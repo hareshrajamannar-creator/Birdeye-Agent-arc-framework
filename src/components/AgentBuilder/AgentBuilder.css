@@ -45,12 +45,24 @@
 .agent-builder__mode-bar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   height: 44px;
   padding: 0 16px;
   background: #fff;
   border-bottom: 1px solid #e9e9eb;
   flex-shrink: 0;
+}
+
+.agent-builder__mode-bar-modes {
+  display: flex;
+  align-items: center;
   gap: 4px;
+}
+
+.agent-builder__mode-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .agent-builder__mode-btn {
@@ -87,6 +99,18 @@
   background: #e8f0fe;
   border-color: #c5d8fc;
   color: #1976d2;
+}
+
+/* ─── Save agent modal form ─── */
+.agent-builder__save-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.agent-builder__save-field {
+  width: 100%;
 }
 
 /* ─── AI Prompt panel (left, prompt mode) ─── */

@@ -6,6 +6,10 @@ import RHS from '../Organisms/Panels/RHS/RHS';
 import ScheduleBased from '../Molecules/RHS/Trigger/ScheduleBased/ScheduleBased';
 import AIChatBubble from '../Molecules/AIChatBubble/AIChatBubble';
 import AIPromptBox from '../Molecules/AIPromptBox/AIPromptBox';
+import Button from '@birdeye/elemental/core/atoms/Button/index.js';
+import CustomModal from '@birdeye/elemental/core/atoms/CustomModal/index.js';
+import FormInput from '@birdeye/elemental/core/atoms/FormInput/index.js';
+import TextArea from '@birdeye/elemental/core/atoms/TextArea/index.js';
 import './AgentBuilder.css';
 
 const START_NODE_ID = '__start__';
@@ -89,10 +93,6 @@ function nextId() {
 
 /* ─── Prompt workflow helpers ─── */
 
-/**
- * Build a single node entry (same shape as handleDropNode) for use in
- * generateWorkflowFromPrompt. Returns { node, details, extraDetails }.
- */
 function buildPromptNodeEntry(type, label, description) {
   const id = nextId();
   let flowType = 'task';
@@ -136,13 +136,7 @@ function buildPromptNodeEntry(type, label, description) {
   } else {
     hasAiIcon = label === 'Custom';
     if (hasAiIcon) {
-      details = {
-        taskName: description,
-        description: '',
-        llmModel: 'Fast',
-        systemPrompt: '',
-        userPrompt: '',
-      };
+      details = { taskName: description, description: '', llmModel: 'Fast', systemPrompt: '', userPrompt: '' };
     } else {
       details = { taskName: description, description: '' };
     }
@@ -166,14 +160,6 @@ function buildPromptNodeEntry(type, label, description) {
   return { node, details, extraDetails };
 }
 
-/**
- * Smart mock: parse free-text prompt and return { nodes, details }.
- *
- * "review"   → EntityTrigger(Reviews) + LLMTask
- * "schedule" → ScheduleTrigger + EntityTask
- * "branch"   → EntityTrigger + Branch + LLMTask × 2
- * default    → LLMTask
- */
 function generateWorkflowFromPrompt(text) {
   const lower = text.toLowerCase();
 
@@ -225,6 +211,8 @@ export default function AgentBuilder({
   appTitle = 'Reviews AI',
   pageTitle = 'Review response agent  1',
   activeNavId = 'reviews',
+  moduleContext = 'agents',
+  onSaveAgent,
 }) {
   const [navId, setNavId] = useState(activeNavId);
   const [nodeList, setNodeList] = useState([]);
@@ -243,6 +231,26 @@ export default function AgentBuilder({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [promptMessages]);
 
+  /* ─── Save modal ─── */
+  const [saveModalOpen, setSaveModalOpen] = useState(false);
+  const [agentName, setAgentName] = useState(pageTitle || '');
+  const [agentDesc, setAgentDesc] = useState('');
+
+  const handleSaveConfirm = useCallback(() => {
+    if (!agentName.trim()) return;
+    onSaveAgent?.({
+      id: crypto.randomUUID(),
+      name: agentName.trim(),
+      description: agentDesc.trim(),
+      createdAt: new Date().toISOString(),
+      moduleContext,
+      nodes: nodeList,
+      creationMode: buildMode,
+    });
+    setSaveModalOpen(false);
+  }, [agentName, agentDesc, moduleContext, nodeList, buildMode, onSaveAgent]);
+
+  /* ─── Prompt mode ─── */
   const handlePromptSend = useCallback((text) => {
     setPromptMessages((prev) => [...prev, { role: 'user', message: text }]);
 
@@ -583,33 +591,40 @@ export default function AgentBuilder({
 
         {/* ─── Mode toggle bar ─── */}
         <div className="agent-builder__mode-bar">
-          <button
-            className={`agent-builder__mode-btn${buildMode === 'manual' ? ' agent-builder__mode-btn--active' : ''}`}
-            onClick={() => setBuildMode('manual')}
-          >
-            <span className="material-symbols-outlined">edit</span>
-            Build manually
-          </button>
-          <button
-            className={`agent-builder__mode-btn${buildMode === 'prompt' ? ' agent-builder__mode-btn--active' : ''}`}
-            onClick={() => setBuildMode('prompt')}
-          >
-            <span className="material-symbols-outlined">auto_awesome</span>
-            Build with prompt
-          </button>
+          <div className="agent-builder__mode-bar-modes">
+            <button
+              className={`agent-builder__mode-btn${buildMode === 'manual' ? ' agent-builder__mode-btn--active' : ''}`}
+              onClick={() => setBuildMode('manual')}
+            >
+              <span className="material-symbols-outlined">edit</span>
+              Build manually
+            </button>
+            <button
+              className={`agent-builder__mode-btn${buildMode === 'prompt' ? ' agent-builder__mode-btn--active' : ''}`}
+              onClick={() => setBuildMode('prompt')}
+            >
+              <span className="material-symbols-outlined">auto_awesome</span>
+              Build with prompt
+            </button>
+          </div>
+          <div className="agent-builder__mode-bar-actions">
+            <Button
+              theme="secondary"
+              label="Save agent"
+              onClick={() => setSaveModalOpen(true)}
+            />
+          </div>
         </div>
 
         {/* ─── Main content ─── */}
         <div className="agent-builder">
 
-          {/* Manual mode: LHS drawer */}
           {buildMode === 'manual' && (
             <div className="agent-builder__lhs">
               <LHSDrawer defaultTab="Create manually" triggerOpen tasksOpen={false} controlsOpen={false} />
             </div>
           )}
 
-          {/* Prompt mode: AI chat panel */}
           {buildMode === 'prompt' && (
             <div className="agent-builder__prompt-panel">
               <div className="agent-builder__prompt-messages">
@@ -633,7 +648,6 @@ export default function AgentBuilder({
             </div>
           )}
 
-          {/* Canvas */}
           <div className={`agent-builder__canvas${drawerOpen ? ' agent-builder__canvas--with-rhs' : ''}`}>
             <FlowCanvas
               nodes={nodes}
@@ -645,7 +659,6 @@ export default function AgentBuilder({
             />
           </div>
 
-          {/* RHS panel */}
           {drawerOpen && (
             <div className="agent-builder__rhs">
               {renderRHSPanel()}
@@ -653,6 +666,41 @@ export default function AgentBuilder({
           )}
         </div>
       </div>
+
+      {/* ─── Save agent modal ─── */}
+      {saveModalOpen && (
+        <CustomModal
+          title="Save agent"
+          needPrimaryBtn
+          primaryBtnLabel="Save"
+          primaryBtnDisabled={!agentName.trim()}
+          needSecondaryBtn
+          secondaryBtnLabel="Cancel"
+          onHideModal={() => setSaveModalOpen(false)}
+          onHandleChangeModal={handleSaveConfirm}
+        >
+          <div className="agent-builder__save-form">
+            <div className="agent-builder__save-field">
+              <FormInput
+                name="save-agent-name"
+                type="text"
+                label="Agent name"
+                value={agentName}
+                onChange={(e, val) => setAgentName(val)}
+              />
+            </div>
+            <div className="agent-builder__save-field">
+              <TextArea
+                name="save-agent-desc"
+                label="Description (optional)"
+                value={agentDesc}
+                onChange={(e, val) => setAgentDesc(val)}
+                rows={3}
+              />
+            </div>
+          </div>
+        </CustomModal>
+      )}
     </AppShell>
   );
 }
