@@ -1,9 +1,11 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import AppShell from '../AppShell/AppShell';
 import LHSDrawer from '../LHSDrawer/LHSDrawer';
 import FlowCanvas from '../FlowCanvas/FlowCanvas';
 import RHS from '../Organisms/Panels/RHS/RHS';
 import ScheduleBased from '../Molecules/RHS/Trigger/ScheduleBased/ScheduleBased';
+import AIChatBubble from '../Molecules/AIChatBubble/AIChatBubble';
+import AIPromptBox from '../Molecules/AIPromptBox/AIPromptBox';
 import './AgentBuilder.css';
 
 const START_NODE_ID = '__start__';
@@ -85,6 +87,140 @@ function nextId() {
   return `node-${nodeIdCounter}`;
 }
 
+/* ─── Prompt workflow helpers ─── */
+
+/**
+ * Build a single node entry (same shape as handleDropNode) for use in
+ * generateWorkflowFromPrompt. Returns { node, details, extraDetails }.
+ */
+function buildPromptNodeEntry(type, label, description) {
+  const id = nextId();
+  let flowType = 'task';
+  let title = 'Task';
+  let hasAiIcon = false;
+  let details = {};
+  let extraDetails = {};
+
+  if (type === 'trigger') {
+    flowType = 'trigger';
+    title = 'Trigger';
+    if (label === 'Schedule-based') {
+      details = { frequency: 'Daily', day: '7 days', time: '9:00 AM' };
+    } else {
+      details = {
+        triggerName: label,
+        description,
+        conditions: [
+          { field: '', operator: '', value: '' },
+          { field: '', operator: '', value: '' },
+          { field: '', operator: '', value: '' },
+        ],
+      };
+    }
+  } else if (type === 'branch') {
+    flowType = 'branch';
+    title = label;
+    const p1 = `${id}-path-1`;
+    const p2 = `${id}-path-2`;
+    details = {
+      basedOn: 'Conditions',
+      branches: [
+        { id: p1, name: 'Branch 1' },
+        { id: p2, name: 'Branch 2' },
+      ],
+    };
+    extraDetails = {
+      [p1]: { branchName: 'Branch 1', description: '', conditions: [], parentId: id, isBranchPath: true },
+      [p2]: { branchName: 'Branch 2', description: '', conditions: [], parentId: id, isBranchPath: true },
+    };
+  } else {
+    hasAiIcon = label === 'Custom';
+    if (hasAiIcon) {
+      details = {
+        taskName: description,
+        description: '',
+        llmModel: 'Fast',
+        systemPrompt: '',
+        userPrompt: '',
+      };
+    } else {
+      details = { taskName: description, description: '' };
+    }
+  }
+
+  const node = {
+    id,
+    flowType,
+    data: {
+      title,
+      subtype: label,
+      stepNumber: null,
+      description,
+      subtitle: `${label}: ${description}`,
+      hasAiIcon,
+      hasToggle: true,
+      toggleEnabled: true,
+    },
+  };
+
+  return { node, details, extraDetails };
+}
+
+/**
+ * Smart mock: parse free-text prompt and return { nodes, details }.
+ *
+ * "review"   → EntityTrigger(Reviews) + LLMTask
+ * "schedule" → ScheduleTrigger + EntityTask
+ * "branch"   → EntityTrigger + Branch + LLMTask × 2
+ * default    → LLMTask
+ */
+function generateWorkflowFromPrompt(text) {
+  const lower = text.toLowerCase();
+
+  let specs;
+  if (lower.includes('review')) {
+    specs = [
+      { type: 'trigger', label: 'Reviews',  description: 'When a new review is received' },
+      { type: 'task',    label: 'Custom',   description: 'Analyze and respond to the review' },
+    ];
+  } else if (lower.includes('schedule')) {
+    specs = [
+      { type: 'trigger', label: 'Schedule-based', description: 'Runs on a set schedule' },
+      { type: 'task',    label: 'Review',          description: 'Process scheduled items' },
+    ];
+  } else if (lower.includes('branch')) {
+    specs = [
+      { type: 'trigger', label: 'Reviews', description: 'When a new review is received' },
+      { type: 'branch',  label: 'Branch',  description: 'Route based on conditions' },
+      { type: 'task',    label: 'Custom',  description: 'Handle positive outcome' },
+      { type: 'task',    label: 'Custom',  description: 'Handle negative outcome' },
+    ];
+  } else {
+    specs = [
+      { type: 'task', label: 'Custom', description: 'Process and respond' },
+    ];
+  }
+
+  const nodes = [];
+  const allDetails = {};
+
+  specs.forEach(({ type, label, description }) => {
+    const { node, details, extraDetails } = buildPromptNodeEntry(type, label, description);
+    nodes.push(node);
+    allDetails[node.id] = details;
+    Object.assign(allDetails, extraDetails);
+  });
+
+  const numberedNodes = nodes.map((n, i) => ({
+    ...n,
+    data: { ...n.data, stepNumber: i + 1 },
+  }));
+
+  return { nodes: numberedNodes, details: allDetails };
+}
+
+/* ─── Component ─── */
+
 export default function AgentBuilder({
   appTitle = 'Reviews AI',
   pageTitle = 'Review response agent  1',
@@ -96,6 +232,38 @@ export default function AgentBuilder({
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [nodeDetails, setNodeDetails] = useState({});
 
+  /* ─── Build mode ─── */
+  const [buildMode, setBuildMode] = useState('manual');
+  const [promptMessages, setPromptMessages] = useState([
+    { role: 'ai', message: "Hi! Describe what your agent should do and I'll generate a workflow for you." },
+  ]);
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [promptMessages]);
+
+  const handlePromptSend = useCallback((text) => {
+    setPromptMessages((prev) => [...prev, { role: 'user', message: text }]);
+
+    const { nodes: generatedNodes, details: newDetails } = generateWorkflowFromPrompt(text);
+
+    setNodeList(generatedNodes);
+    setNodeDetails(newDetails);
+    setSelectedNodeId(null);
+    setDrawerOpen(false);
+
+    setPromptMessages((prev) => [
+      ...prev,
+      {
+        role: 'ai',
+        message: `Done! I've generated a ${generatedNodes.length}-step workflow based on your description. Switch to Manual mode to edit individual nodes.`,
+      },
+    ]);
+  }, []);
+
+  /* ─── Manual-mode node management ─── */
+
   const handleDeleteNode = useCallback((nodeId) => {
     setNodeList((prev) => {
       const updated = prev.filter((n) => n.id !== nodeId);
@@ -106,7 +274,6 @@ export default function AgentBuilder({
     });
     setNodeDetails((prev) => {
       const copy = { ...prev };
-      // Remove the node and any branch path details that belong to it
       Object.keys(copy).forEach((key) => {
         if (key === nodeId || copy[key]?.parentId === nodeId) {
           delete copy[key];
@@ -258,7 +425,6 @@ export default function AgentBuilder({
   const renderRHSPanel = () => {
     if (!selectedNodeId) return null;
 
-    // Start node → agent details
     if (selectedNodeId === START_NODE_ID) {
       const startDetails = nodeDetails[START_NODE_ID] || {
         agentName: pageTitle,
@@ -290,7 +456,6 @@ export default function AgentBuilder({
       );
     }
 
-    // Branch path node → branch details
     if (currentDetails.isBranchPath) {
       return (
         <RHS
@@ -306,7 +471,6 @@ export default function AgentBuilder({
     if (!selectedNode) return null;
     const { flowType, data } = selectedNode;
 
-    // Schedule trigger
     if (flowType === 'trigger' && data.subtype === 'Schedule-based') {
       return (
         <ScheduleBased
@@ -324,7 +488,6 @@ export default function AgentBuilder({
       );
     }
 
-    // Entity trigger
     if (flowType === 'trigger') {
       return (
         <RHS
@@ -337,7 +500,6 @@ export default function AgentBuilder({
       );
     }
 
-    // Branch node → branch overview (controlBranch)
     if (flowType === 'branch') {
       return (
         <RHS
@@ -350,7 +512,6 @@ export default function AgentBuilder({
       );
     }
 
-    // Delay node
     if (flowType === 'delay') {
       return (
         <RHS
@@ -363,7 +524,6 @@ export default function AgentBuilder({
       );
     }
 
-    // Parallel node
     if (flowType === 'parallel') {
       return (
         <RHS
@@ -376,7 +536,6 @@ export default function AgentBuilder({
       );
     }
 
-    // Loop node
     if (flowType === 'loop') {
       return (
         <RHS
@@ -389,7 +548,6 @@ export default function AgentBuilder({
       );
     }
 
-    // LLM task (Custom)
     if (data.hasAiIcon) {
       return (
         <RHS
@@ -402,7 +560,6 @@ export default function AgentBuilder({
       );
     }
 
-    // Entity task (default)
     return (
       <RHS
         variant="entityTask"
@@ -422,25 +579,79 @@ export default function AgentBuilder({
       onNavChange={setNavId}
       publishDisabled
     >
-      <div className="agent-builder">
-        <div className="agent-builder__lhs">
-          <LHSDrawer defaultTab="Create manually" triggerOpen tasksOpen={false} controlsOpen={false} />
+      <div className="agent-builder-wrapper">
+
+        {/* ─── Mode toggle bar ─── */}
+        <div className="agent-builder__mode-bar">
+          <button
+            className={`agent-builder__mode-btn${buildMode === 'manual' ? ' agent-builder__mode-btn--active' : ''}`}
+            onClick={() => setBuildMode('manual')}
+          >
+            <span className="material-symbols-outlined">edit</span>
+            Build manually
+          </button>
+          <button
+            className={`agent-builder__mode-btn${buildMode === 'prompt' ? ' agent-builder__mode-btn--active' : ''}`}
+            onClick={() => setBuildMode('prompt')}
+          >
+            <span className="material-symbols-outlined">auto_awesome</span>
+            Build with prompt
+          </button>
         </div>
-        <div className={`agent-builder__canvas ${drawerOpen ? 'agent-builder__canvas--with-rhs' : ''}`}>
-          <FlowCanvas
-            nodes={nodes}
-            edges={edges}
-            onNodeClick={handleNodeClick}
-            onDropNode={handleDropNode}
-            selectedNodeId={selectedNodeId}
-            orientation="vertical"
-          />
-        </div>
-        {drawerOpen && (
-          <div className="agent-builder__rhs">
-            {renderRHSPanel()}
+
+        {/* ─── Main content ─── */}
+        <div className="agent-builder">
+
+          {/* Manual mode: LHS drawer */}
+          {buildMode === 'manual' && (
+            <div className="agent-builder__lhs">
+              <LHSDrawer defaultTab="Create manually" triggerOpen tasksOpen={false} controlsOpen={false} />
+            </div>
+          )}
+
+          {/* Prompt mode: AI chat panel */}
+          {buildMode === 'prompt' && (
+            <div className="agent-builder__prompt-panel">
+              <div className="agent-builder__prompt-messages">
+                {promptMessages.map((msg, i) =>
+                  msg.role === 'ai' ? (
+                    <AIChatBubble key={i} message={msg.message} />
+                  ) : (
+                    <div key={i} className="agent-builder__prompt-user-msg">
+                      {msg.message}
+                    </div>
+                  )
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+              <div className="agent-builder__prompt-input">
+                <AIPromptBox
+                  placeholder="Describe what your agent should do..."
+                  onSend={handlePromptSend}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Canvas */}
+          <div className={`agent-builder__canvas${drawerOpen ? ' agent-builder__canvas--with-rhs' : ''}`}>
+            <FlowCanvas
+              nodes={nodes}
+              edges={edges}
+              onNodeClick={handleNodeClick}
+              onDropNode={handleDropNode}
+              selectedNodeId={selectedNodeId}
+              orientation="vertical"
+            />
           </div>
-        )}
+
+          {/* RHS panel */}
+          {drawerOpen && (
+            <div className="agent-builder__rhs">
+              {renderRHSPanel()}
+            </div>
+          )}
+        </div>
       </div>
     </AppShell>
   );
