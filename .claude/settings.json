@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e ' *)",
+      "Bash(open \"http://localhost:6006/?path=/story/agent-builder-modules-rhspanel-trigger-schedulebased--default\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:6006)",
+      "Bash(git fetch *)",
+      "Bash(curl -s http://localhost:6006)",
+      "Bash(curl -s http://localhost:6006/index.json)",
+      "Bash(kill 5108 5089)",
+      "Bash(git checkout *)",
+      "Bash(git cherry-pick *)"
+    ]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "vite-dev",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "source $HOME/.nvm/nvm.sh && nvm use 22 && npm run dev -- --port $PORT"],
+      "port": 5173,
+      "autoPort": true
+    },
+    {
+      "name": "storybook",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "source $HOME/.nvm/nvm.sh && nvm use 22 && npx storybook dev -p $PORT"],
+      "port": 6006,
+      "autoPort": true
+    }
+  ]
+}

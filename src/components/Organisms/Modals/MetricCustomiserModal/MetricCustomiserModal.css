@@ -1,0 +1,299 @@
+.metric-customiser-modal__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(33, 33, 33, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 60px;
+}
+
+.metric-customiser-modal__dialog {
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0px 4px 8px 0px rgba(33, 33, 33, 0.18);
+  width: 600px;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Roboto', sans-serif;
+}
+
+/* ─── Header ─── */
+.metric-customiser-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 24px 12px 24px;
+}
+
+.metric-customiser-modal__titles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.metric-customiser-modal__title {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: -0.32px;
+  color: #1f2328;
+  margin: 0;
+}
+
+.metric-customiser-modal__subtitle {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+  color: #8f8f8f;
+  margin: 0;
+}
+
+.metric-customiser-modal__close {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: #212121;
+  flex-shrink: 0;
+}
+
+.metric-customiser-modal__close .material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  line-height: 1;
+}
+
+.metric-customiser-modal__close:hover {
+  color: #555;
+}
+
+/* ─── Body ─── */
+.metric-customiser-modal__body {
+  display: flex;
+  flex-direction: column;
+}
+
+.metric-customiser-modal__radios {
+  display: flex;
+  gap: 20px;
+  padding-left: 20px;
+  padding-bottom: 4px;
+}
+
+.metric-customiser-modal__radio-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #212121;
+  user-select: none;
+}
+
+.metric-customiser-modal__radio-label input[type='radio'] {
+  width: 16px;
+  height: 16px;
+  accent-color: #1976d2;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin: 0;
+}
+
+/* ─── Metric row ─── */
+.metric-customiser-modal__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+}
+
+.metric-customiser-modal__row--top {
+  align-items: flex-start;
+}
+
+.metric-customiser-modal__row-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.metric-customiser-modal__row-label {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: #1f2328;
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+
+.metric-customiser-modal__row-sublabel {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #8f8f8f;
+  margin: 0;
+}
+
+.metric-customiser-modal__input-group {
+  display: flex;
+  align-items: center;
+  width: 75px;
+  height: 38px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 7px 12px;
+  gap: 4px;
+  flex-shrink: 0;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.metric-customiser-modal__input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #212121;
+  background: transparent;
+  padding: 0;
+  width: 100%;
+}
+
+.metric-customiser-modal__input--right {
+  text-align: right;
+}
+
+/* hide number input spinners */
+.metric-customiser-modal__input::-webkit-outer-spin-button,
+.metric-customiser-modal__input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.metric-customiser-modal__input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+.metric-customiser-modal__unit {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #8f8f8f;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ─── Wage inputs (cost mode) ─── */
+.metric-customiser-modal__wage-inputs {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.metric-customiser-modal__currency-select {
+  position: relative;
+  width: 75px;
+  height: 38px;
+  flex-shrink: 0;
+}
+
+.metric-customiser-modal__select {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 100%;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 7px 28px 7px 12px;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #212121;
+  background: #fff;
+  cursor: pointer;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.metric-customiser-modal__chevron {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  line-height: 1;
+  color: #212121;
+  pointer-events: none;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+}
+
+.metric-customiser-modal__input-group--wage {
+  padding: 7px 12px;
+}
+
+/* ─── Footer ─── */
+.metric-customiser-modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 12px 24px 24px 24px;
+}
+
+.metric-customiser-modal__cancel {
+  height: 36px;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: #1976d2;
+}
+
+.metric-customiser-modal__cancel:hover {
+  background: #f0f7ff;
+}
+
+.metric-customiser-modal__save {
+  height: 36px;
+  padding: 8px 12px;
+  background: #1976d2;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  color: #fff;
+}
+
+.metric-customiser-modal__save:hover {
+  background: #1565c0;
+}

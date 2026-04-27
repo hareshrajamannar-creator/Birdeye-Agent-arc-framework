@@ -1,0 +1,156 @@
+.cnh *,
+.cnh *::before,
+.cnh *::after { box-sizing: border-box; }
+
+.cnh .material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  line-height: 1;
+  overflow: hidden;
+}
+
+.cnh {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  font-family: var(--sans, 'Roboto', sans-serif);
+}
+
+/* ── Left ── */
+.cnh__left {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.cnh__icon-circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cnh__icon-circle .material-symbols-outlined {
+  font-size: 16px !important;
+  width: 16px;
+  height: 16px;
+}
+
+.cnh__icon-circle--trigger { background: #fff3e0; }
+.cnh__icon-circle--trigger .material-symbols-outlined { color: #e65100; }
+
+.cnh__icon-circle--task { background: #e3f2fd; }
+.cnh__icon-circle--task .material-symbols-outlined { color: #1976d2; }
+
+.cnh__icon-circle--branch { background: #e8f5e9; }
+.cnh__icon-circle--branch .material-symbols-outlined { color: #2e7d32; }
+
+.cnh__icon-circle--parallel { background: #e0f2f1; }
+.cnh__icon-circle--parallel .material-symbols-outlined { color: #00695c; }
+
+.cnh__icon-circle--loop { background: #f3e5f5; }
+.cnh__icon-circle--loop .material-symbols-outlined { color: #7b1fa2; }
+
+.cnh__icon-circle--delay { background: #fff8e1; }
+.cnh__icon-circle--delay .material-symbols-outlined { color: #f57f17; }
+
+.cnh__label {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: -0.28px;
+  color: var(--text-h);
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Right ── */
+.cnh__right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.cnh__ai-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.cnh__ai-icon .material-symbols-outlined {
+  color: #6834b7;
+  font-size: 24px !important;
+  width: 24px;
+  height: 24px;
+}
+
+/* ── Elemental Button icon sizing ── */
+.cnh__btn-icon {
+  font-family: 'Material Symbols Outlined' !important;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+  font-style: normal;
+  font-size: 20px !important;
+  width: 20px;
+  height: 20px;
+  line-height: 1;
+  overflow: hidden;
+  display: inline-block;
+  color: var(--text-h, #212121);
+}
+
+.cnh__btn-icon--delete { color: #d32f2f; }
+
+/* ── More / context menu ── */
+.cnh__more-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.cnh__context-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: var(--bg);
+  border-radius: 8px;
+  box-shadow: 0px 4px 12px rgba(33, 33, 33, 0.15);
+  padding: 4px 0;
+  min-width: 140px;
+  z-index: 20;
+}
+
+.cnh__context-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: var(--sans, 'Roboto', sans-serif);
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: -0.28px;
+  color: var(--text-h);
+  text-align: left;
+}
+
+.cnh__context-menu-item:hover { background: var(--border); }
+
+.cnh__context-menu-item--delete,
+.cnh__context-menu-item--delete .material-symbols-outlined { color: #d32f2f; }

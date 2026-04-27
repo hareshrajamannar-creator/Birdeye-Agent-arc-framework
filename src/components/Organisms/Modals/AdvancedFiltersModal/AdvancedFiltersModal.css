@@ -1,0 +1,313 @@
+.afm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(33, 33, 33, 0.24);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.afm-dialog {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0px 10px 24px 0px rgba(33, 33, 33, 0.2);
+  width: 784px;
+  max-width: calc(100vw - 48px);
+  max-height: calc(100vh - 96px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px;
+  font-family: 'Roboto', sans-serif;
+  box-sizing: border-box;
+}
+
+/* ─── Body ─── */
+.afm-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.afm-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: #1f2328;
+  flex-shrink: 0;
+}
+
+/* ─── Groups ─── */
+.afm-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.afm-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: #f8f9fa;
+  border: 1px solid #e5e9f0;
+  border-radius: 4px;
+}
+
+.afm-group__conditions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.afm-group__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ─── Group connector (OR/AND between groups) ─── */
+.afm-group-connector {
+  display: flex;
+  align-items: center;
+  padding: 6px 0;
+}
+
+/* ─── Filter rows ─── */
+.afm-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 4px;
+}
+
+.afm-row__when {
+  flex-shrink: 0;
+  width: 77px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #000;
+}
+
+.afm-row__dropdowns {
+  display: flex;
+  flex: 1;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+}
+
+/* ─── Dropdown ─── */
+.afm-dropdown {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.afm-dropdown--narrow {
+  flex: 0 0 77px;
+  width: 77px;
+}
+
+.afm-dropdown__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 6px 8px;
+  background: #fff;
+  border: 1px solid #e5e9f0;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Roboto', sans-serif;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.afm-dropdown__trigger:hover {
+  border-color: #ccc;
+}
+
+.afm-dropdown__trigger--open {
+  border-color: #ccc;
+}
+
+.afm-dropdown__value {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #555;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.afm-dropdown__chevron {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  line-height: 1;
+  color: #212121;
+  flex-shrink: 0;
+  overflow: hidden;
+  transition: transform 0.15s;
+}
+
+.afm-dropdown__trigger--open .afm-dropdown__chevron {
+  transform: rotate(180deg);
+}
+
+.afm-dropdown__menu {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  z-index: 10;
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0px 4px 8px 0px rgba(33, 33, 33, 0.18);
+}
+
+.afm-dropdown__option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #212121;
+  cursor: pointer;
+  list-style: none;
+}
+
+.afm-dropdown__option:hover {
+  background: #f5f5f5;
+}
+
+.afm-dropdown__option--selected {
+  background: #e5e9f0;
+}
+
+.afm-dropdown__option .material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  line-height: 1;
+  overflow: hidden;
+}
+
+/* ─── Delete buttons ─── */
+.afm-row__delete,
+.afm-remove-group-btn {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: #8f8f8f;
+}
+
+.afm-row__delete:hover,
+.afm-remove-group-btn:hover {
+  color: #de1b0c;
+}
+
+.afm-row__delete .material-symbols-outlined,
+.afm-remove-group-btn .material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  line-height: 1;
+  overflow: hidden;
+}
+
+/* ─── Add buttons ─── */
+.afm-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 36px;
+  padding: 8px 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: -0.28px;
+  color: #1976d2;
+}
+
+.afm-add-btn:hover {
+  opacity: 0.8;
+}
+
+.afm-add-btn .material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  line-height: 1;
+  overflow: hidden;
+}
+
+/* ─── Footer ─── */
+.afm-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.afm-btn {
+  height: 36px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.afm-btn--tertiary {
+  background: none;
+  border: none;
+  color: #1976d2;
+}
+
+.afm-btn--tertiary:hover {
+  background: #f0f7ff;
+}
+
+.afm-btn--primary {
+  background: #1976d2;
+  border: none;
+  color: #fff;
+}
+
+.afm-btn--primary:hover {
+  background: #1565c0;
+}

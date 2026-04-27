@@ -1,0 +1,404 @@
+
+/* Reset */
+.lhs-drawer *,
+.lhs-drawer *::before,
+.lhs-drawer *::after {
+  box-sizing: border-box;
+}
+
+.lhs-drawer .material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+  font-size: 20px !important;
+  width: 20px;
+  height: 20px;
+  line-height: 1;
+  overflow: hidden;
+}
+
+/* ─── Root panel ─── */
+.lhs-drawer {
+  background: #fff;
+  border-radius: 8px;
+  width: 360px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  padding: 8px 24px 20px;
+  font-family: 'Roboto', sans-serif;
+  color: #212121;
+  position: relative;
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+/* ─── Custom tabs ─── */
+.lhs-drawer__tabs {
+  width: 100%;
+  display: flex;
+  gap: 8px;
+  background: #fff;
+}
+
+.lhs-drawer__tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: 'Roboto', sans-serif;
+  line-height: 20px;
+  letter-spacing: -0.28px;
+  color: #555;
+}
+
+.lhs-drawer__tab--active {
+  color: #212121;
+}
+
+.lhs-drawer__tab-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 8px;
+  white-space: nowrap;
+}
+
+.lhs-drawer__tab-ai-icon {
+  width: 24px;
+  height: 24px;
+  display: block;
+  flex-shrink: 0;
+}
+
+.lhs-drawer__tab-underline {
+  display: block;
+  width: 100%;
+  height: 1px;
+  background: transparent;
+}
+
+.lhs-drawer__tab--active .lhs-drawer__tab-underline {
+  background: #1976d2;
+}
+
+/* ─── Tab content area ─── */
+.lhs-drawer__body {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ─── Search field (override elemental FormInput) ─── */
+.lhs-drawer__search {
+  width: 100%;
+}
+
+.lhs-drawer__search .el-forminput {
+  margin: 0 !important;
+}
+
+.lhs-drawer__search .form-input-wrapper {
+  height: 36px !important;
+  min-height: 36px !important;
+  border: 1px solid #e5e9f0 !important;
+  border-radius: 4px !important;
+  background: #fff !important;
+  padding: 0 !important;
+}
+
+.lhs-drawer__search .form-input-wrapper input {
+  font-size: 14px !important;
+  font-family: 'Roboto', sans-serif !important;
+  color: #212121 !important;
+  padding: 8px 12px 8px 36px !important;
+  height: 100% !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.lhs-drawer__search .form-input-wrapper input::placeholder {
+  color: #9e9e9e !important;
+}
+
+.lhs-drawer__search .form-input-wrapper i {
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  left: 12px !important;
+  font-size: 20px !important;
+  color: #9e9e9e !important;
+}
+
+.lhs-drawer__search label {
+  display: none !important;
+}
+
+/* ─── Sections (override elemental Accordion) ─── */
+.lhs-drawer__sections {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.lhs-drawer__sections .accordionContentWrap {
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+}
+
+.lhs-drawer__sections .accordionContentWrap > li {
+  width: 100% !important;
+}
+
+.lhs-drawer__sections .accordionHeadingContent {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  cursor: pointer !important;
+  padding: 0 !important;
+  width: 100% !important;
+  text-align: left !important;
+}
+
+.lhs-drawer__sections .accordionHeadingContent h2 {
+  flex: 1 !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  letter-spacing: -0.28px !important;
+  color: #212121 !important;
+  margin: 0 !important;
+  line-height: 20px !important;
+  text-align: left !important;
+}
+
+.lhs-drawer__sections .accordionHeadingContent span {
+  display: none !important;
+}
+
+.lhs-drawer__sections .accordionIcon {
+  font-size: 20px !important;
+  color: #212121 !important;
+  transition: transform 0.2s ease !important;
+}
+
+.lhs-drawer__sections li.open .accordionIcon {
+  transform: rotate(180deg) !important;
+}
+
+.lhs-drawer__sections .accordionBelowContent {
+  overflow: hidden !important;
+  max-height: 0 !important;
+  transition: max-height 0.3s ease !important;
+}
+
+.lhs-drawer__sections li.open .accordionBelowContent {
+  max-height: 1000px !important;
+  overflow: visible !important;
+}
+
+.lhs-drawer__sections .accordionInnerContent {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+  padding: 12px 0 0 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* ─── Cards container ─── */
+.lhs-drawer__cards {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  width: 100% !important;
+  text-align: left !important;
+}
+
+/* ─── Card rows ─── */
+.lhs-drawer__card {
+  display: flex !important;
+  align-items: center !important;
+  gap: 13px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  max-height: 36px !important;
+  padding: 4px 12px !important;
+  border: 1px solid #e5e9f0 !important;
+  border-radius: 4px !important;
+  background: #fff !important;
+  cursor: pointer !important;
+  transition: background 0.15s !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.lhs-drawer__card:hover {
+  background: #f5f8ff !important;
+}
+
+.lhs-drawer__card--drag {
+  cursor: grab !important;
+}
+
+.lhs-drawer__card--drag:hover {
+  background: #f5f8ff !important;
+  border-color: #1976d2 !important;
+}
+
+.lhs-drawer__card-icon {
+  flex-shrink: 0 !important;
+  color: #212121 !important;
+}
+
+.lhs-drawer__card-label {
+  flex: 1 !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  line-height: 20px !important;
+  letter-spacing: -0.28px !important;
+  color: #212121 !important;
+  min-width: 0 !important;
+  text-align: left !important;
+}
+
+.lhs-drawer__card-action {
+  flex-shrink: 0 !important;
+  color: #212121 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.lhs-drawer__card-action .material-symbols-outlined {
+  font-size: 20px !important;
+}
+
+/* Rotate expand_more to point right like a chevron_right */
+.lhs-drawer__card-action--chevron .material-symbols-outlined {
+  transform: rotate(-90deg) !important;
+}
+
+/* ─── Card wrapper (for dropdown positioning) ─── */
+.lhs-drawer__card-wrapper {
+  position: static !important;
+}
+
+/* ─── Active card state ─── */
+.lhs-drawer__card.lhs-drawer__card--active {
+  border-color: #1976d2 !important;
+  background: #f5f8ff !important;
+}
+
+/* ─── Dropdown hover zone (bridge + panel) ─── */
+.lhs-drawer__dropdown-zone {
+  position: absolute !important;
+  left: 100% !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  z-index: 10 !important;
+}
+
+.lhs-drawer__dropdown-bridge {
+  width: 8px !important;
+  min-height: 100% !important;
+  flex-shrink: 0 !important;
+}
+
+/* ─── Dropdown panel ─── */
+.lhs-drawer__dropdown {
+  position: relative !important;
+  left: auto !important;
+  width: 317px !important;
+  min-width: 317px !important;
+  background: #fff !important;
+  border-radius: 8px !important;
+  box-shadow: 0px 4px 8px 0px rgba(33, 33, 33, 0.18) !important;
+  padding: 20px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 20px !important;
+  z-index: 10 !important;
+  box-sizing: border-box !important;
+}
+
+.lhs-drawer__dropdown-title {
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  line-height: 20px !important;
+  letter-spacing: -0.28px !important;
+  color: #212121 !important;
+  text-align: left !important;
+}
+
+.lhs-drawer__dropdown-items {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+.lhs-drawer__dropdown-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  min-height: 36px !important;
+  padding: 4px 12px !important;
+  border: 1px solid #e5e9f0 !important;
+  border-radius: 4px !important;
+  background: #fff !important;
+  cursor: grab !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.lhs-drawer__dropdown-item:hover {
+  background: #f5f5f5 !important;
+}
+
+.lhs-drawer__dropdown-item-label {
+  flex: 1 !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  line-height: 20px !important;
+  letter-spacing: -0.28px !important;
+  color: #212121 !important;
+  text-align: left !important;
+}
+
+.lhs-drawer__dropdown-item-action {
+  flex-shrink: 0 !important;
+  color: #212121 !important;
+}
+
+/* ─── AI tab content ─── */
+.lhs-drawer__ai-body {
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 0;
+}
+
+.lhs-drawer__ai-chat-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 0;
+}

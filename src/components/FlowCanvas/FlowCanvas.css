@@ -1,0 +1,143 @@
+
+.flow-canvas *,
+.flow-canvas *::before,
+.flow-canvas *::after {
+  box-sizing: border-box;
+}
+
+.flow-canvas .material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+  font-size: 20px !important;
+  width: 20px;
+  height: 20px;
+  line-height: 1;
+  overflow: hidden;
+}
+
+/* ─── Root ─── */
+.flow-canvas {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 600px;
+  font-family: 'Roboto', sans-serif;
+  background: #f4f6f7;
+}
+
+/* ─── Toolbar anchor (positioning only) ─── */
+.flow-canvas__toolbar-anchor {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+}
+
+/* ─── Node centering wrapper ─── */
+.flow-canvas__node-center {
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+/* ─── React Flow overrides ─── */
+.flow-canvas .react-flow__node {
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  width: auto !important;
+}
+
+.flow-canvas .react-flow__edge-path {
+  stroke: #ccd5e4 !important;
+  stroke-dasharray: 4 4 !important;
+  stroke-width: 1 !important;
+}
+
+.flow-canvas .react-flow__handle {
+  opacity: 0 !important;
+  width: 1px !important;
+  height: 1px !important;
+}
+
+/* Hide default controls/attribution */
+.flow-canvas .react-flow__controls,
+.flow-canvas .react-flow__attribution {
+  display: none !important;
+}
+
+/* ─── Custom edge add button ─── */
+.flow-canvas__edge-add-wrapper {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flow-canvas__edge-add {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid #e5e9f0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.flow-canvas__edge-add:hover {
+  background: #f5f5f5;
+}
+
+.flow-canvas__edge-add .material-symbols-outlined {
+  font-size: 16px !important;
+  width: 16px;
+  height: 16px;
+  color: #555;
+}
+
+/* ─── Branch path label node ─── */
+.flow-canvas__branch-path-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.flow-canvas__branch-path {
+  background: #fff;
+  border: 1px solid #ccd5e4;
+  border-radius: 6px;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #1a2b4a;
+  white-space: nowrap;
+}
+
+.flow-canvas__branch-path-icon {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+  color: #8d9dca;
+}
+
+/* ─── Selected node highlight ─── */
+.flow-canvas .react-flow__node.flow-canvas__node--selected .flow-node--card {
+  outline: 2px solid #1976d2 !important;
+  outline-offset: 2px;
+}
+
+.flow-canvas .react-flow__node.flow-canvas__node--selected .start-node {
+  border-color: #1976d2 !important;
+  border-width: 2px !important;
+}

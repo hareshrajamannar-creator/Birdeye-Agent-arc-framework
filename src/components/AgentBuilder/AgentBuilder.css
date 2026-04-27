@@ -1,0 +1,58 @@
+.agent-builder {
+  display: flex;
+  height: 100%;
+  gap: 0;
+  overflow: hidden;
+}
+
+.agent-builder__lhs {
+  padding: 8px;
+  flex-shrink: 0;
+  overflow: visible;
+  z-index: 5;
+}
+
+.agent-builder__canvas {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  transition: flex 0.2s ease;
+}
+
+.agent-builder__canvas--with-rhs {
+  flex: 1;
+}
+
+.agent-builder__rhs {
+  flex-shrink: 0;
+  padding: 8px;
+  overflow: hidden;
+  z-index: 5;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Empty state ─── */
+.agent-builder__empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.agent-builder__empty-inner {
+  text-align: center;
+  max-width: 400px;
+}
+
+.agent-builder__empty-text {
+  font-size: 14px;
+  font-family: 'Roboto', sans-serif;
+  color: #555;
+  line-height: 20px;
+  letter-spacing: -0.28px;
+}
