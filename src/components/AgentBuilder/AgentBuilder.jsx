@@ -145,8 +145,17 @@ export default function AgentBuilder({
       flowType = 'trigger';
       title = 'Trigger';
     } else if (type === 'branch') {
-      flowType = label === 'Delay' ? 'task' : 'branch';
+      flowType = 'branch';
       title = label;
+    } else if (type === 'delay') {
+      flowType = 'delay';
+      title = 'Delay';
+    } else if (type === 'parallel') {
+      flowType = 'parallel';
+      title = 'Parallel tasks';
+    } else if (type === 'loop') {
+      flowType = 'loop';
+      title = 'Loop';
     } else if (type === 'task') {
       flowType = 'task';
       title = 'Task';
@@ -205,6 +214,12 @@ export default function AgentBuilder({
         [path1Id]: { branchName: 'Branch 1', description: '', conditions: [], parentId: id, isBranchPath: true },
         [path2Id]: { branchName: 'Branch 2', description: '', conditions: [], parentId: id, isBranchPath: true },
       };
+    } else if (type === 'delay') {
+      details = { duration: '1', unit: 'hours' };
+    } else if (type === 'parallel') {
+      details = { tasks: [] };
+    } else if (type === 'loop') {
+      details = { iterations: 3, exitCondition: '' };
     } else if (type === 'task' && label === 'Custom') {
       details = {
         taskName: 'Identify relevant mentions in the review',
@@ -335,14 +350,38 @@ export default function AgentBuilder({
       );
     }
 
-    // Delay / Parallel / Loop by subtype
-    const subtypeVariantMap = { Delay: 'delay', Parallel: 'parallel', Loop: 'loop' };
-    const subtypeVariant = subtypeVariantMap[data.subtype];
-    if (subtypeVariant) {
+    // Delay node
+    if (flowType === 'delay') {
       return (
         <RHS
-          variant={subtypeVariant}
-          title={data.subtype}
+          variant="delay"
+          title="Delay"
+          bodyProps={{ initialValues: currentDetails }}
+          onClose={handleCloseDrawer}
+          onSave={handleCloseDrawer}
+        />
+      );
+    }
+
+    // Parallel node
+    if (flowType === 'parallel') {
+      return (
+        <RHS
+          variant="parallel"
+          title="Parallel tasks"
+          bodyProps={{ initialValues: currentDetails }}
+          onClose={handleCloseDrawer}
+          onSave={handleCloseDrawer}
+        />
+      );
+    }
+
+    // Loop node
+    if (flowType === 'loop') {
+      return (
+        <RHS
+          variant="loop"
+          title="Loop"
           bodyProps={{ initialValues: currentDetails }}
           onClose={handleCloseDrawer}
           onSave={handleCloseDrawer}

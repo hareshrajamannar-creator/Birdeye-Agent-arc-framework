@@ -73,6 +73,36 @@ function BranchPathNodeWrapper({ data }) {
   );
 }
 
+function LoopNodeWrapper({ data }) {
+  return (
+    <div className="flow-canvas__node-center">
+      <Handle type="target" position={Position.Top} />
+      <CanvasNode nodeType="loop" label={data.title} stepNumber={data.stepNumber} title={data.description} description={data.subtitle} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} onDelete={data.onDelete} />
+      <Handle type="source" position={Position.Bottom} />
+    </div>
+  );
+}
+
+function DelayNodeWrapper({ data }) {
+  return (
+    <div className="flow-canvas__node-center">
+      <Handle type="target" position={Position.Top} />
+      <CanvasNode nodeType="delay" label={data.title} stepNumber={data.stepNumber} title={data.description} description={data.subtitle} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} onDelete={data.onDelete} />
+      <Handle type="source" position={Position.Bottom} />
+    </div>
+  );
+}
+
+function ParallelNodeWrapper({ data }) {
+  return (
+    <div className="flow-canvas__node-center">
+      <Handle type="target" position={Position.Top} />
+      <CanvasNode nodeType="parallel" label={data.title} stepNumber={data.stepNumber} title={data.description} description={data.subtitle} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} onDelete={data.onDelete} />
+      <Handle type="source" position={Position.Bottom} />
+    </div>
+  );
+}
+
 function EndNodeWrapper() {
   return (
     <div className="flow-canvas__node-center">
@@ -117,6 +147,9 @@ const NODE_TYPES = {
   task: TaskNodeWrapper,
   branch: BranchNodeWrapper,
   branchPath: BranchPathNodeWrapper,
+  loop: LoopNodeWrapper,
+  delay: DelayNodeWrapper,
+  parallel: ParallelNodeWrapper,
   end: EndNodeWrapper,
 };
 
