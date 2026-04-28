@@ -152,7 +152,7 @@ export default function AgentBuilder({
       ...prev,
       [nodeId]: { ...prev[nodeId], [field]: value },
     }));
-    // Mirror name/description changes into the canvas node label
+    // Mirror name/description changes into the canvas node body
     setNodeList((prev) =>
       prev.map((n) => {
         if (n.id !== nodeId) return n;
@@ -216,7 +216,8 @@ export default function AgentBuilder({
 
     if (type === 'trigger') {
       flowType = 'trigger';
-      title = 'Trigger';
+      // body title = the specific trigger variant (e.g. "Review mentioned")
+      title = label || 'Trigger';
     } else if (type === 'branch' && label === 'Branch') {
       flowType = 'branch';
       title = label;
@@ -231,8 +232,9 @@ export default function AgentBuilder({
       title = 'Loop';
     } else if (type === 'task') {
       flowType = 'task';
-      title = 'Task';
       hasAiIcon = label === 'Custom';
+      // body title = the LHS description for entity tasks; keep generic for LLM tasks
+      title = hasAiIcon ? 'Task' : (description || 'Task');
     }
 
     const newNode = {

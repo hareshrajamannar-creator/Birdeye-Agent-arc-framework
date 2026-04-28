@@ -31,7 +31,7 @@ function TriggerNodeWrapper({ id, data }) {
   return (
     <div className="flow-canvas__node-center">
       <Handle type="target" position={Position.Top} />
-      <CanvasNode nodeType="trigger" label={data.title} stepNumber={data.stepNumber} title={data.description} description={data.subtitle} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} state={isSelected ? 'selected' : 'default'} />
+      <CanvasNode nodeType="trigger" label="Trigger" stepNumber={data.stepNumber} title={data.title} description={data.subtitle} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} state={isSelected ? 'selected' : 'default'} />
       <Handle type="source" position={Position.Bottom} />
     </div>
   );
@@ -42,7 +42,7 @@ function TaskNodeWrapper({ id, data }) {
   return (
     <div className="flow-canvas__node-center">
       <Handle type="target" position={Position.Top} />
-      <CanvasNode nodeType="task" label={data.title} stepNumber={data.stepNumber} title={data.description} description={data.subtitle} hasAiIcon={data.hasAiIcon} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} state={isSelected ? 'selected' : 'default'} />
+      <CanvasNode nodeType="task" label="Task" stepNumber={data.stepNumber} title={data.title} description={data.subtitle} hasAiIcon={data.hasAiIcon} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} state={isSelected ? 'selected' : 'default'} />
       <Handle type="source" position={Position.Bottom} />
     </div>
   );
@@ -53,7 +53,7 @@ function BranchNodeWrapper({ id, data }) {
   return (
     <div className="flow-canvas__node-center">
       <Handle type="target" position={Position.Top} />
-      <CanvasNode nodeType="branch" label={data.title} stepNumber={data.stepNumber} title={data.description} description={data.subtitle} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} hasAddButton state={isSelected ? 'selected' : 'default'} />
+      <CanvasNode nodeType="branch" label="Branch" stepNumber={data.stepNumber} title={data.title} description={data.subtitle} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} hasAddButton state={isSelected ? 'selected' : 'default'} />
       <Handle type="source" position={Position.Bottom} />
     </div>
   );
