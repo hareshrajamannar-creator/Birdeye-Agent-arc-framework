@@ -1,0 +1,91 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ─── Locations field ─── */
+.locationsField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.locationsLabel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+  font-family: 'Roboto', arial, sans-serif;
+}
+
+.locationsLabelText {
+  color: #212121;
+}
+
+.locationsRequired {
+  color: #de1b0c;
+}
+
+.locationsInfoIcon {
+  font-size: 16px !important;
+  width: 16px;
+  height: 16px;
+  line-height: 1;
+  overflow: hidden;
+  color: #8f8f8f;
+  cursor: pointer;
+}
+
+/* ─── Chip row ─── */
+.chipsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.chipCloseIcon {
+  font-size: 14px !important;
+  width: 14px;
+  height: 14px;
+  line-height: 1;
+  overflow: hidden;
+}
+
+/* ─── "+ N more" expand link ─── */
+.moreLink {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 20px;
+  color: #1976d2;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: 'Roboto', arial, sans-serif;
+}
+
+.moreLink:hover {
+  text-decoration: underline;
+}
+
+/* ─── "+ Add" link ─── */
+.addLink {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+  color: #1976d2;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  font-family: 'Roboto', arial, sans-serif;
+}
+
+.addLink:hover {
+  text-decoration: underline;
+}

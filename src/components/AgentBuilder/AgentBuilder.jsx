@@ -193,7 +193,8 @@ export default function AgentBuilder({
     }
   }, [selectedNodeId]);
 
-  const startData = { title: pageTitle, subtitle: 'AI-powered workflow agent' };
+  const startAgentName = nodeDetails[START_NODE_ID]?.agentName || pageTitle;
+  const startData = { title: startAgentName, subtitle: 'All locations' };
   const { nodes: rawNodes, edges } = buildFlow(nodeList, startData, nodeDetails);
 
   const nodes = rawNodes.map((n) => {
@@ -344,12 +345,7 @@ export default function AgentBuilder({
         agentName: pageTitle,
         goals: 'Respond to customer reviews promptly and professionally, maintaining brand voice and addressing specific customer feedback.',
         outcomes: 'Improved customer satisfaction scores, faster response times, and consistent brand messaging across all review platforms.',
-        locations: [
-          { id: '1001', name: 'Mountain view, CA' },
-          { id: '1002', name: 'Seattle, WA' },
-          { id: '1004', name: 'Chicago, IL' },
-        ],
-        moreLocationsCount: 1,
+        locations: [],
       };
       return (
         <RHS
@@ -360,8 +356,9 @@ export default function AgentBuilder({
             onChange: (field, value) => {
               setNodeDetails((prev) => ({
                 ...prev,
-                [START_NODE_ID]: { ...startDetails, [field]: value },
+                [START_NODE_ID]: { ...(prev[START_NODE_ID] || startDetails), [field]: value },
               }));
+              if (field === 'agentName') setAgentName(value);
             },
           }}
           onClose={handleCloseDrawer}
@@ -505,7 +502,7 @@ export default function AgentBuilder({
   return (
     <AppShell
       appTitle={appTitle}
-      pageTitle={pageTitle}
+      pageTitle={agentName}
       activeNavId={navId}
       onNavChange={setNavId}
       showBack={!!onClose}
