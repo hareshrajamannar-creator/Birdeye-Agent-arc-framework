@@ -195,44 +195,43 @@ export default function Conditions({
               return (
                 <React.Fragment key={condition.id}>
                   {index > 0 && (
-                    <LogicConnector value={logic} onChange={onLogicChange ?? (() => {})} />
-                  )}
-                  <div className="trigger-conditions__condition">
-                    <div className={styles.conditionRow}>
-                      <div className={styles.conditionDropdowns}>
-                        <Dropdown
-                          name={`field-${condition.id}`}
-                          selected={condition.fieldValue}
-                          options={fieldOpts}
-                          onChange={(opt) => onConditionChange?.(condition.id, 'field', opt.value)}
-                          onOptionsChange={onOptionsChange ? (opts) => onOptionsChange('field', opts) : undefined}
-                        />
-                        <Dropdown
-                          name={`operator-${condition.id}`}
-                          selected={condition.operatorValue}
-                          options={operatorOpts}
-                          onChange={(opt) => onConditionChange?.(condition.id, 'operator', opt.value)}
-                          onOptionsChange={onOptionsChange ? (opts) => onOptionsChange('operator', opts) : undefined}
-                        />
-                        <Dropdown
-                          name={`value-${condition.id}`}
-                          selected={condition.valueValue}
-                          options={valueOpts}
-                          onChange={(opt) => onConditionChange?.(condition.id, 'value', opt.value)}
-                          onOptionsChange={onOptionsChange ? (opts) => onOptionsChange('value', opts) : undefined}
-                        />
-                      </div>
+                    <div className={styles.connectorRow}>
+                      <LogicConnector value={logic} onChange={onLogicChange ?? (() => {})} />
                       {onRemoveCondition && (
                         <button
                           type="button"
                           className={styles.removeBtn}
                           onClick={() => onRemoveCondition(condition.id)}
-                          disabled={conditions.length <= 1}
                           title="Remove condition"
                         >
                           <span className={`material-symbols-outlined ${styles.removeBtnIcon}`}>close</span>
                         </button>
                       )}
+                    </div>
+                  )}
+                  <div className="trigger-conditions__condition">
+                    <div className={styles.conditionDropdowns}>
+                      <Dropdown
+                        name={`field-${condition.id}`}
+                        selected={condition.fieldValue}
+                        options={fieldOpts}
+                        onChange={(opt) => onConditionChange?.(condition.id, 'field', opt.value)}
+                        onOptionsChange={onOptionsChange ? (opts) => onOptionsChange('field', opts) : undefined}
+                      />
+                      <Dropdown
+                        name={`operator-${condition.id}`}
+                        selected={condition.operatorValue}
+                        options={operatorOpts}
+                        onChange={(opt) => onConditionChange?.(condition.id, 'operator', opt.value)}
+                        onOptionsChange={onOptionsChange ? (opts) => onOptionsChange('operator', opts) : undefined}
+                      />
+                      <Dropdown
+                        name={`value-${condition.id}`}
+                        selected={condition.valueValue}
+                        options={valueOpts}
+                        onChange={(opt) => onConditionChange?.(condition.id, 'value', opt.value)}
+                        onOptionsChange={onOptionsChange ? (opts) => onOptionsChange('value', opts) : undefined}
+                      />
                     </div>
                   </div>
                 </React.Fragment>
