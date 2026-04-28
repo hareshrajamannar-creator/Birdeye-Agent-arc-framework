@@ -1,0 +1,70 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 24px;
+  padding: 0 4px 0 10px;
+  background: #e8f0fe;
+  border: 1px solid #c5d8fc;
+  border-radius: 100px;
+  cursor: pointer;
+  font-family: 'Roboto', sans-serif;
+  vertical-align: middle;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.chipEditing {
+  padding: 0 8px;
+  cursor: text;
+}
+
+.chipLabel {
+  font-size: 12px;
+  line-height: 18px;
+  color: #1976d2;
+  white-space: nowrap;
+}
+
+.deleteBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: #1976d2;
+  border-radius: 50%;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.deleteBtn:hover {
+  background: #c5d8fc;
+}
+
+.deleteBtn .material-symbols-outlined {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.chipInput {
+  font-size: 12px;
+  line-height: 18px;
+  color: #1976d2;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: 'Roboto', sans-serif;
+  min-width: 40px;
+  max-width: 120px;
+  width: 80px;
+  padding: 0;
+}
+
+.chipInput::placeholder {
+  color: #93b8f0;
+}
