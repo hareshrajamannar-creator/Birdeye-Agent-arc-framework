@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import CommonSideDrawer from '@birdeye/elemental/core/atoms/CommonSideDrawer/index.js';
 import Button from '@birdeye/elemental/core/atoms/Button/index.js';
+import FormInput from '@birdeye/elemental/core/atoms/FormInput/index.js';
+import TextArea from '@birdeye/elemental/core/atoms/TextArea/index.js';
 import './CustomToolBuilder.css';
 
 // ─── Field type definitions ────────────────────────────────────────────────────
@@ -115,7 +117,6 @@ export function FieldCard({ field, index, total, onChange, onDelete, onMoveUp, o
             type="button"
             title="Move up"
             disabled={index === 0}
-            style={{ opacity: index === 0 ? 0.3 : 1 }}
             onClick={onMoveUp}
           >
             <span className="material-symbols-outlined">arrow_upward</span>
@@ -125,7 +126,6 @@ export function FieldCard({ field, index, total, onChange, onDelete, onMoveUp, o
             type="button"
             title="Move down"
             disabled={index === total - 1}
-            style={{ opacity: index === total - 1 ? 0.3 : 1 }}
             onClick={onMoveDown}
           >
             <span className="material-symbols-outlined">arrow_downward</span>
@@ -142,20 +142,23 @@ export function FieldCard({ field, index, total, onChange, onDelete, onMoveUp, o
       </div>
 
       <div className="ctb__field-group">
-        <span className="ctb__label ctb__label--required">Field label</span>
-        <input
-          className="ctb__input"
+        <FormInput
+          name={`fieldLabel_${field.id}`}
+          type="text"
+          label="Field label"
           placeholder="e.g. Customer name"
           value={field.label}
           onChange={(e) => onChange({ ...field, label: e.target.value })}
+          required
         />
       </div>
 
       {!OPTION_FIELD_TYPES.has(field.type) && field.type !== 'toggle' && (
         <div className="ctb__field-group">
-          <span className="ctb__label">Placeholder / helper text</span>
-          <input
-            className="ctb__input"
+          <FormInput
+            name={`fieldPlaceholder_${field.id}`}
+            type="text"
+            label="Placeholder / helper text"
             placeholder="e.g. Enter a value…"
             value={field.placeholder}
             onChange={(e) => onChange({ ...field, placeholder: e.target.value })}
@@ -173,15 +176,16 @@ export function FieldCard({ field, index, total, onChange, onDelete, onMoveUp, o
         </div>
       )}
 
-      <label className="ctb__required-row">
-        <input
+      <div className="ctb__required-row">
+        <FormInput
+          name={`fieldRequired_${field.id}`}
           type="checkbox"
+          label="Required field"
+          labelInside
           checked={field.required}
           onChange={(e) => onChange({ ...field, required: e.target.checked })}
-          className="ctb__checkbox"
         />
-        <span className="ctb__label">Required field</span>
-      </label>
+      </div>
     </div>
   );
 }
@@ -384,6 +388,7 @@ export default function CustomToolBuilder({ isOpen = false, onClose, onSave, ini
       width="960px"
       shouldScroll={false}
       buttonPosition="right"
+      headerRightContent={<span className="ctb__drawer-suppress" />}
     >
       <div className="ctb-outer">
         {/* ─── Custom header with back arrow ─── */}
@@ -409,12 +414,14 @@ export default function CustomToolBuilder({ isOpen = false, onClose, onSave, ini
 
               {/* Tool name */}
               <div className="ctb__field-group">
-                <span className="ctb__label ctb__label--required">Tool name</span>
-                <input
-                  className="ctb__input"
+                <FormInput
+                  name="toolName"
+                  type="text"
+                  label="Tool name"
                   placeholder="e.g. Create support ticket"
                   value={toolName}
                   onChange={(e) => setToolName(e.target.value)}
+                  required
                 />
               </div>
 
@@ -444,13 +451,13 @@ export default function CustomToolBuilder({ isOpen = false, onClose, onSave, ini
 
               {/* Tool description */}
               <div className="ctb__field-group">
-                <span className="ctb__label">Description</span>
-                <textarea
-                  className="ctb__textarea"
+                <TextArea
+                  name="toolDescription"
+                  label="Description"
                   placeholder="Describe what this tool does and when to use it…"
                   value={toolDescription}
                   onChange={(e) => setToolDescription(e.target.value)}
-                  rows={3}
+                  noFloatingLabel
                 />
               </div>
 
@@ -499,7 +506,6 @@ export default function CustomToolBuilder({ isOpen = false, onClose, onSave, ini
               </div>
 
             </div>
-
           </div>
 
           {/* Right: live preview */}

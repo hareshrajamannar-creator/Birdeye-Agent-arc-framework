@@ -6,19 +6,81 @@
   font-family: 'Roboto', sans-serif;
 }
 
-/* ─── View mode top bar ─── */
+/* ─── Header right: more menu + close ─── */
 
-.topBar {
+.headerActions {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  padding: 8px 20px;
-  border-bottom: 1px solid #e5e9f0;
-  flex-shrink: 0;
-  background: #fff;
+  gap: 4px;
+  position: relative;
 }
 
-/* ─── View mode body ─── */
+.moreBtn,
+.closeBtn {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  color: #555;
+  padding: 0;
+  transition: background 0.15s;
+}
+
+.moreBtn:hover,
+.closeBtn:hover {
+  background: #f2f4f7;
+}
+
+.moreBtn .material-symbols-outlined,
+.closeBtn .material-symbols-outlined {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.moreMenu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: #fff;
+  border: 1px solid #e5e9f0;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  min-width: 148px;
+  z-index: 200;
+  overflow: hidden;
+}
+
+.moreMenuItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Roboto', sans-serif;
+  font-size: 13px;
+  color: #212121;
+  text-align: left;
+  transition: background 0.12s;
+}
+
+.moreMenuItem:hover {
+  background: #f4f6f7;
+}
+
+.moreMenuItem .material-symbols-outlined {
+  font-size: 16px;
+  color: #666;
+}
+
+/* ─── View body ─── */
 
 .viewBody {
   flex: 1;
@@ -95,169 +157,4 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-}
-
-/* ─── Edit mode body ─── */
-
-.editBody {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.fieldGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.label {
-  font-size: 12px;
-  font-weight: 400;
-  color: #212121;
-  line-height: 18px;
-  letter-spacing: -0.24px;
-}
-
-.sublabel {
-  font-size: 11px;
-  color: #8f8f8f;
-  line-height: 16px;
-  margin-top: -2px;
-}
-
-.input {
-  width: 100%;
-  height: 36px;
-  padding: 0 10px;
-  border: 1px solid #e5e9f0;
-  border-radius: 4px;
-  font-family: 'Roboto', sans-serif;
-  font-size: 13px;
-  color: #212121;
-  box-sizing: border-box;
-  outline: none;
-}
-
-.input:focus {
-  border-color: #1976d2;
-}
-
-.textarea {
-  width: 100%;
-  padding: 8px 10px;
-  border: 1px solid #e5e9f0;
-  border-radius: 4px;
-  font-family: 'Roboto', sans-serif;
-  font-size: 13px;
-  color: #212121;
-  box-sizing: border-box;
-  outline: none;
-  resize: vertical;
-  min-height: 64px;
-}
-
-.textarea:focus {
-  border-color: #1976d2;
-}
-
-/* ─── Icon upload (edit mode) ─── */
-
-.iconUpload {
-  width: 48px;
-  height: 48px;
-  border: 1px solid #c5d0e6;
-  border-radius: 6px;
-  background: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-}
-
-.iconUpload:hover {
-  border-color: #1976d2;
-  background: #f0f5ff;
-}
-
-.iconUploadSym {
-  font-size: 24px !important;
-  color: #888;
-  line-height: 1;
-  overflow: hidden;
-}
-
-.iconPreview {
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
-  border-radius: 4px;
-}
-
-.iconInput {
-  display: none;
-}
-
-/* ─── Fields editor (edit mode) ─── */
-
-.fieldsHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.fieldsCount {
-  font-size: 12px;
-  color: #888;
-}
-
-.fieldsList {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.addFieldBtn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  width: 100%;
-  padding: 10px 12px;
-  background: #fff;
-  border: 1px solid #c5d0e6;
-  border-radius: 6px;
-  cursor: pointer;
-  font-family: 'Roboto', sans-serif;
-  font-size: 13px;
-  color: #1976d2;
-}
-
-.addFieldBtn:hover {
-  background: #f0f5ff;
-  border-color: #1976d2;
-}
-
-.addFieldBtnIcon {
-  font-size: 18px !important;
-  width: 18px;
-  height: 18px;
-  line-height: 1;
-  overflow: hidden;
-}
-
-/* ─── Footer ─── */
-
-.footer {
-  flex-shrink: 0;
-  padding: 12px 20px;
-  border-top: 1px solid #e5e9f0;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  background: #fff;
 }

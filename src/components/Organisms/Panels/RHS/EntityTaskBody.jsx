@@ -2,13 +2,19 @@ import React, { useState } from 'react';
 import FormInput from '@birdeye/elemental/core/atoms/FormInput/index.js';
 import TextArea from '@birdeye/elemental/core/atoms/TextArea/index.js';
 import CustomToolBuilder from '../../Drawers/CustomToolBuilder/CustomToolBuilder.jsx';
+import CustomToolViewer from '../../Drawers/CustomToolViewer/CustomToolViewer.jsx';
 import styles from './EntityTaskBody.module.css';
 
 export default function EntityTaskBody({ initialValues = {}, onFieldChange }) {
   const [taskName, setTaskName] = useState(initialValues.taskName ?? '');
   const [description, setDescription] = useState(initialValues.description ?? '');
+
   const [isBuilderOpen, setIsBuilderOpen] = useState(false);
   const [editingTool, setEditingTool] = useState(null);
+
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
+  const [viewingTool, setViewingTool] = useState(null);
+
   const [customTools, setCustomTools] = useState([]);
 
   const handleTaskName = (e) => {
@@ -28,7 +34,19 @@ export default function EntityTaskBody({ initialValues = {}, onFieldChange }) {
     setIsBuilderOpen(true);
   };
 
-  const openEdit = (tool) => {
+  const openViewer = (tool) => {
+    setViewingTool(tool);
+    setIsViewerOpen(true);
+  };
+
+  const closeViewer = () => {
+    setIsViewerOpen(false);
+    setViewingTool(null);
+  };
+
+  const openEditFromViewer = (tool) => {
+    setIsViewerOpen(false);
+    setViewingTool(null);
     setEditingTool(tool);
     setIsBuilderOpen(true);
   };
@@ -93,22 +111,21 @@ export default function EntityTaskBody({ initialValues = {}, onFieldChange }) {
 
             {customTools.map((tool) => (
               <div key={tool.id} className={styles.toolRow}>
-                <div className={styles.toolIconWrap}>
-                  {tool.iconDataUrl ? (
-                    <img src={tool.iconDataUrl} alt={tool.name} className={styles.toolIconImg} />
-                  ) : (
-                    <span className={`material-symbols-outlined ${styles.toolIconFallback}`}>build</span>
-                  )}
-                </div>
-                <span className={styles.toolName}>{tool.name}</span>
+                <button
+                  className={styles.toolRowMain}
+                  type="button"
+                  onClick={() => openViewer(tool)}
+                >
+                  <div className={styles.toolIconWrap}>
+                    {tool.iconDataUrl ? (
+                      <img src={tool.iconDataUrl} alt={tool.name} className={styles.toolIconImg} />
+                    ) : (
+                      <span className={`material-symbols-outlined ${styles.toolIconFallback}`}>build</span>
+                    )}
+                  </div>
+                  <span className={styles.toolName}>{tool.name}</span>
+                </button>
                 <div className={styles.toolActions}>
-                  <button
-                    className={styles.iconBtn}
-                    onClick={() => openEdit(tool)}
-                    title="Edit tool"
-                  >
-                    <span className={`material-symbols-outlined ${styles.iconBtnIcon}`}>edit</span>
-                  </button>
                   <button
                     className={`${styles.iconBtn} ${styles.iconBtnDanger}`}
                     onClick={() => handleDeleteTool(tool.id)}
@@ -119,9 +136,23 @@ export default function EntityTaskBody({ initialValues = {}, onFieldChange }) {
                 </div>
               </div>
             ))}
+
+            {customTools.length > 0 && (
+              <button className={styles.addBtn} onClick={openCreate}>
+                <span className={`material-symbols-outlined ${styles.addBtnIcon}`}>add_circle</span>
+                <span className={styles.addBtnLabel}>Add</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
+
+      <CustomToolViewer
+        isOpen={isViewerOpen}
+        tool={viewingTool}
+        onClose={closeViewer}
+        onEditTool={openEditFromViewer}
+      />
 
       <CustomToolBuilder
         isOpen={isBuilderOpen}

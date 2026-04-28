@@ -1,11 +1,18 @@
 /* ─── Custom Tool Builder ────────────────────────────────────────────────────── */
 
-/* Outer wrapper: flex column so header + two-panel body stack cleanly */
+/* Suppress the CommonSideDrawer's built-in header ghost (empty title + broken icon) */
+.ctb__drawer-suppress {
+  display: none;
+}
+
+/* Outer wrapper: flex column so header + two-panel body stack cleanly.
+   Negative margins compensate for the .side-drawer padding: 0 30px 70px */
 .ctb-outer {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: calc(100% + 70px);
   overflow: hidden;
+  margin: 0 -30px -70px;
 }
 
 /* ─── Custom header (back arrow + title) ─── */
