@@ -34,6 +34,11 @@ export default function EntityTaskBody({ initialValues = {}, onFieldChange }) {
     setIsBuilderOpen(true);
   };
 
+  const openEditDirect = (tool) => {
+    setEditingTool(tool);
+    setIsBuilderOpen(true);
+  };
+
   const openViewer = (tool) => {
     setViewingTool(tool);
     setIsViewerOpen(true);
@@ -127,6 +132,13 @@ export default function EntityTaskBody({ initialValues = {}, onFieldChange }) {
                 </button>
                 <div className={styles.toolActions}>
                   <button
+                    className={styles.iconBtn}
+                    onClick={() => openEditDirect(tool)}
+                    title="Edit tool"
+                  >
+                    <span className={`material-symbols-outlined ${styles.iconBtnIcon}`}>edit</span>
+                  </button>
+                  <button
                     className={`${styles.iconBtn} ${styles.iconBtnDanger}`}
                     onClick={() => handleDeleteTool(tool.id)}
                     title="Delete tool"
@@ -136,13 +148,6 @@ export default function EntityTaskBody({ initialValues = {}, onFieldChange }) {
                 </div>
               </div>
             ))}
-
-            {customTools.length > 0 && (
-              <button className={styles.addBtn} onClick={openCreate}>
-                <span className={`material-symbols-outlined ${styles.addBtnIcon}`}>add_circle</span>
-                <span className={styles.addBtnLabel}>Add</span>
-              </button>
-            )}
           </div>
         </div>
       </div>
