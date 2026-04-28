@@ -1,86 +1,50 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import FormInput from '@birdeye/elemental/core/atoms/FormInput/index.js';
 import TextArea from '@birdeye/elemental/core/atoms/TextArea/index.js';
-import styles from './EntityTriggerBody.module.css';
+import Conditions from '../../../Molecules/Conditions/Conditions';
+
+const DEFAULT_CONDITION_OPTIONS = {
+  field: [
+    { value: 'event', label: 'Event' },
+    { value: 'message_type', label: 'Message type' },
+    { value: 'message_age', label: 'Message age' },
+    { value: 'rating', label: 'Rating' },
+    { value: 'sentiment', label: 'Sentiment' },
+    { value: 'source', label: 'Source' },
+    { value: 'location', label: 'Location' },
+    { value: 'keyword', label: 'Keyword' },
+  ],
+  operator: [
+    { value: 'is', label: 'is' },
+    { value: 'is_not', label: 'is not' },
+    { value: 'contains', label: 'contains' },
+    { value: 'greater_than', label: 'is greater than' },
+    { value: 'less_than', label: 'is less than' },
+  ],
+  value: [
+    { value: 'review_received', label: 'Review received' },
+    { value: 'google', label: 'Google' },
+    { value: '48_hours', label: '48 hours' },
+  ],
+};
 
 const DEFAULT_CONDITIONS = [
-  { field: 'Event', operator: 'is', value: 'Review received' },
-  { field: 'Message type', operator: 'is', value: 'Google' },
-  { field: 'Message age', operator: 'is less than', value: '48 hours' },
+  { id: 1, fieldValue: 'event', operatorValue: 'is', valueValue: 'review_received' },
+  { id: 2, fieldValue: 'message_type', operatorValue: 'is', valueValue: 'google' },
+  { id: 3, fieldValue: 'message_age', operatorValue: 'less_than', valueValue: '48_hours' },
 ];
 
-/* ─── InlineEditable ─── */
-function InlineEditable({ value, onChange, className }) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [draft, setDraft] = useState(value);
-  const inputRef = useRef(null);
+const makeCondition = (id) => ({ id, fieldValue: '', operatorValue: '', valueValue: '' });
 
-  useEffect(() => {
-    if (isEditing) inputRef.current?.focus();
-  }, [isEditing]);
-
-  const commit = () => {
-    setIsEditing(false);
-    if (draft !== value) onChange(draft);
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') { e.preventDefault(); commit(); }
-    if (e.key === 'Escape') { setDraft(value); setIsEditing(false); }
-  };
-
-  if (isEditing) {
-    return (
-      <input
-        ref={inputRef}
-        className={`${styles.editingInput} ${className || ''}`}
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-        onBlur={commit}
-        onKeyDown={handleKeyDown}
-      />
-    );
-  }
-
-  return (
-    <span
-      className={`${styles.chipText} ${className || ''}`}
-      onDoubleClick={() => { setDraft(value); setIsEditing(true); }}
-    >
-      {value}
-    </span>
-  );
-}
-
-/* ─── ConditionChip ─── */
-function ConditionChip({ value, onChange }) {
-  return (
-    <div className={styles.chip}>
-      <InlineEditable value={value} onChange={onChange} />
-      <span className={`material-symbols-outlined ${styles.chipIcon}`}>expand_more</span>
-    </div>
-  );
-}
-
-/* ─── AndBadge ─── */
-function AndBadge({ value, onChange }) {
-  return (
-    <div className={styles.andBadge}>
-      <InlineEditable value={value} onChange={onChange} className={styles.andText} />
-      <span className={`material-symbols-outlined ${styles.andIcon}`}>expand_more</span>
-    </div>
-  );
-}
-
-/* ─── Main component ─── */
 export default function EntityTriggerBody({ initialValues = {}, onFieldChange }) {
   const [triggerName, setTriggerName] = useState(initialValues.triggerName ?? '');
   const [description, setDescription] = useState(initialValues.description ?? '');
   const [conditions, setConditions] = useState(
-    initialValues.conditions ?? DEFAULT_CONDITIONS
+    initialValues.conditions?.length ? initialValues.conditions : DEFAULT_CONDITIONS
   );
-  const [connectors, setConnectors] = useState(
-    () => Array.from({ length: Math.max(0, (initialValues.conditions ?? DEFAULT_CONDITIONS).length - 1) }, () => 'AND')
+  const [logic, setLogic] = useState(initialValues.logic ?? 'AND');
+  const [conditionOptions, setConditionOptions] = useState(
+    initialValues.conditionOptions ?? DEFAULT_CONDITION_OPTIONS
   );
 
   const handleTriggerName = (e) => {
@@ -95,39 +59,28 @@ export default function EntityTriggerBody({ initialValues = {}, onFieldChange })
     onFieldChange?.('description', val);
   };
 
-  const updateField = (index, key, value) => {
-    setConditions((prev) => {
-      const next = [...prev];
-      next[index] = { ...next[index], [key]: value };
-      return next;
-    });
-  };
+  function handleConditionChange(id, field, value) {
+    setConditions((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, [`${field}Value`]: value } : c))
+    );
+  }
 
-  const updateConnector = (index, value) => {
-    setConnectors((prev) => {
-      const next = [...prev];
-      next[index] = value;
-      return next;
-    });
-  };
+  function handleRemoveCondition(id) {
+    setConditions((prev) => prev.filter((c) => c.id !== id));
+  }
 
-  const addCondition = () => {
-    setConditions((prev) => [...prev, { field: 'Field', operator: 'is', value: 'Value' }]);
-    setConnectors((prev) => [...prev, 'AND']);
-  };
+  function handleAddCondition() {
+    setConditions((prev) => [...prev, makeCondition(Date.now())]);
+  }
 
-  const removeCondition = (index) => {
-    setConditions((prev) => prev.filter((_, i) => i !== index));
-    setConnectors((prev) => {
-      const next = [...prev];
-      const spliceAt = index < next.length ? index : index - 1;
-      if (next.length > 0) next.splice(spliceAt, 1);
-      return next;
-    });
-  };
+  function handleOptionsChange(key, opts) {
+    const next = { ...conditionOptions, [key]: opts };
+    setConditionOptions(next);
+    onFieldChange?.('conditionOptions', next);
+  }
 
   return (
-    <div className={styles.body}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <FormInput
         name="triggerName"
         type="text"
@@ -145,40 +98,17 @@ export default function EntityTriggerBody({ initialValues = {}, onFieldChange })
         onChange={handleDescription}
         noFloatingLabel
       />
-
-      {/* ─── Trigger conditions ─── */}
-      <div className={styles.conditionsSection}>
-        <span className={styles.sectionLabel}>Trigger conditions</span>
-
-        {conditions.map((cond, i) => (
-          <React.Fragment key={i}>
-            <div className={styles.conditionRow}>
-              <ConditionChip value={cond.field} onChange={(v) => updateField(i, 'field', v)} />
-              <ConditionChip value={cond.operator} onChange={(v) => updateField(i, 'operator', v)} />
-              <ConditionChip value={cond.value} onChange={(v) => updateField(i, 'value', v)} />
-              <button
-                className={styles.removeBtn}
-                onClick={() => removeCondition(i)}
-                disabled={conditions.length === 1}
-                title="Remove condition"
-              >
-                <span className={`material-symbols-outlined ${styles.removeBtnIcon}`}>close</span>
-              </button>
-            </div>
-
-            {i < connectors.length && (
-              <div className={styles.andRow}>
-                <AndBadge value={connectors[i]} onChange={(v) => updateConnector(i, v)} />
-              </div>
-            )}
-          </React.Fragment>
-        ))}
-
-        <button className={styles.addBtn} onClick={addCondition}>
-          <span className={`material-symbols-outlined ${styles.addBtnIcon}`}>add</span>
-          Add condition
-        </button>
-      </div>
+      <Conditions
+        conditions={conditions}
+        logic={logic}
+        onConditionChange={handleConditionChange}
+        onLogicChange={setLogic}
+        onAddCondition={handleAddCondition}
+        onRemoveCondition={handleRemoveCondition}
+        onAdvancedFilters={() => {}}
+        conditionOptions={conditionOptions}
+        onOptionsChange={handleOptionsChange}
+      />
     </div>
   );
 }
