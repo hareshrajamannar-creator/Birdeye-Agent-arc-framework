@@ -1,22 +1,26 @@
+/* Matches Figma OptionDataType: h=26, swatch 25px, border #d1e5f9, gap 4px, pl-1px pr-7px */
+
 .chip {
   display: inline-flex;
   align-items: center;
+  gap: 4px;
   height: 26px;
+  padding: 1px 7px 1px 0;
   background: #fff;
   border: 1px solid #d1e5f9;
   border-radius: 4px;
   overflow: hidden;
   flex-shrink: 0;
-  cursor: default;
   box-sizing: border-box;
+  cursor: default;
 }
 
 .chipEditing {
   border-color: #1976d2;
 }
 
-/* Left icon swatch */
-.chipIcon {
+/* Left swatch: #ecf5fd bg, right-divider */
+.chipSwatch {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -27,18 +31,12 @@
   flex-shrink: 0;
 }
 
-.chipIcon .material-symbols-outlined {
-  font-size: 14px;
-  color: #1976d2;
-}
-
 .chipLabel {
   font-size: 12px;
   line-height: 16px;
   color: #555;
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Inter', 'Roboto', sans-serif;
   white-space: nowrap;
-  padding: 0 6px 0 5px;
   cursor: pointer;
 }
 
@@ -52,22 +50,11 @@
   border: none;
   padding: 0;
   cursor: pointer;
-  color: #888;
   flex-shrink: 0;
   line-height: 1;
-  margin-right: 3px;
 }
 
-.deleteBtn:hover {
-  color: #212121;
-}
-
-.deleteBtn .material-symbols-outlined {
-  font-size: 12px;
-  line-height: 1;
-}
-
-/* Input replaces text in edit mode */
+/* Input replaces label in edit mode */
 .chipInput {
   font-size: 12px;
   line-height: 16px;
@@ -75,11 +62,11 @@
   background: transparent;
   border: none;
   outline: none;
-  font-family: 'Roboto', sans-serif;
-  padding: 0 6px 0 5px;
+  font-family: 'Inter', 'Roboto', sans-serif;
   min-width: 60px;
   max-width: 160px;
   width: 100px;
+  padding: 0;
 }
 
 .chipInput::placeholder {
