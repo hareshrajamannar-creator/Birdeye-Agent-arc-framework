@@ -1,0 +1,190 @@
+/* EntityTriggerBody.module.css */
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  /* Editing border token — consumed by .editingInput */
+  --editing-border: #1976d2;
+}
+
+/* ─── Section header ─── */
+.conditionsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sectionLabel {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+  color: #212121;
+  font-family: 'Roboto', arial, sans-serif;
+  margin-bottom: 2px;
+}
+
+/* ─── Condition row ─── */
+.conditionRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ─── Pill chip (field / operator / value) ─── */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 8px;
+  height: 30px;
+  border: 1px solid #e5e9f0;
+  border-radius: 4px;
+  background: #fff;
+  font-family: 'Roboto', arial, sans-serif;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.chipText {
+  font-size: 13px;
+  color: #212121;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+  cursor: default;
+  user-select: none;
+}
+
+.chipIcon {
+  font-size: 16px !important;
+  width: 16px;
+  height: 16px;
+  line-height: 1;
+  overflow: hidden;
+  color: #8f8f8f;
+  flex-shrink: 0;
+}
+
+/* ─── Inline editing input (shared by chips and AND badge) ─── */
+.editingInput {
+  font-size: 13px;
+  font-family: 'Roboto', arial, sans-serif;
+  color: #212121;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--editing-border);
+  outline: none;
+  padding: 0;
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  /* Reset any overflow/cursor inherited from chipText */
+  overflow: visible;
+  text-overflow: unset;
+  white-space: normal;
+  cursor: text;
+  user-select: text;
+}
+
+/* ─── AND connector badge ─── */
+.andRow {
+  display: flex;
+  align-items: center;
+  padding: 2px 0;
+}
+
+.andBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 8px;
+  background: #f4f6f7;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.andText {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #555;
+  font-family: 'Roboto', arial, sans-serif;
+  user-select: none;
+}
+
+.andIcon {
+  font-size: 14px !important;
+  width: 14px;
+  height: 14px;
+  line-height: 1;
+  overflow: hidden;
+  color: #555;
+}
+
+/* ─── Remove (×) button ─── */
+.removeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+  color: #8f8f8f;
+  flex-shrink: 0;
+  transition: background 0.1s ease, color 0.1s ease;
+}
+
+.removeBtn:hover:not(:disabled) {
+  background: #f4f6f7;
+  color: #212121;
+}
+
+.removeBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.removeBtnIcon {
+  font-size: 16px !important;
+  width: 16px;
+  height: 16px;
+  line-height: 1;
+  overflow: hidden;
+}
+
+/* ─── + Add condition button ─── */
+.addBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 0;
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Roboto', arial, sans-serif;
+  color: #1976d2;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.addBtn:hover {
+  text-decoration: underline;
+}
+
+.addBtnIcon {
+  font-size: 16px !important;
+  width: 16px;
+  height: 16px;
+  line-height: 1;
+  overflow: hidden;
+}
