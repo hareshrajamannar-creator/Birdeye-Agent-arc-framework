@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import CommonSideDrawer from '@birdeye/elemental/core/atoms/CommonSideDrawer/index.js';
 import Button from '@birdeye/elemental/core/atoms/Button/index.js';
 import './CustomToolBuilder.css';
 
 // ─── Field type definitions ────────────────────────────────────────────────────
 
-const FIELD_TYPES = [
+export const FIELD_TYPES = [
   { value: 'text',     label: 'Text',     icon: 'text_fields' },
   { value: 'textarea', label: 'Long text', icon: 'notes' },
   { value: 'number',   label: 'Number',   icon: 'pin' },
@@ -16,13 +16,13 @@ const FIELD_TYPES = [
   { value: 'date',     label: 'Date',     icon: 'calendar_today' },
 ];
 
-const OPTION_FIELD_TYPES = new Set(['dropdown', 'radio', 'checkbox']);
+export const OPTION_FIELD_TYPES = new Set(['dropdown', 'radio', 'checkbox']);
 
-function makeId() {
+export function makeId() {
   return Math.random().toString(36).slice(2, 9);
 }
 
-function emptyField(type = 'text') {
+export function emptyField(type = 'text') {
   return {
     id: makeId(),
     type,
@@ -35,7 +35,7 @@ function emptyField(type = 'text') {
 
 // ─── Field type picker ─────────────────────────────────────────────────────────
 
-function FieldTypePicker({ value, onChange }) {
+export function FieldTypePicker({ value, onChange }) {
   return (
     <div className="ctb__type-grid">
       {FIELD_TYPES.map((ft) => (
@@ -56,7 +56,7 @@ function FieldTypePicker({ value, onChange }) {
 
 // ─── Options editor (for dropdown / radio / checkbox) ─────────────────────────
 
-function OptionsEditor({ options, onChange }) {
+export function OptionsEditor({ options, onChange }) {
   const updateOption = (i, val) => {
     const next = [...options];
     next[i] = val;
@@ -66,8 +66,7 @@ function OptionsEditor({ options, onChange }) {
   const addOption = () => onChange([...options, `Option ${options.length + 1}`]);
 
   const removeOption = (i) => {
-    const next = options.filter((_, idx) => idx !== i);
-    onChange(next);
+    onChange(options.filter((_, idx) => idx !== i));
   };
 
   return (
@@ -91,7 +90,7 @@ function OptionsEditor({ options, onChange }) {
         </div>
       ))}
       <button className="ctb__add-option-btn" type="button" onClick={addOption}>
-        <span className="material-symbols-outlined" style={{ fontSize: 14 }}>add</span>
+        <span className="material-symbols-outlined ctb__add-option-icon">add</span>
         Add option
       </button>
     </div>
@@ -100,12 +99,11 @@ function OptionsEditor({ options, onChange }) {
 
 // ─── Single field editor card ─────────────────────────────────────────────────
 
-function FieldCard({ field, index, total, onChange, onDelete, onMoveUp, onMoveDown }) {
+export function FieldCard({ field, index, total, onChange, onDelete, onMoveUp, onMoveDown }) {
   const typeMeta = FIELD_TYPES.find((t) => t.value === field.type);
 
   return (
     <div className="ctb__field-card">
-      {/* Header row */}
       <div className="ctb__field-card__header">
         <div className="ctb__field-card__type-badge">
           <span className="material-symbols-outlined">{typeMeta?.icon}</span>
@@ -143,8 +141,7 @@ function FieldCard({ field, index, total, onChange, onDelete, onMoveUp, onMoveDo
         </div>
       </div>
 
-      {/* Label input */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <div className="ctb__field-group">
         <span className="ctb__label ctb__label--required">Field label</span>
         <input
           className="ctb__input"
@@ -154,9 +151,8 @@ function FieldCard({ field, index, total, onChange, onDelete, onMoveUp, onMoveDo
         />
       </div>
 
-      {/* Placeholder (text / textarea / number / date) */}
       {!OPTION_FIELD_TYPES.has(field.type) && field.type !== 'toggle' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <div className="ctb__field-group">
           <span className="ctb__label">Placeholder / helper text</span>
           <input
             className="ctb__input"
@@ -167,9 +163,8 @@ function FieldCard({ field, index, total, onChange, onDelete, onMoveUp, onMoveDo
         </div>
       )}
 
-      {/* Options (dropdown / radio / checkbox) */}
       {OPTION_FIELD_TYPES.has(field.type) && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <div className="ctb__field-group">
           <span className="ctb__label">Options</span>
           <OptionsEditor
             options={field.options}
@@ -178,13 +173,12 @@ function FieldCard({ field, index, total, onChange, onDelete, onMoveUp, onMoveDo
         </div>
       )}
 
-      {/* Required toggle */}
-      <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', userSelect: 'none' }}>
+      <label className="ctb__required-row">
         <input
           type="checkbox"
           checked={field.required}
           onChange={(e) => onChange({ ...field, required: e.target.checked })}
-          style={{ accentColor: '#1976d2', width: 14, height: 14 }}
+          className="ctb__checkbox"
         />
         <span className="ctb__label">Required field</span>
       </label>
@@ -194,8 +188,8 @@ function FieldCard({ field, index, total, onChange, onDelete, onMoveUp, onMoveDo
 
 // ─── Live preview ──────────────────────────────────────────────────────────────
 
-function PreviewField({ field }) {
-  const label = field.label || <em style={{ color: '#bbb' }}>Untitled field</em>;
+export function PreviewField({ field }) {
+  const label = field.label || <em className="ctb__prev-untitled">Untitled field</em>;
 
   switch (field.type) {
     case 'text':
@@ -203,31 +197,31 @@ function PreviewField({ field }) {
     case 'date':
       return (
         <div className="ctb__prev-field">
-          <span className="ctb__prev-label">{label}{field.required && <span style={{ color: '#de1b0c' }}> *</span>}</span>
+          <span className="ctb__prev-label">{label}{field.required && <span className="ctb__prev-required"> *</span>}</span>
           <div className="ctb__prev-input">{field.placeholder || ''}</div>
         </div>
       );
     case 'textarea':
       return (
         <div className="ctb__prev-field">
-          <span className="ctb__prev-label">{label}{field.required && <span style={{ color: '#de1b0c' }}> *</span>}</span>
+          <span className="ctb__prev-label">{label}{field.required && <span className="ctb__prev-required"> *</span>}</span>
           <div className="ctb__prev-textarea">{field.placeholder || ''}</div>
         </div>
       );
     case 'dropdown':
       return (
         <div className="ctb__prev-field">
-          <span className="ctb__prev-label">{label}{field.required && <span style={{ color: '#de1b0c' }}> *</span>}</span>
+          <span className="ctb__prev-label">{label}{field.required && <span className="ctb__prev-required"> *</span>}</span>
           <div className="ctb__prev-select">
             <span>{field.options[0] || 'Select…'}</span>
-            <span className="material-symbols-outlined" style={{ fontSize: 16, color: '#888' }}>expand_more</span>
+            <span className="material-symbols-outlined ctb__prev-chevron">expand_more</span>
           </div>
         </div>
       );
     case 'radio':
       return (
         <div className="ctb__prev-field">
-          <span className="ctb__prev-label">{label}{field.required && <span style={{ color: '#de1b0c' }}> *</span>}</span>
+          <span className="ctb__prev-label">{label}{field.required && <span className="ctb__prev-required"> *</span>}</span>
           <div className="ctb__prev-options">
             {(field.options.length ? field.options : ['Option 1', 'Option 2']).map((opt, i) => (
               <div key={i} className="ctb__prev-option">
@@ -241,7 +235,7 @@ function PreviewField({ field }) {
     case 'checkbox':
       return (
         <div className="ctb__prev-field">
-          <span className="ctb__prev-label">{label}{field.required && <span style={{ color: '#de1b0c' }}> *</span>}</span>
+          <span className="ctb__prev-label">{label}{field.required && <span className="ctb__prev-required"> *</span>}</span>
           <div className="ctb__prev-options">
             {(field.options.length ? field.options : ['Option 1', 'Option 2']).map((opt, i) => (
               <div key={i} className="ctb__prev-option">
@@ -269,7 +263,7 @@ function PreviewField({ field }) {
 function LivePreview({ toolName, toolDescription, fields }) {
   return (
     <div className="ctb__preview-card">
-      {toolName || toolDescription ? (
+      {(toolName || toolDescription) ? (
         <>
           {toolName && <div className="ctb__preview-title">{toolName}</div>}
           {toolDescription && <div className="ctb__preview-desc">{toolDescription}</div>}
@@ -291,24 +285,14 @@ function LivePreview({ toolName, toolDescription, fields }) {
 
 // ─── Add field panel ────────────────────────────────────────────────────────────
 
-function AddFieldPanel({ onAdd, onCancel }) {
+export function AddFieldPanel({ onAdd, onCancel }) {
   const [selectedType, setSelectedType] = useState('text');
 
   return (
-    <div
-      style={{
-        background: '#f8fafc',
-        border: '1px solid #e5e9f0',
-        borderRadius: 6,
-        padding: 14,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 12,
-      }}
-    >
-      <span className="ctb__label" style={{ fontWeight: 500 }}>Choose field type</span>
+    <div className="ctb__add-panel">
+      <span className="ctb__label ctb__label--medium">Choose field type</span>
       <FieldTypePicker value={selectedType} onChange={setSelectedType} />
-      <div style={{ display: 'flex', gap: 8 }}>
+      <div className="ctb__add-panel-actions">
         <Button theme="primary" label="Add field" onClick={() => onAdd(selectedType)} />
         <Button theme="secondary" label="Cancel" onClick={onCancel} />
       </div>
@@ -321,8 +305,18 @@ function AddFieldPanel({ onAdd, onCancel }) {
 export default function CustomToolBuilder({ isOpen = false, onClose, onSave }) {
   const [toolName, setToolName] = useState('');
   const [toolDescription, setToolDescription] = useState('');
+  const [iconDataUrl, setIconDataUrl] = useState(null);
   const [fields, setFields] = useState([]);
   const [showAddPanel, setShowAddPanel] = useState(false);
+  const iconInputRef = useRef(null);
+
+  const handleIconChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => setIconDataUrl(evt.target.result);
+    reader.readAsDataURL(file);
+  };
 
   const handleAddField = (type) => {
     setFields((prev) => [...prev, emptyField(type)]);
@@ -362,14 +356,14 @@ export default function CustomToolBuilder({ isOpen = false, onClose, onSave }) {
       name: toolName.trim(),
       description: toolDescription.trim(),
       fields,
+      iconDataUrl,
       createdAt: new Date().toISOString(),
     });
-    // Reset
     setToolName('');
     setToolDescription('');
+    setIconDataUrl(null);
     setFields([]);
     setShowAddPanel(false);
-    onClose?.();
   };
 
   const handleClose = () => {
@@ -381,111 +375,140 @@ export default function CustomToolBuilder({ isOpen = false, onClose, onSave }) {
   return (
     <CommonSideDrawer
       isOpen={isOpen}
-      title="Build custom tool"
+      title=""
       onClose={handleClose}
-      width="820px"
+      width="960px"
       shouldScroll={false}
-      buttonPosition="left"
+      buttonPosition="right"
     >
-      <div className="ctb">
-        {/* ─── Left: builder ─── */}
-        <div className="ctb__left">
-          <div className="ctb__left-scroll">
-
-            {/* Tool name */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <span className="ctb__label ctb__label--required">Tool name</span>
-              <input
-                className="ctb__input"
-                placeholder="e.g. Create support ticket"
-                value={toolName}
-                onChange={(e) => setToolName(e.target.value)}
-              />
-            </div>
-
-            {/* Tool description */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <span className="ctb__label">Description</span>
-              <textarea
-                className="ctb__textarea"
-                placeholder="Describe what this tool does and when to use it…"
-                value={toolDescription}
-                onChange={(e) => setToolDescription(e.target.value)}
-                rows={3}
-              />
-            </div>
-
-            {/* Divider */}
-            <div style={{ height: 1, background: '#e5e9f0', margin: '0 -16px' }} />
-
-            {/* Fields section label */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 13, fontWeight: 500, color: '#212121' }}>
-                Form fields
-              </span>
-              <span style={{ fontSize: 12, color: '#888' }}>
-                {fields.length} field{fields.length !== 1 ? 's' : ''}
-              </span>
-            </div>
-
-            {/* Existing fields */}
-            {fields.length > 0 && (
-              <div className="ctb__fields">
-                {fields.map((field, i) => (
-                  <FieldCard
-                    key={field.id}
-                    field={field}
-                    index={i}
-                    total={fields.length}
-                    onChange={(updated) => handleUpdateField(field.id, updated)}
-                    onDelete={() => handleDeleteField(field.id)}
-                    onMoveUp={() => handleMoveUp(i)}
-                    onMoveDown={() => handleMoveDown(i)}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Add field panel or button */}
-            {showAddPanel ? (
-              <AddFieldPanel
-                onAdd={handleAddField}
-                onCancel={() => setShowAddPanel(false)}
-              />
-            ) : (
-              <button
-                className="ctb__add-field-btn"
-                type="button"
-                onClick={() => setShowAddPanel(true)}
-              >
-                <span className="material-symbols-outlined">add_circle</span>
-                Add a field
-              </button>
-            )}
-
-          </div>
-
-          {/* Footer */}
-          <div className="ctb__footer">
-            <Button theme="secondary" label="Cancel" onClick={handleClose} />
-            <Button
-              theme="primary"
-              label="Save tool"
-              disabled={!canSave}
-              onClick={handleSave}
-            />
-          </div>
+      <div className="ctb-outer">
+        {/* ─── Custom header with back arrow ─── */}
+        <div className="ctb__header">
+          <button className="ctb__back-btn" type="button" onClick={handleClose}>
+            <span className="material-symbols-outlined">arrow_back</span>
+          </button>
+          <span className="ctb__header-title">Build custom tool</span>
         </div>
 
-        {/* ─── Right: live preview ─── */}
-        <div className="ctb__right">
-          <div className="ctb__preview-header">Live preview</div>
-          <div className="ctb__preview-scroll">
-            <LivePreview
-              toolName={toolName}
-              toolDescription={toolDescription}
-              fields={fields}
-            />
+        {/* ─── Two-panel body ─── */}
+        <div className="ctb">
+          {/* Left: builder form */}
+          <div className="ctb__left">
+            <div className="ctb__left-scroll">
+
+              {/* Tool name */}
+              <div className="ctb__field-group">
+                <span className="ctb__label ctb__label--required">Tool name</span>
+                <input
+                  className="ctb__input"
+                  placeholder="e.g. Create support ticket"
+                  value={toolName}
+                  onChange={(e) => setToolName(e.target.value)}
+                />
+              </div>
+
+              {/* Icon upload */}
+              <div className="ctb__field-group">
+                <span className="ctb__label">Tool icon</span>
+                <span className="ctb__sublabel">Upload SVG or PNG (optional)</span>
+                <button
+                  className="ctb__icon-upload"
+                  type="button"
+                  onClick={() => iconInputRef.current?.click()}
+                >
+                  {iconDataUrl ? (
+                    <img src={iconDataUrl} alt="Tool icon" className="ctb__icon-preview" />
+                  ) : (
+                    <span className="material-symbols-outlined ctb__icon-upload-sym">upload</span>
+                  )}
+                </button>
+                <input
+                  ref={iconInputRef}
+                  type="file"
+                  accept=".svg,.png"
+                  className="ctb__icon-input"
+                  onChange={handleIconChange}
+                />
+              </div>
+
+              {/* Tool description */}
+              <div className="ctb__field-group">
+                <span className="ctb__label">Description</span>
+                <textarea
+                  className="ctb__textarea"
+                  placeholder="Describe what this tool does and when to use it…"
+                  value={toolDescription}
+                  onChange={(e) => setToolDescription(e.target.value)}
+                  rows={3}
+                />
+              </div>
+
+              {/* Divider */}
+              <div className="ctb__divider" />
+
+              {/* Fields section */}
+              <div className="ctb__fields-header">
+                <span className="ctb__fields-title">Form fields</span>
+                <span className="ctb__fields-count">{fields.length} field{fields.length !== 1 ? 's' : ''}</span>
+              </div>
+
+              {fields.length > 0 && (
+                <div className="ctb__fields">
+                  {fields.map((field, i) => (
+                    <FieldCard
+                      key={field.id}
+                      field={field}
+                      index={i}
+                      total={fields.length}
+                      onChange={(updated) => handleUpdateField(field.id, updated)}
+                      onDelete={() => handleDeleteField(field.id)}
+                      onMoveUp={() => handleMoveUp(i)}
+                      onMoveDown={() => handleMoveDown(i)}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {showAddPanel ? (
+                <AddFieldPanel
+                  onAdd={handleAddField}
+                  onCancel={() => setShowAddPanel(false)}
+                />
+              ) : (
+                <button
+                  className="ctb__add-field-btn"
+                  type="button"
+                  onClick={() => setShowAddPanel(true)}
+                >
+                  <span className="material-symbols-outlined">add_circle</span>
+                  Add a field
+                </button>
+              )}
+
+            </div>
+
+            {/* Footer */}
+            <div className="ctb__footer">
+              <Button theme="secondary" label="Cancel" onClick={handleClose} />
+              <Button
+                theme="primary"
+                label="Save tool"
+                disabled={!canSave}
+                onClick={handleSave}
+              />
+            </div>
+          </div>
+
+          {/* Right: live preview */}
+          <div className="ctb__right">
+            <div className="ctb__preview-header">Live preview</div>
+            <div className="ctb__preview-scroll">
+              <LivePreview
+                toolName={toolName}
+                toolDescription={toolDescription}
+                fields={fields}
+              />
+            </div>
           </div>
         </div>
       </div>
