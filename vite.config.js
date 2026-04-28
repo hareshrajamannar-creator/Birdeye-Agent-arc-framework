@@ -30,8 +30,29 @@ export default defineConfig({
       '@birdeye/elemental': elementalPath,
       '@xyflow/react': xyflowReactPath,
       '@xyflow/system': xyflowSystemPath,
+      classnames: resolve(dirname, 'src/vendor/classnames.js'),
+      'fast-shallow-equal': resolve(dirname, 'src/vendor/fast-shallow-equal.js'),
+      lodash: resolve(dirname, 'node_modules/lodash-es'),
+      'react-list': resolve(dirname, 'src/vendor/react-list.jsx'),
+      'react-modal': resolve(dirname, 'src/vendor/react-modal.jsx'),
       react: resolve(dirname, 'node_modules/react'),
       'react-dom': resolve(dirname, 'node_modules/react-dom'),
+    },
+  },
+  // Exclude elemental from esbuild pre-bundling — it ships with nested
+  // core/node_modules/ that esbuild can't traverse, so we serve it as
+  // raw ESM at request time instead.
+  optimizeDeps: {
+    exclude: ['@birdeye/elemental'],
+  },
+  server: {
+    // Allow Vite to serve files from inside the elemental package tree,
+    // including its nested core/node_modules/ directory.
+    fs: {
+      allow: [
+        resolve(dirname, 'node_modules/@birdeye/elemental'),
+        resolve(dirname, '..'),
+      ],
     },
   },
 });

@@ -208,11 +208,12 @@ const AI_OPTIONS = [
 
 export default function LHSDrawer({
   defaultTab = 'Create manually',
-  triggerOpen = true,
-  tasksOpen = false,
-  controlsOpen = false,
+  defaultOpenSection = 'Trigger',
 }) {
   const [activeTab, setActiveTab] = useState(defaultTab);
+  const [openSection, setOpenSection] = useState(defaultOpenSection);
+  const toggleSection = (section) =>
+    setOpenSection((prev) => (prev === section ? null : section));
   const [search, setSearch] = useState('');
   const [expandedCard, setExpandedCard] = useState(null);
   const [expandedSection, setExpandedSection] = useState(null);
@@ -310,9 +311,9 @@ export default function LHSDrawer({
           </div>
 
           <div className="lhs-drawer__sections">
-            <NodeType title="Trigger" content={triggerContent} isDefaultOpen={triggerOpen} />
-            <NodeType title="Tasks" content={tasksContent} isDefaultOpen={tasksOpen} />
-            <NodeType title="Controls" content={controlsContent} isDefaultOpen={controlsOpen} />
+            <NodeType title="Trigger" content={triggerContent} isOpen={openSection === 'Trigger'} onToggle={() => toggleSection('Trigger')} />
+            <NodeType title="Tasks" content={tasksContent} isOpen={openSection === 'Tasks'} onToggle={() => toggleSection('Tasks')} />
+            <NodeType title="Controls" content={controlsContent} isOpen={openSection === 'Controls'} onToggle={() => toggleSection('Controls')} />
           </div>
         </div>
       ) : (
@@ -331,7 +332,6 @@ export default function LHSDrawer({
         <div
           className="lhs-drawer__dropdown-zone"
           style={{ top: dropdownTop }}
-          onDragStart={closeDropdown}
         >
           <div className="lhs-drawer__dropdown-bridge" />
           <LHSEntityGroup

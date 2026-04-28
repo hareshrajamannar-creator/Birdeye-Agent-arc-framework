@@ -1,0 +1,45 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3, 12px);
+  min-height: 240px;
+  width: 100%;
+  padding: var(--space-6, 24px);
+  border: 1px dashed var(--color-border, #e5e9f0);
+  border-radius: var(--radius-lg, 12px);
+  background: var(--color-neutral-50, #f8fafc);
+  color: var(--color-text-secondary, #555);
+  font-family: var(--font-family-base, 'Roboto', sans-serif);
+  text-align: center;
+}
+
+.compact {
+  min-height: 220px;
+}
+
+.icon {
+  color: var(--color-primary, #1976d2);
+  font-size: 36px;
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1, 4px);
+}
+
+.title {
+  margin: 0;
+  color: var(--color-text-primary, #212121);
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.description {
+  margin: 0;
+  color: var(--color-text-secondary, #555);
+  font-size: 13px;
+  line-height: 1.45;
+}

@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import TableContainer from '@birdeye/elemental/core/components/TableContainer/index.js';
+import './PerformanceTable.css';
 
 const COLUMNS = [
   { value: 'location',        tableHead: 'Location',              enabled: true, width: 350, enableSorting: true, align: 'left' },
@@ -27,11 +28,11 @@ function buildTableData(rows) {
     tableHead: { columns: COLUMNS },
     tableRow: rows.map(row => ({
       rowsData: [
-        { rowValue: row.location },
-        { rowValue: String(row.reviewsResponded) },
-        { rowValue: row.responseRate },
-        { rowValue: row.avgResponseTime },
-        { rowValue: row.timeSaved },
+        { rowValue: row.location,                  align: 'left' },
+        { rowValue: String(row.reviewsResponded),  align: 'left' },
+        { rowValue: row.responseRate,              align: 'left' },
+        { rowValue: row.avgResponseTime,           align: 'left' },
+        { rowValue: row.timeSaved,                 align: 'left' },
       ],
     })),
   };
@@ -39,7 +40,7 @@ function buildTableData(rows) {
 
 export default function PerformanceTable({ rows = DEFAULT_ROWS }) {
   return (
-    <div style={{ background: '#fff' }}>
+    <div style={{ background: '#fff' }} className="performance-table">
       <TableContainer tableData={buildTableData(rows)} />
     </div>
   );

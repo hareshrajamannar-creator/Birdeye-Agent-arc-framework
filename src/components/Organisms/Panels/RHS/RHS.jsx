@@ -13,9 +13,7 @@ import LoopBody from './LoopBody';
 import ControlBranchBody from './ControlBranchBody';
 import StartBody from './StartBody';
 import ExpandedRHSModal from '../../../Modules/ExpandedRHSModal/ExpandedRHSModal/ExpandedRHSModal';
-import ExpandedRHSTestInput from '../../../Molecules/ExpandedRHS/ExpandedRHSTestInput/ExpandedRHSTestInput';
-import ExpandedRHSTestOutput from '../../../Molecules/ExpandedRHS/ExpandedRHSTestOutput/ExpandedRHSTestOutput';
-import ExpandedRHSTestFeedback from '../../../Molecules/ExpandedRHS/ExpandedRHSTestFeedback/ExpandedRHSTestFeedback';
+import ExpandedRHSTest from '../../../Modules/ExpandedRHSModal/ExpandedRHSTest/ExpandedRHSTest';
 
 const VARIANTS = {
   start: {
@@ -74,8 +72,6 @@ export default function RHS({ variant = 'agentDetails', title, bodyProps, onClos
   const config = VARIANTS[variant];
   const Body = config.body;
   const [isExpanded, setIsExpanded] = useState(false);
-  const [feedbackValue, setFeedbackValue] = useState('');
-
   const handleExpand = () => {
     setIsExpanded(true);
     onExpand?.();
@@ -85,17 +81,7 @@ export default function RHS({ variant = 'agentDetails', title, bodyProps, onClos
     setIsExpanded(false);
   };
 
-  const testContent = (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <ExpandedRHSTestInput fields={[]} />
-      <ExpandedRHSTestOutput rows={[]} />
-      <ExpandedRHSTestFeedback
-        value={feedbackValue}
-        onChange={(e) => setFeedbackValue(e.target.value)}
-        onSubmit={() => setFeedbackValue('')}
-      />
-    </div>
-  );
+  const testContent = <ExpandedRHSTest />;
 
   return (
     <>

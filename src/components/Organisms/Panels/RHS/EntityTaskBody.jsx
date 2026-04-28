@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import FormInput from '@birdeye/elemental/core/atoms/FormInput/index.js';
 import TextArea from '@birdeye/elemental/core/atoms/TextArea/index.js';
 import ToolSelectionDrawer from '../../Drawers/ToolSelectionDrawer/ToolSelectionDrawer.jsx';
+import CustomToolBuilder from '../../Drawers/CustomToolBuilder/CustomToolBuilder.jsx';
 
 const font = '"Roboto", arial, sans-serif';
 
@@ -35,6 +36,8 @@ export default function EntityTaskBody({ initialValues = {}, onFieldChange }) {
   const [taskName, setTaskName] = useState(initialValues.taskName ?? '');
   const [description, setDescription] = useState(initialValues.description ?? '');
   const [isToolDrawerOpen, setIsToolDrawerOpen] = useState(false);
+  const [isCustomToolBuilderOpen, setIsCustomToolBuilderOpen] = useState(false);
+  const [customTools, setCustomTools] = useState([]);
 
   const handleTaskName = (e) => {
     const val = e.target.value;
@@ -78,7 +81,18 @@ export default function EntityTaskBody({ initialValues = {}, onFieldChange }) {
         onClose={() => setIsToolDrawerOpen(false)}
         onToolSelect={() => setIsToolDrawerOpen(false)}
         onConnect={() => {}}
-        onAddCustom={() => {}}
+        onAddCustom={() => {
+          setIsToolDrawerOpen(false);
+          setIsCustomToolBuilderOpen(true);
+        }}
+      />
+      <CustomToolBuilder
+        isOpen={isCustomToolBuilderOpen}
+        onClose={() => setIsCustomToolBuilderOpen(false)}
+        onSave={(tool) => {
+          setCustomTools((prev) => [...prev, tool]);
+          setIsCustomToolBuilderOpen(false);
+        }}
       />
     </>
   );

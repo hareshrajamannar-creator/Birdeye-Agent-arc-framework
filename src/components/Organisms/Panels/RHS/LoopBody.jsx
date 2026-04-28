@@ -5,6 +5,8 @@ import SingleSelect from '@birdeye/elemental/core/atoms/SingleSelect/index.js';
 
 const font = '"Roboto", arial, sans-serif';
 
+const helpTextStyle = { fontSize: 11, lineHeight: '16px', color: '#8f8f8f', fontFamily: font };
+
 const LOOP_OVER_OPTIONS = [
   { value: 'reviews_list', label: '{{reviews_list}}' },
   { value: 'items', label: '{{items}}' },

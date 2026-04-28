@@ -22,7 +22,6 @@ export const Empty = {
 export const WithInputOnly = {
   render: () => wrap(
     <ExpandedRHSTest
-      defaultRun
       inputFields={[
         { name: 'review_text', type: 'variable', value: 'I went for a root canal, Mr.John was very professional' },
       ]}
@@ -33,7 +32,6 @@ export const WithInputOnly = {
 export const WithOutputOnly = {
   render: () => wrap(
     <ExpandedRHSTest
-      defaultRun
       outputFields={[
         { label: 'Identified_product', type: 'variable', value: 'Root canal' },
       ]}
@@ -44,7 +42,6 @@ export const WithOutputOnly = {
 export const Filled = {
   render: () => wrap(
     <ExpandedRHSTest
-      defaultRun
       inputFields={[
         { name: 'review_text', type: 'variable', value: 'I went for a root canal, Mr.John was very professional' },
       ]}

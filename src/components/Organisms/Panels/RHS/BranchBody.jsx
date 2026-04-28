@@ -43,7 +43,7 @@ const helpTextStyle = { fontSize: 11, lineHeight: '16px', color: '#8f8f8f', font
 export default function BranchBody({ initialValues = {} }) {
   const [branchName, setBranchName] = useState(initialValues.branchName ?? '');
   const [description, setDescription] = useState(initialValues.description ?? '');
-  const [conditions, setConditions] = useState(initialValues.conditions ?? [makeCondition(1)]);
+  const [conditions, setConditions] = useState(initialValues.conditions?.length ? initialValues.conditions : [makeCondition(1)]);
   const [logic, setLogic] = useState(initialValues.logic ?? 'OR');
 
   function handleConditionChange(id, field, value) {
