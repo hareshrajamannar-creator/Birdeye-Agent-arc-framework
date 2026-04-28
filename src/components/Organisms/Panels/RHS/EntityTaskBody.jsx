@@ -31,10 +31,22 @@ function AddBox({ onAdd, children }) {
   );
 }
 
-export default function EntityTaskBody({ initialValues = {} }) {
+export default function EntityTaskBody({ initialValues = {}, onFieldChange }) {
   const [taskName, setTaskName] = useState(initialValues.taskName ?? '');
   const [description, setDescription] = useState(initialValues.description ?? '');
   const [isToolDrawerOpen, setIsToolDrawerOpen] = useState(false);
+
+  const handleTaskName = (e) => {
+    const val = e.target.value;
+    setTaskName(val);
+    onFieldChange?.('taskName', val);
+  };
+
+  const handleDescription = (e) => {
+    const val = e.target.value;
+    setDescription(val);
+    onFieldChange?.('description', val);
+  };
 
   return (
     <>
@@ -45,7 +57,7 @@ export default function EntityTaskBody({ initialValues = {} }) {
           label="Task name"
           placeholder="Enter name"
           value={taskName}
-          onChange={(e) => setTaskName(e.target.value)}
+          onChange={handleTaskName}
           required
         />
         <TextArea
@@ -53,7 +65,7 @@ export default function EntityTaskBody({ initialValues = {} }) {
           label="Description"
           placeholder="Enter description"
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={handleDescription}
           noFloatingLabel
         />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>

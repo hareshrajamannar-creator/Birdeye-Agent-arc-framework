@@ -42,7 +42,7 @@ const LLM_MODEL_OPTIONS = [
   { value: 'Advanced', label: 'Advanced' },
 ];
 
-export default function LLMTaskBody({ initialValues = {} }) {
+export default function LLMTaskBody({ initialValues = {}, onFieldChange }) {
   const [values, setValues] = useState({
     taskName: initialValues.taskName ?? '',
     description: initialValues.description ?? '',
@@ -56,12 +56,32 @@ export default function LLMTaskBody({ initialValues = {} }) {
   const [outputFields, setOutputFields] = useState(initialValues.outputFields ?? []);
   const [inputFields, setInputFields] = useState(initialValues.inputFields ?? []);
   const [fieldPickerPrompt, setFieldPickerPrompt] = useState(null); // 'system' | 'user' | null
-  const set = (field) => (val) => setValues((v) => ({ ...v, [field]: val }));
+
+  const set = (field) => (val) => {
+    setValues((v) => ({ ...v, [field]: val }));
+    onFieldChange?.(field, val);
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-      <FormInput name="taskName" type="text" label="Task name" placeholder="Enter name" value={values.taskName} onChange={(e) => set('taskName')(e.target.value)} required />
-      <TextArea name="description" label="Description" placeholder="Enter description" value={values.description} onChange={(e) => set('description')(e.target.value)} required noFloatingLabel />
+      <FormInput
+        name="taskName"
+        type="text"
+        label="Task name"
+        placeholder="Enter name"
+        value={values.taskName}
+        onChange={(e) => set('taskName')(e.target.value)}
+        required
+      />
+      <TextArea
+        name="description"
+        label="Description"
+        placeholder="Enter description"
+        value={values.description}
+        onChange={(e) => set('description')(e.target.value)}
+        required
+        noFloatingLabel
+      />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         <FieldLabel label="LLM Model" showInfo />

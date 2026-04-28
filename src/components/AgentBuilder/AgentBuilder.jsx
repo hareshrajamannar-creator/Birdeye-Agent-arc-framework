@@ -1,11 +1,9 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import AppShell from '../AppShell/AppShell';
 import LHSDrawer from '../LHSDrawer/LHSDrawer';
 import FlowCanvas from '../FlowCanvas/FlowCanvas';
 import RHS from '../Organisms/Panels/RHS/RHS';
 import ScheduleBased from '../Molecules/RHS/Trigger/ScheduleBased/ScheduleBased';
-import AIChatBubble from '../Molecules/AIChatBubble/AIChatBubble';
-import AIPromptBox from '../Molecules/AIPromptBox/AIPromptBox';
 import Button from '@birdeye/elemental/core/atoms/Button/index.js';
 import CustomModal from '@birdeye/elemental/core/atoms/CustomModal/index.js';
 import FormInput from '@birdeye/elemental/core/atoms/FormInput/index.js';
@@ -91,122 +89,6 @@ function nextId() {
   return `node-${nodeIdCounter}`;
 }
 
-/* ─── Prompt workflow helpers ─── */
-
-function buildPromptNodeEntry(type, label, description) {
-  const id = nextId();
-  let flowType = 'task';
-  let title = 'Task';
-  let hasAiIcon = false;
-  let details = {};
-  let extraDetails = {};
-
-  if (type === 'trigger') {
-    flowType = 'trigger';
-    title = 'Trigger';
-    if (label === 'Schedule-based') {
-      details = { frequency: 'Daily', day: '7 days', time: '9:00 AM' };
-    } else {
-      details = {
-        triggerName: label,
-        description,
-        conditions: [
-          { field: '', operator: '', value: '' },
-          { field: '', operator: '', value: '' },
-          { field: '', operator: '', value: '' },
-        ],
-      };
-    }
-  } else if (type === 'branch') {
-    flowType = 'branch';
-    title = label;
-    const p1 = `${id}-path-1`;
-    const p2 = `${id}-path-2`;
-    details = {
-      basedOn: 'Conditions',
-      branches: [
-        { id: p1, name: 'Branch 1' },
-        { id: p2, name: 'Branch 2' },
-      ],
-    };
-    extraDetails = {
-      [p1]: { branchName: 'Branch 1', description: '', conditions: [], parentId: id, isBranchPath: true },
-      [p2]: { branchName: 'Branch 2', description: '', conditions: [], parentId: id, isBranchPath: true },
-    };
-  } else {
-    hasAiIcon = label === 'Custom';
-    if (hasAiIcon) {
-      details = { taskName: description, description: '', llmModel: 'Fast', systemPrompt: '', userPrompt: '' };
-    } else {
-      details = { taskName: description, description: '' };
-    }
-  }
-
-  const node = {
-    id,
-    flowType,
-    data: {
-      title,
-      subtype: label,
-      stepNumber: null,
-      description,
-      subtitle: `${label}: ${description}`,
-      hasAiIcon,
-      hasToggle: true,
-      toggleEnabled: true,
-    },
-  };
-
-  return { node, details, extraDetails };
-}
-
-function generateWorkflowFromPrompt(text) {
-  const lower = text.toLowerCase();
-
-  let specs;
-  if (lower.includes('review')) {
-    specs = [
-      { type: 'trigger', label: 'Reviews',  description: 'When a new review is received' },
-      { type: 'task',    label: 'Custom',   description: 'Analyze and respond to the review' },
-    ];
-  } else if (lower.includes('schedule')) {
-    specs = [
-      { type: 'trigger', label: 'Schedule-based', description: 'Runs on a set schedule' },
-      { type: 'task',    label: 'Review',          description: 'Process scheduled items' },
-    ];
-  } else if (lower.includes('branch')) {
-    specs = [
-      { type: 'trigger', label: 'Reviews', description: 'When a new review is received' },
-      { type: 'branch',  label: 'Branch',  description: 'Route based on conditions' },
-      { type: 'task',    label: 'Custom',  description: 'Handle positive outcome' },
-      { type: 'task',    label: 'Custom',  description: 'Handle negative outcome' },
-    ];
-  } else {
-    specs = [
-      { type: 'task', label: 'Custom', description: 'Process and respond' },
-    ];
-  }
-
-  const nodes = [];
-  const allDetails = {};
-
-  specs.forEach(({ type, label, description }) => {
-    const { node, details, extraDetails } = buildPromptNodeEntry(type, label, description);
-    nodes.push(node);
-    allDetails[node.id] = details;
-    Object.assign(allDetails, extraDetails);
-  });
-
-  const numberedNodes = nodes.map((n, i) => ({
-    ...n,
-    data: { ...n.data, stepNumber: i + 1 },
-  }));
-
-  return { nodes: numberedNodes, details: allDetails };
-}
-
-/* ─── Component ─── */
-
 export default function AgentBuilder({
   appTitle = 'Reviews AI',
   pageTitle = 'Review response agent 1',
@@ -224,17 +106,6 @@ export default function AgentBuilder({
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [nodeDetails, setNodeDetails] = useState(() => initialNodeDetails || {});
 
-  /* ─── Build mode ─── */
-  const [buildMode, setBuildMode] = useState('manual');
-  const [promptMessages, setPromptMessages] = useState([
-    { role: 'ai', message: "Hi! Describe what your agent should do and I'll generate a workflow for you." },
-  ]);
-  const messagesEndRef = useRef(null);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [promptMessages]);
-
   /* ─── Save modal ─── */
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [agentName, setAgentName] = useState(pageTitle || '');
@@ -251,32 +122,53 @@ export default function AgentBuilder({
       moduleContext,
       nodes: nodeList,
       nodeDetails,
-      creationMode: buildMode,
     });
     setSaveModalOpen(false);
-  }, [agentName, agentDesc, moduleContext, nodeList, nodeDetails, buildMode, onSaveAgent]);
+  }, [agentName, agentDesc, moduleContext, nodeList, nodeDetails, onSaveAgent]);
 
-  /* ─── Prompt mode ─── */
-  const handlePromptSend = useCallback((text) => {
-    setPromptMessages((prev) => [...prev, { role: 'user', message: text }]);
+  /* ─── Download handler ─── */
+  const handleExport = useCallback(() => {
+    const payload = {
+      name: agentName,
+      description: agentDesc,
+      moduleContext,
+      exportedAt: new Date().toISOString(),
+      nodes: nodeList,
+      nodeDetails,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${agentName.replace(/\s+/g, '-').toLowerCase() || 'agent'}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [agentName, agentDesc, moduleContext, nodeList, nodeDetails]);
 
-    const { nodes: generatedNodes, details: newDetails } = generateWorkflowFromPrompt(text);
-
-    setNodeList(generatedNodes);
-    setNodeDetails(newDetails);
-    setSelectedNodeId(null);
-    setDrawerOpen(false);
-
-    setPromptMessages((prev) => [
+  /* ─── Live node sync: RHS → canvas ─── */
+  const handleNodeFieldChange = useCallback((nodeId, field, value) => {
+    // Always persist to nodeDetails
+    setNodeDetails((prev) => ({
       ...prev,
-      {
-        role: 'ai',
-        message: `Done! I've generated a ${generatedNodes.length}-step workflow based on your description. Switch to Manual mode to edit individual nodes.`,
-      },
-    ]);
+      [nodeId]: { ...prev[nodeId], [field]: value },
+    }));
+    // Mirror name/description changes into the canvas node label
+    setNodeList((prev) =>
+      prev.map((n) => {
+        if (n.id !== nodeId) return n;
+        const updates = {};
+        if (field === 'triggerName' || field === 'taskName') {
+          updates.title = value;
+        }
+        if (field === 'description') {
+          updates.subtitle = `${n.data.subtype || n.data.title}: ${value}`;
+        }
+        return { ...n, data: { ...n.data, ...updates } };
+      })
+    );
   }, []);
 
-  /* ─── Manual-mode node management ─── */
+  /* ─── Node management ─── */
 
   const handleDeleteNode = useCallback((nodeId) => {
     setNodeList((prev) => {
@@ -325,16 +217,16 @@ export default function AgentBuilder({
     if (type === 'trigger') {
       flowType = 'trigger';
       title = 'Trigger';
-    } else if (type === 'branch') {
+    } else if (type === 'branch' && label === 'Branch') {
       flowType = 'branch';
       title = label;
-    } else if (type === 'delay') {
+    } else if (label === 'Delay') {
       flowType = 'delay';
       title = 'Delay';
-    } else if (type === 'parallel') {
+    } else if (label === 'Parallel') {
       flowType = 'parallel';
       title = 'Parallel tasks';
-    } else if (type === 'loop') {
+    } else if (label === 'Loop') {
       flowType = 'loop';
       title = 'Loop';
     } else if (type === 'task') {
@@ -381,7 +273,7 @@ export default function AgentBuilder({
           { field: '', operator: '', value: '' },
         ],
       };
-    } else if (type === 'branch' && label === 'Branch') {
+    } else if (label === 'Branch') {
       const path1Id = `${id}-path-1`;
       const path2Id = `${id}-path-2`;
       details = {
@@ -395,13 +287,13 @@ export default function AgentBuilder({
         [path1Id]: { branchName: 'Branch 1', description: '', conditions: [], parentId: id, isBranchPath: true },
         [path2Id]: { branchName: 'Branch 2', description: '', conditions: [], parentId: id, isBranchPath: true },
       };
-    } else if (type === 'delay') {
+    } else if (label === 'Delay') {
       details = { duration: '1', unit: 'hours' };
-    } else if (type === 'parallel') {
+    } else if (label === 'Parallel') {
       details = { tasks: [] };
-    } else if (type === 'loop') {
+    } else if (label === 'Loop') {
       details = { iterations: 3, exitCondition: '' };
-    } else if (type === 'task' && label === 'Custom') {
+    } else if (label === 'Custom') {
       details = {
         taskName: 'Identify relevant mentions in the review',
         description: 'Extract product or service-specific feedback from the review',
@@ -435,6 +327,12 @@ export default function AgentBuilder({
   }, []);
 
   const currentDetails = selectedNodeId ? (nodeDetails[selectedNodeId] || {}) : {};
+
+  /* ─── Shared onFieldChange for the active node ─── */
+  const activeFieldChange = useCallback(
+    (field, value) => handleNodeFieldChange(selectedNodeId, field, value),
+    [selectedNodeId, handleNodeFieldChange]
+  );
 
   const renderRHSPanel = () => {
     if (!selectedNodeId) return null;
@@ -475,7 +373,7 @@ export default function AgentBuilder({
         <RHS
           variant="branch"
           title={currentDetails.branchName || 'Branch details'}
-          bodyProps={{ initialValues: currentDetails }}
+          bodyProps={{ initialValues: currentDetails, onFieldChange: activeFieldChange }}
           onClose={handleCloseDrawer}
           onSave={handleCloseDrawer}
         />
@@ -507,7 +405,7 @@ export default function AgentBuilder({
         <RHS
           variant="entityTrigger"
           title="Trigger"
-          bodyProps={{ initialValues: currentDetails }}
+          bodyProps={{ initialValues: currentDetails, onFieldChange: activeFieldChange }}
           onClose={handleCloseDrawer}
           onSave={handleCloseDrawer}
         />
@@ -519,7 +417,7 @@ export default function AgentBuilder({
         <RHS
           variant="controlBranch"
           title="Branch details"
-          bodyProps={{ initialValues: currentDetails }}
+          bodyProps={{ initialValues: currentDetails, onFieldChange: activeFieldChange }}
           onClose={handleCloseDrawer}
           onSave={handleCloseDrawer}
         />
@@ -531,7 +429,7 @@ export default function AgentBuilder({
         <RHS
           variant="delay"
           title="Delay"
-          bodyProps={{ initialValues: currentDetails }}
+          bodyProps={{ initialValues: currentDetails, onFieldChange: activeFieldChange }}
           onClose={handleCloseDrawer}
           onSave={handleCloseDrawer}
         />
@@ -543,7 +441,7 @@ export default function AgentBuilder({
         <RHS
           variant="parallel"
           title="Parallel tasks"
-          bodyProps={{ initialValues: currentDetails }}
+          bodyProps={{ initialValues: currentDetails, onFieldChange: activeFieldChange }}
           onClose={handleCloseDrawer}
           onSave={handleCloseDrawer}
         />
@@ -555,7 +453,7 @@ export default function AgentBuilder({
         <RHS
           variant="loop"
           title="Loop"
-          bodyProps={{ initialValues: currentDetails }}
+          bodyProps={{ initialValues: currentDetails, onFieldChange: activeFieldChange }}
           onClose={handleCloseDrawer}
           onSave={handleCloseDrawer}
         />
@@ -567,7 +465,7 @@ export default function AgentBuilder({
         <RHS
           variant="llmTask"
           title="LLM Task"
-          bodyProps={{ initialValues: currentDetails }}
+          bodyProps={{ initialValues: currentDetails, onFieldChange: activeFieldChange }}
           onClose={handleCloseDrawer}
           onSave={handleCloseDrawer}
         />
@@ -578,12 +476,29 @@ export default function AgentBuilder({
       <RHS
         variant="entityTask"
         title="Task"
-        bodyProps={{ initialValues: currentDetails }}
+        bodyProps={{ initialValues: currentDetails, onFieldChange: activeFieldChange }}
         onClose={handleCloseDrawer}
         onSave={handleCloseDrawer}
       />
     );
   };
+
+  /* ─── Header actions: Download + Save (replaces Publish) ─── */
+  const headerActions = (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <Button
+        theme="secondary"
+        label="Download"
+        customIcon={<span className="material-symbols-outlined" style={{ fontSize: 16 }}>download</span>}
+        onClick={handleExport}
+      />
+      <Button
+        theme="primary"
+        label="Save"
+        onClick={() => setSaveModalOpen(true)}
+      />
+    </div>
+  );
 
   return (
     <AppShell
@@ -593,89 +508,32 @@ export default function AgentBuilder({
       onNavChange={setNavId}
       showBack={!!onClose}
       onBack={onClose}
-      publishDisabled
+      pageActions={headerActions}
     >
-      <div className="agent-builder-wrapper">
-
-        {/* ─── Mode toggle bar ─── */}
-        <div className="agent-builder__mode-bar">
-          <div className="agent-builder__mode-bar-modes">
-            <button
-              className={`agent-builder__mode-btn${buildMode === 'manual' ? ' agent-builder__mode-btn--active' : ''}`}
-              onClick={() => setBuildMode('manual')}
-            >
-              <span className="material-symbols-outlined">edit</span>
-              Build manually
-            </button>
-            <button
-              className={`agent-builder__mode-btn${buildMode === 'prompt' ? ' agent-builder__mode-btn--active' : ''}`}
-              onClick={() => setBuildMode('prompt')}
-            >
-              <span className="material-symbols-outlined">auto_awesome</span>
-              Build with prompt
-            </button>
-          </div>
-          <div className="agent-builder__mode-bar-actions">
-            <Button
-              theme="secondary"
-              label="Save agent"
-              onClick={() => setSaveModalOpen(true)}
-            />
-          </div>
+      <div className="agent-builder">
+        <div className="agent-builder__lhs">
+          <LHSDrawer defaultTab="Create manually" triggerOpen tasksOpen={false} controlsOpen={false} />
         </div>
 
-        {/* ─── Main content ─── */}
-        <div className="agent-builder">
-
-          {buildMode === 'manual' && (
-            <div className="agent-builder__lhs">
-              <LHSDrawer defaultTab="Create manually" triggerOpen tasksOpen={false} controlsOpen={false} />
-            </div>
-          )}
-
-          {buildMode === 'prompt' && (
-            <div className="agent-builder__prompt-panel">
-              <div className="agent-builder__prompt-messages">
-                {promptMessages.map((msg, i) =>
-                  msg.role === 'ai' ? (
-                    <AIChatBubble key={i} message={msg.message} />
-                  ) : (
-                    <div key={i} className="agent-builder__prompt-user-msg">
-                      {msg.message}
-                    </div>
-                  )
-                )}
-                <div ref={messagesEndRef} />
-              </div>
-              <div className="agent-builder__prompt-input">
-                <AIPromptBox
-                  placeholder="Describe what your agent should do..."
-                  onSend={handlePromptSend}
-                />
-              </div>
-            </div>
-          )}
-
-          <div className={`agent-builder__canvas${drawerOpen ? ' agent-builder__canvas--with-rhs' : ''}`}>
-            <FlowCanvas
-              nodes={nodes}
-              edges={edges}
-              onNodeClick={handleNodeClick}
-              onDropNode={handleDropNode}
-              selectedNodeId={selectedNodeId}
-              orientation="vertical"
-            />
-          </div>
-
-          {drawerOpen && (
-            <div className="agent-builder__rhs">
-              {renderRHSPanel()}
-            </div>
-          )}
+        <div className={`agent-builder__canvas${drawerOpen ? ' agent-builder__canvas--with-rhs' : ''}`}>
+          <FlowCanvas
+            nodes={nodes}
+            edges={edges}
+            onNodeClick={handleNodeClick}
+            onDropNode={handleDropNode}
+            selectedNodeId={selectedNodeId}
+            orientation="vertical"
+          />
         </div>
+
+        {drawerOpen && (
+          <div className="agent-builder__rhs">
+            {renderRHSPanel()}
+          </div>
+        )}
       </div>
 
-      {/* ─── Save agent modal ─── */}
+      {/* ─── Save modal ─── */}
       {saveModalOpen && (
         <CustomModal
           title="Save agent"
@@ -694,7 +552,7 @@ export default function AgentBuilder({
                 type="text"
                 label="Agent name"
                 value={agentName}
-                onChange={(e, val) => setAgentName(val)}
+                onChange={(e, val) => setAgentName(val ?? e.target.value)}
               />
             </div>
             <div className="agent-builder__save-field">
@@ -702,7 +560,7 @@ export default function AgentBuilder({
                 name="save-agent-desc"
                 label="Description (optional)"
                 value={agentDesc}
-                onChange={(e, val) => setAgentDesc(val)}
+                onChange={(e, val) => setAgentDesc(val ?? e.target.value)}
                 rows={3}
               />
             </div>

@@ -1,0 +1,4 @@
+.agents-table tbody td,
+.agents-table thead th {
+  text-align: left !important;
+}

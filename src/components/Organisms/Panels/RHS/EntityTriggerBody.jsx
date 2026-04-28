@@ -2,9 +2,21 @@ import React, { useState } from 'react';
 import FormInput from '@birdeye/elemental/core/atoms/FormInput/index.js';
 import TextArea from '@birdeye/elemental/core/atoms/TextArea/index.js';
 
-export default function EntityTriggerBody({ initialValues = {} }) {
+export default function EntityTriggerBody({ initialValues = {}, onFieldChange }) {
   const [triggerName, setTriggerName] = useState(initialValues.triggerName ?? '');
   const [description, setDescription] = useState(initialValues.description ?? '');
+
+  const handleTriggerName = (e) => {
+    const val = e.target.value;
+    setTriggerName(val);
+    onFieldChange?.('triggerName', val);
+  };
+
+  const handleDescription = (e) => {
+    const val = e.target.value;
+    setDescription(val);
+    onFieldChange?.('description', val);
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -14,7 +26,7 @@ export default function EntityTriggerBody({ initialValues = {} }) {
         label="Trigger name"
         placeholder="Enter name"
         value={triggerName}
-        onChange={(e) => setTriggerName(e.target.value)}
+        onChange={handleTriggerName}
         required
       />
       <TextArea
@@ -22,7 +34,7 @@ export default function EntityTriggerBody({ initialValues = {} }) {
         label="Description"
         placeholder="Enter description"
         value={description}
-        onChange={(e) => setDescription(e.target.value)}
+        onChange={handleDescription}
         noFloatingLabel
       />
     </div>
