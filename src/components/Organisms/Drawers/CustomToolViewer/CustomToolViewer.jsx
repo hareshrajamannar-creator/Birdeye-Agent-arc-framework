@@ -28,61 +28,47 @@ export default function CustomToolViewer({ isOpen, tool, onClose, onEditTool }) 
   return (
     <CommonSideDrawer
       isOpen={isOpen}
-      title={tool.name}
+      title=""
       onClose={onClose}
-      width="480px"
+      width="650px"
       shouldScroll={false}
       buttonPosition="right"
-      headerRightContent={
-        <div className={styles.headerActions} ref={menuRef}>
-          <button
-            className={styles.moreBtn}
-            type="button"
-            onClick={() => setMenuOpen((m) => !m)}
-            title="More options"
-          >
-            <span className="material-symbols-outlined">more_vert</span>
-          </button>
-          {menuOpen && (
-            <div className={styles.moreMenu}>
-              <button className={styles.moreMenuItem} type="button" onClick={handleEdit}>
-                <span className="material-symbols-outlined">edit</span>
-                Edit tool
-              </button>
-            </div>
-          )}
-          <button className={styles.closeBtn} type="button" onClick={onClose} title="Close">
-            <span className="material-symbols-outlined">close</span>
-          </button>
-        </div>
-      }
+      headerRightContent={<span className={styles.drawerSuppress} />}
     >
-      <div className={styles.viewer}>
-        <div className={styles.viewBody}>
-          <div className={styles.infoRow}>
-            {tool.iconDataUrl ? (
-              <img src={tool.iconDataUrl} alt={tool.name} className={styles.toolIcon} />
-            ) : (
-              <span className={`material-symbols-outlined ${styles.toolIconFallback}`}>build</span>
-            )}
-            <div className={styles.infoText}>
-              <span className={styles.toolName}>{tool.name}</span>
-              {tool.description && (
-                <span className={styles.toolDesc}>{tool.description}</span>
-              )}
-            </div>
+      <div className={styles.outer}>
+        {/* ─── Custom header ─── */}
+        <div className={styles.header}>
+          <div className={styles.headerLeft}>
+            <button className={styles.backBtn} type="button" onClick={onClose}>
+              <span className="material-symbols-outlined">arrow_left_alt</span>
+            </button>
+            <span className={styles.headerTitle}>{tool.name}</span>
           </div>
-
-          {tool.fields?.length > 0 && (
-            <div className={styles.fieldsSection}>
-              <span className={styles.fieldsSectionLabel}>Form fields</span>
-              <div className={styles.previewCard}>
-                {tool.fields.map((f) => (
-                  <PreviewField key={f.id} field={f} />
-                ))}
+          <div className={styles.headerRight} ref={menuRef}>
+            <button
+              className={styles.moreBtn}
+              type="button"
+              onClick={() => setMenuOpen((m) => !m)}
+              title="More options"
+            >
+              <span className="material-symbols-outlined">more_vert</span>
+            </button>
+            {menuOpen && (
+              <div className={styles.moreMenu}>
+                <button className={styles.moreMenuItem} type="button" onClick={handleEdit}>
+                  <span className="material-symbols-outlined">edit</span>
+                  Edit tool
+                </button>
               </div>
-            </div>
-          )}
+            )}
+          </div>
+        </div>
+
+        {/* ─── Free-flowing fields ─── */}
+        <div className={styles.body}>
+          {tool.fields?.map((f) => (
+            <PreviewField key={f.id} field={f} />
+          ))}
         </div>
       </div>
     </CommonSideDrawer>

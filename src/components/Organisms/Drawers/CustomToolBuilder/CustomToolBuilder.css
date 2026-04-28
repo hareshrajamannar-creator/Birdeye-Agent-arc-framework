@@ -444,91 +444,105 @@
 .ctb__prev-field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .ctb__prev-label {
-  font-size: 12px;
+  font-size: 13px;
   color: #212121;
   font-weight: 400;
+  line-height: 18px;
+  font-family: 'Roboto', sans-serif;
 }
 
 .ctb__prev-input {
-  height: 32px;
-  border: 1px solid #e5e9f0;
-  border-radius: 4px;
-  background: #fafafa;
-  padding: 0 8px;
-  font-size: 12px;
-  color: #bbb;
+  height: 40px;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  background: #fff;
+  padding: 0 12px;
+  font-size: 14px;
+  color: #aaa;
+  font-family: 'Roboto', sans-serif;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .ctb__prev-textarea {
-  min-height: 52px;
-  border: 1px solid #e5e9f0;
-  border-radius: 4px;
-  background: #fafafa;
-  padding: 6px 8px;
-  font-size: 12px;
-  color: #bbb;
+  min-height: 80px;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  background: #fff;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: #aaa;
+  font-family: 'Roboto', sans-serif;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .ctb__prev-options {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 12px;
 }
 
 .ctb__prev-option {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: #555;
+  gap: 10px;
+  font-size: 14px;
+  color: #212121;
+  font-family: 'Roboto', sans-serif;
 }
 
 .ctb__prev-option-dot {
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  border: 2px solid #bbb;
+  border: 2px solid #c8c8c8;
   flex-shrink: 0;
 }
 
 .ctb__prev-option-square {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   border-radius: 3px;
-  border: 2px solid #bbb;
+  border: 2px solid #c8c8c8;
   flex-shrink: 0;
 }
 
 .ctb__prev-select {
-  height: 32px;
-  border: 1px solid #e5e9f0;
-  border-radius: 4px;
-  background: #fafafa;
-  padding: 0 8px;
-  font-size: 12px;
-  color: #bbb;
+  height: 40px;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  background: #fff;
+  padding: 0 12px;
+  font-size: 14px;
+  color: #212121;
+  font-family: 'Roboto', sans-serif;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .ctb__prev-toggle {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: #555;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #212121;
+  font-family: 'Roboto', sans-serif;
 }
 
 .ctb__prev-toggle-track {
-  width: 32px;
-  height: 18px;
+  width: 40px;
+  height: 22px;
   background: #e0e0e0;
-  border-radius: 9px;
+  border-radius: 11px;
+  flex-shrink: 0;
 }
 
 /* ─── Inline styles replaced with classes ───────────────────────────────────── */
