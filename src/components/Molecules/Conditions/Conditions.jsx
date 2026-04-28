@@ -53,85 +53,94 @@ function Dropdown({ name, selected, options, onChange, placeholder = 'Select', o
 
   return (
     <div className={styles.dropdownOuter} ref={ref}>
-      <div className={styles.dropdownStretch}>
-        <div className="tc-dropdown">
-          <button
-            type="button"
-            className={`tc-dropdown__trigger${open ? ' tc-dropdown__trigger--open' : ''}`}
-            onClick={() => { if (!editMode) setOpen((v) => !v); }}
-            aria-haspopup="listbox"
-            aria-expanded={open}
-          >
-            <span className={`tc-dropdown__value${!selectedLabel ? ' tc-dropdown__value--placeholder' : ''}`}>
-              {selectedLabel || placeholder}
-            </span>
-            <span className="material-symbols-outlined tc-dropdown__chevron">expand_more</span>
-          </button>
-
-          {open && (
-            <ul className="tc-dropdown__menu" role="listbox">
-              {options.map((opt) => (
-                <li
-                  key={opt.value}
-                  role="option"
-                  aria-selected={opt.value === selected}
-                  className={`tc-dropdown__option${opt.value === selected ? ' tc-dropdown__option--selected' : ''}`}
-                  onClick={() => { onChange(opt); setOpen(false); }}
-                >
-                  {opt.label}
-                  {opt.value === selected && (
-                    <span className="material-symbols-outlined tc-dropdown__check">check</span>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-
-          {editMode && (
-            <div className={styles.optionsEditor}>
-              <div className={styles.optionsEditorList}>
-                {draftOptions.map((opt, i) => (
-                  <div key={opt.value || i} className={styles.optionRow}>
-                    <input
-                      className={styles.optionInput}
-                      value={opt.label}
-                      placeholder="Option label"
-                      onChange={(e) => updateDraftLabel(i, e.target.value)}
-                    />
-                    <button
-                      type="button"
-                      className={styles.optionRemoveBtn}
-                      onClick={() => removeDraftOption(i)}
-                    >
-                      <span className={`material-symbols-outlined ${styles.optionRemoveBtnIcon}`}>close</span>
-                    </button>
-                  </div>
-                ))}
-              </div>
-              <div className={styles.editorFooter}>
-                <button type="button" className={styles.addOptionBtn} onClick={addDraftOption}>
-                  <span className={`material-symbols-outlined ${styles.addOptionIcon}`}>add</span>
-                  Add option
-                </button>
-                <button type="button" className={styles.applyBtn} onClick={applyOptions}>
-                  <span className={`material-symbols-outlined ${styles.applyBtnIcon}`}>check</span>
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {onOptionsChange && (
+      <div className="tc-dropdown">
         <button
           type="button"
-          className={styles.editTrigger}
-          onClick={handleEditClick}
-          title="Edit options"
+          className={`tc-dropdown__trigger${open ? ' tc-dropdown__trigger--open' : ''} ${styles.dropdownTrigger}`}
+          onClick={() => { if (!editMode) setOpen((v) => !v); }}
+          aria-haspopup="listbox"
+          aria-expanded={open}
         >
-          <span className={`material-symbols-outlined ${styles.editTriggerIcon}`}>edit</span>
+          <span className={`tc-dropdown__value${!selectedLabel ? ' tc-dropdown__value--placeholder' : ''}`}>
+            {selectedLabel || placeholder}
+          </span>
+          {onOptionsChange && (
+            <span
+              className={styles.editTrigger}
+              role="button"
+              tabIndex={0}
+              aria-label="Edit options"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleEditClick(e);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleEditClick(e);
+                }
+              }}
+            >
+              <span className={`material-symbols-outlined ${styles.editTriggerIcon}`}>edit</span>
+            </span>
+          )}
+          <span className="material-symbols-outlined tc-dropdown__chevron">expand_more</span>
         </button>
-      )}
+
+        {open && (
+          <ul className="tc-dropdown__menu" role="listbox">
+            {options.map((opt) => (
+              <li
+                key={opt.value}
+                role="option"
+                aria-selected={opt.value === selected}
+                className={`tc-dropdown__option${opt.value === selected ? ' tc-dropdown__option--selected' : ''}`}
+                onClick={() => { onChange(opt); setOpen(false); }}
+              >
+                {opt.label}
+                {opt.value === selected && (
+                  <span className="material-symbols-outlined tc-dropdown__check">check</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {editMode && (
+          <div className={styles.optionsEditor}>
+            <div className={styles.optionsEditorList}>
+              {draftOptions.map((opt, i) => (
+                <div key={opt.value || i} className={styles.optionRow}>
+                  <input
+                    className={styles.optionInput}
+                    value={opt.label}
+                    placeholder="Option label"
+                    onChange={(e) => updateDraftLabel(i, e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className={styles.optionRemoveBtn}
+                    onClick={() => removeDraftOption(i)}
+                  >
+                    <span className={`material-symbols-outlined ${styles.optionRemoveBtnIcon}`}>close</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+            <div className={styles.editorFooter}>
+              <button type="button" className={styles.addOptionBtn} onClick={addDraftOption}>
+                <span className={`material-symbols-outlined ${styles.addOptionIcon}`}>add</span>
+                Add option
+              </button>
+              <button type="button" className={styles.applyBtn} onClick={applyOptions}>
+                <span className={`material-symbols-outlined ${styles.applyBtnIcon}`}>check</span>
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -204,7 +213,7 @@ export default function Conditions({
                           onClick={() => onRemoveCondition(condition.id)}
                           title="Remove condition"
                         >
-                          <span className={`material-symbols-outlined ${styles.removeBtnIcon}`}>close</span>
+                          <span className={`material-symbols-outlined ${styles.removeBtnIcon}`}>delete</span>
                         </button>
                       )}
                     </div>

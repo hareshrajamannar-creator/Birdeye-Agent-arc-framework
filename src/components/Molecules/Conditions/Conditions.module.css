@@ -1,18 +1,20 @@
-/* ─── Dropdown outer wrapper (flex row: stretch + edit icon) ─── */
+/* ─── Dropdown outer wrapper ─── */
 .dropdownOuter {
   position: relative;
-  display: flex;
-  align-items: center;
-  gap: 2px;
   width: 100%;
 }
 
-.dropdownStretch {
-  flex: 1;
-  min-width: 0;
+/* ─── Equal left/right padding on the trigger button ─── */
+.dropdownOuter :global(.tc-dropdown__trigger) {
+  padding-right: 12px;
 }
 
-/* ─── Edit pencil icon (hover-revealed) ─── */
+/* ─── Trigger button — needed as hover ancestor for pencil icon ─── */
+.dropdownTrigger {
+  position: relative;
+}
+
+/* ─── Edit pencil icon — flex item inside trigger, left of chevron ─── */
 .editTrigger {
   display: flex;
   align-items: center;
@@ -20,18 +22,15 @@
   width: 20px;
   height: 20px;
   flex-shrink: 0;
-  padding: 0;
-  border: none;
   border-radius: 3px;
-  background: none;
-  cursor: pointer;
   color: #8f8f8f;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.1s, color 0.1s;
+  cursor: pointer;
 }
 
-.dropdownOuter:hover .editTrigger {
+.dropdownTrigger:hover .editTrigger {
   opacity: 1;
   visibility: visible;
 }
@@ -185,12 +184,50 @@
   overflow: hidden;
 }
 
-/* ─── Connector row: AND badge + × remove on the same line ─── */
+/* ─── Connector row: AND badge + delete icon on the same line ─── */
+/* Delete icon is 8px from AND, revealed only on row hover          */
 .connectorRow {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 8px;
   width: 100%;
+  padding: 2px 0;
+}
+
+.removeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+  color: #8f8f8f;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.1s, color 0.1s;
+}
+
+.connectorRow:hover .removeBtn {
+  opacity: 1;
+  visibility: visible;
+}
+
+.removeBtn:hover {
+  color: #de1b0c;
+  background: #fef0ef;
+}
+
+.removeBtnIcon {
+  font-size: 16px !important;
+  width: 16px;
+  height: 16px;
+  line-height: 1;
+  overflow: hidden;
 }
 
 /* ─── Condition dropdowns: full-width column stack ─── */
@@ -200,37 +237,4 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-}
-
-.removeBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  flex-shrink: 0;
-  padding: 0;
-  border: none;
-  border-radius: 4px;
-  background: none;
-  cursor: pointer;
-  color: #8f8f8f;
-}
-
-.removeBtn:hover:not(:disabled) {
-  background: #f4f6f7;
-  color: #212121;
-}
-
-.removeBtn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.removeBtnIcon {
-  font-size: 16px !important;
-  width: 16px;
-  height: 16px;
-  line-height: 1;
-  overflow: hidden;
 }
