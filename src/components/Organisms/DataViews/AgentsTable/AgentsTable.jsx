@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import TableContainer from '@birdeye/elemental/core/components/TableContainer/index.js';
 import Chip from '@birdeye/elemental/core/atoms/Chip/index.js';
+import Button from '@birdeye/elemental/core/atoms/Button/index.js';
 
 const STATUS_COLOR = {
   Running: 'green',
@@ -48,16 +49,18 @@ const DEFAULT_AGENTS = [
 ];
 
 const COLUMNS = [
-  { value: 'name',            tableHead: 'Agent name',            enabled: true, width: 320, enableSorting: true, align: 'left' },
-  { value: 'status',          tableHead: 'Status',                enabled: true, width: 110, enableSorting: true, align: 'left' },
-  { value: 'reviewsResponded',tableHead: 'Reviews responded',     enabled: true, width: 160, enableSorting: true, align: 'left' },
-  { value: 'responseRate',    tableHead: 'Response rate',         enabled: true, width: 130, enableSorting: true, align: 'left' },
-  { value: 'avgResponseTime', tableHead: 'Average response time', enabled: true, width: 170, enableSorting: true, align: 'left' },
-  { value: 'timeSaved',       tableHead: 'Time saved',            enabled: true, width: 120, enableSorting: true, align: 'left' },
-  { value: 'locations',       tableHead: 'Locations',             enabled: true, width: 110, enableSorting: true, align: 'left' },
+  { value: 'name',            tableHead: 'Agent name',            enabled: true, width: 260, enableSorting: true,  align: 'left' },
+  { value: 'status',          tableHead: 'Status',                enabled: true, width: 110, enableSorting: true,  align: 'left' },
+  { value: 'reviewsResponded',tableHead: 'Reviews responded',     enabled: true, width: 160, enableSorting: true,  align: 'left' },
+  { value: 'responseRate',    tableHead: 'Response rate',         enabled: true, width: 130, enableSorting: true,  align: 'left' },
+  { value: 'avgResponseTime', tableHead: 'Avg response time',     enabled: true, width: 150, enableSorting: true,  align: 'left' },
+  { value: 'timeSaved',       tableHead: 'Time saved',            enabled: true, width: 110, enableSorting: true,  align: 'left' },
+  { value: 'locations',       tableHead: 'Locations',             enabled: true, width: 100, enableSorting: true,  align: 'left' },
+  { value: 'open',            tableHead: '',                      enabled: true, width: 80,  enableSorting: false, align: 'left' },
+  { value: 'export',          tableHead: '',                      enabled: true, width: 100, enableSorting: false, align: 'left' },
 ];
 
-function buildTableData(agents) {
+function buildTableData(agents, onOpenAgent, onExportAgent) {
   return {
     type: 'allColumns',
     tableId: 'agents-table',
@@ -66,18 +69,39 @@ function buildTableData(agents) {
       rowsData: [
         { rowValue: agent.name },
         { rowValue: React.createElement(StatusCell, { status: agent.status }) },
-        { rowValue: String(agent.reviewsResponded) },
-        { rowValue: agent.responseRate },
-        { rowValue: agent.avgResponseTime },
-        { rowValue: agent.timeSaved },
-        { rowValue: React.createElement(LocationCell, { count: agent.locations }) },
+        { rowValue: String(agent.reviewsResponded ?? '—') },
+        { rowValue: agent.responseRate ?? '—' },
+        { rowValue: agent.avgResponseTime ?? '—' },
+        { rowValue: agent.timeSaved ?? '—' },
+        { rowValue: React.createElement(LocationCell, { count: agent.locations ?? 0 }) },
+        {
+          rowValue: React.createElement(Button, {
+            theme: 'secondary',
+            label: 'Open',
+            size: 'small',
+            onClick: () => onOpenAgent?.(agent.id),
+          }),
+        },
+        {
+          rowValue: React.createElement(Button, {
+            theme: 'noBorder',
+            label: 'Export',
+            size: 'small',
+            customIcon: React.createElement(
+              'span',
+              { className: 'material-symbols-outlined', style: { fontSize: 16 } },
+              'download'
+            ),
+            onClick: () => onExportAgent?.(agent),
+          }),
+        },
       ],
     })),
   };
 }
 
-export default function AgentsTable({ agents = DEFAULT_AGENTS }) {
-  const tableData = buildTableData(agents);
+export default function AgentsTable({ agents = DEFAULT_AGENTS, onOpenAgent, onExportAgent }) {
+  const tableData = buildTableData(agents, onOpenAgent, onExportAgent);
 
   return (
     <div style={{ background: '#fff' }}>
@@ -88,7 +112,7 @@ export default function AgentsTable({ agents = DEFAULT_AGENTS }) {
 
 AgentsTable.propTypes = {
   agents: PropTypes.arrayOf(PropTypes.shape({
-    id: PropTypes.number.isRequired,
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     name: PropTypes.string.isRequired,
     status: PropTypes.oneOf(['Running', 'Paused', 'Draft']),
     reviewsResponded: PropTypes.number,
@@ -97,4 +121,6 @@ AgentsTable.propTypes = {
     timeSaved: PropTypes.string,
     locations: PropTypes.number,
   })),
+  onOpenAgent: PropTypes.func,
+  onExportAgent: PropTypes.func,
 };
