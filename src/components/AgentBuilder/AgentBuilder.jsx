@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import AppShell from '../AppShell/AppShell';
 import LHSDrawer from '../LHSDrawer/LHSDrawer';
 import FlowCanvas from '../FlowCanvas/FlowCanvas';
@@ -106,8 +106,22 @@ export default function AgentBuilder({
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [nodeDetails, setNodeDetails] = useState(() => initialNodeDetails || {});
 
-  /* ─── Save modal ─── */
+  /* ─── Publish modal ─── */
   const [saveModalOpen, setSaveModalOpen] = useState(false);
+
+  /* ─── Header three-dots menu ─── */
+  const [headerMenuOpen, setHeaderMenuOpen] = useState(false);
+  const headerMenuRef = useRef(null);
+  useEffect(() => {
+    if (!headerMenuOpen) return;
+    const handler = (e) => {
+      if (headerMenuRef.current && !headerMenuRef.current.contains(e.target)) {
+        setHeaderMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [headerMenuOpen]);
   const [agentName, setAgentName] = useState(pageTitle || '');
   const [agentDesc, setAgentDesc] = useState(initialDescription);
 
@@ -518,20 +532,36 @@ export default function AgentBuilder({
     );
   };
 
-  /* ─── Header actions: Download + Save (replaces Publish) ─── */
+  /* ─── Header actions: Publish + three-dots menu ─── */
   const headerActions = (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <Button
-        theme="secondary"
-        label="Download"
-        customIcon={<span className="material-symbols-outlined" style={{ fontSize: 16 }}>download</span>}
-        onClick={handleExport}
-      />
+    <div className="ab-header-actions">
       <Button
         theme="primary"
-        label="Save"
+        label="Publish"
         onClick={() => setSaveModalOpen(true)}
       />
+      <div className="ab-header-more" ref={headerMenuRef}>
+        <button
+          className="ab-header-more-btn"
+          type="button"
+          onClick={() => setHeaderMenuOpen((m) => !m)}
+          title="More options"
+        >
+          <span className="material-symbols-outlined">more_vert</span>
+        </button>
+        {headerMenuOpen && (
+          <div className="ab-header-menu">
+            <button
+              className="ab-header-menu-item"
+              type="button"
+              onClick={() => { setHeaderMenuOpen(false); handleExport(); }}
+            >
+              <span className="material-symbols-outlined">download</span>
+              Download
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 
@@ -571,9 +601,9 @@ export default function AgentBuilder({
       {/* ─── Save modal ─── */}
       {saveModalOpen && (
         <CustomModal
-          title="Save agent"
+          title="Publish agent"
           needPrimaryBtn
-          primaryBtnLabel="Save"
+          primaryBtnLabel="Publish"
           primaryBtnDisabled={!agentName.trim()}
           needSecondaryBtn
           secondaryBtnLabel="Cancel"

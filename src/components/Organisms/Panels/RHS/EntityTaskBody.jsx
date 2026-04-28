@@ -15,7 +15,7 @@ export default function EntityTaskBody({ initialValues = {}, onFieldChange }) {
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [viewingTool, setViewingTool] = useState(null);
 
-  const [customTools, setCustomTools] = useState([]);
+  const [customTools, setCustomTools] = useState(initialValues.customTools ?? []);
 
   const handleTaskName = (e) => {
     const val = e.target.value;
@@ -64,19 +64,22 @@ export default function EntityTaskBody({ initialValues = {}, onFieldChange }) {
   const handleBuilderSave = (tool) => {
     setCustomTools((prev) => {
       const idx = prev.findIndex((t) => t.id === tool.id);
-      if (idx >= 0) {
-        const next = [...prev];
-        next[idx] = tool;
-        return next;
-      }
-      return [...prev, tool];
+      const next = idx >= 0
+        ? prev.map((t) => (t.id === tool.id ? tool : t))
+        : [...prev, tool];
+      onFieldChange?.('customTools', next);
+      return next;
     });
     setIsBuilderOpen(false);
     setEditingTool(null);
   };
 
   const handleDeleteTool = (id) => {
-    setCustomTools((prev) => prev.filter((t) => t.id !== id));
+    setCustomTools((prev) => {
+      const next = prev.filter((t) => t.id !== id);
+      onFieldChange?.('customTools', next);
+      return next;
+    });
   };
 
   return (

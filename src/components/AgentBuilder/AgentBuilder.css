@@ -101,7 +101,82 @@
   color: #1976d2;
 }
 
-/* ─── Save agent modal form ─── */
+/* ─── Header actions: Publish + three-dots ─── */
+
+.ab-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ab-header-more {
+  position: relative;
+}
+
+.ab-header-more-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #555;
+  padding: 0;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.ab-header-more-btn:hover {
+  background: #f2f4f7;
+  border-color: #b0b8c4;
+}
+
+.ab-header-more-btn .material-symbols-outlined {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.ab-header-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: #fff;
+  border: 1px solid #e5e9f0;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  min-width: 160px;
+  z-index: 300;
+  overflow: hidden;
+}
+
+.ab-header-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Roboto', sans-serif;
+  font-size: 13px;
+  color: #212121;
+  text-align: left;
+  transition: background 0.12s;
+}
+
+.ab-header-menu-item:hover {
+  background: #f4f6f7;
+}
+
+.ab-header-menu-item .material-symbols-outlined {
+  font-size: 16px;
+  color: #666;
+}
+
+/* ─── Publish agent modal form ─── */
 .agent-builder__save-form {
   display: flex;
   flex-direction: column;
