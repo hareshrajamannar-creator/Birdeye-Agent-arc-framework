@@ -20,11 +20,14 @@ export function serializeFrom(el) {
   return text;
 }
 
-export function createViewChip(name, onDelete) {
-  const chip = document.createElement('span');
-  chip.contentEditable = 'false';
+function buildViewChipContents(chip, name, onDelete) {
+  chip.innerHTML = '';
   chip.dataset.chip = name;
-  chip.className = 'prompt-chip';
+
+  const iconWrap = document.createElement('span');
+  iconWrap.className = 'prompt-chip-icon material-symbols-outlined';
+  iconWrap.textContent = 'data_object';
+  chip.appendChild(iconWrap);
 
   const label = document.createElement('span');
   label.className = 'prompt-chip-label';
@@ -41,7 +44,13 @@ export function createViewChip(name, onDelete) {
   icon.textContent = 'close';
   btn.appendChild(icon);
   chip.appendChild(btn);
+}
 
+export function createViewChip(name, onDelete) {
+  const chip = document.createElement('span');
+  chip.contentEditable = 'false';
+  chip.className = 'prompt-chip';
+  buildViewChipContents(chip, name, onDelete);
   return chip;
 }
 
@@ -68,6 +77,11 @@ export function insertChipAt(el, range, onFinalize) {
   chip.contentEditable = 'false';
   chip.className = 'prompt-chip prompt-chip--editing';
 
+  const iconWrap = document.createElement('span');
+  iconWrap.className = 'prompt-chip-icon material-symbols-outlined';
+  iconWrap.textContent = 'data_object';
+  chip.appendChild(iconWrap);
+
   const input = document.createElement('input');
   input.className = 'prompt-chip-input';
   input.placeholder = 'variable';
@@ -76,26 +90,10 @@ export function insertChipAt(el, range, onFinalize) {
   const finalize = () => {
     const name = input.value.trim();
     chip.className = 'prompt-chip';
-    chip.innerHTML = '';
     if (!name) {
       chip.remove();
     } else {
-      chip.dataset.chip = name;
-      const label = document.createElement('span');
-      label.className = 'prompt-chip-label';
-      label.textContent = name;
-      chip.appendChild(label);
-
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'prompt-chip-del';
-      btn.onmousedown = (e) => e.preventDefault();
-      btn.onclick = () => { chip.remove(); onFinalize(); };
-      const icon = document.createElement('span');
-      icon.className = 'material-symbols-outlined';
-      icon.textContent = 'close';
-      btn.appendChild(icon);
-      chip.appendChild(btn);
+      buildViewChipContents(chip, name, onFinalize);
     }
     onFinalize();
   };

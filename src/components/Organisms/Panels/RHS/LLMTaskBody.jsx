@@ -15,35 +15,33 @@ const LLM_MODEL_OPTIONS = [
 ];
 
 function ChipContainer({ chips, onChipChange, onChipDelete, addingNew, onStartAdd, onCancelAdd, onCommitAdd }) {
+  const hasChips = chips.length > 0 || addingNew;
   return (
     <div className={styles.chipContainer}>
-      {chips.map((chip, i) => (
-        <VariableChip
-          key={`${chip}-${i}`}
-          value={chip}
-          onChange={(v) => onChipChange(i, v)}
-          onDelete={() => onChipDelete(i)}
-        />
-      ))}
-      {addingNew && (
-        <VariableChip
-          value=""
-          autoFocus
-          onChange={(v) => onCommitAdd(v)}
-          onDelete={onCancelAdd}
-        />
+      {hasChips && (
+        <div className={styles.chipWrap}>
+          {chips.map((chip, i) => (
+            <VariableChip
+              key={`${chip}-${i}`}
+              value={chip}
+              onChange={(v) => onChipChange(i, v)}
+              onDelete={() => onChipDelete(i)}
+            />
+          ))}
+          {addingNew && (
+            <VariableChip
+              value=""
+              autoFocus
+              onChange={(v) => onCommitAdd(v)}
+              onDelete={onCancelAdd}
+            />
+          )}
+        </div>
       )}
-      {!addingNew && chips.length === 0 && (
-        <button className={styles.addBtn} type="button" onClick={onStartAdd}>
-          <span className="material-symbols-outlined">add_circle</span>
-          <span className={styles.addBtnLabel}>Add</span>
-        </button>
-      )}
-      {!addingNew && chips.length > 0 && (
-        <button className={styles.addSmallBtn} type="button" onClick={onStartAdd}>
-          <span className="material-symbols-outlined">add</span>
-        </button>
-      )}
+      <button className={styles.addBtn} type="button" onClick={onStartAdd}>
+        <span className="material-symbols-outlined">add_circle</span>
+        <span className={styles.addBtnLabel}>Add</span>
+      </button>
     </div>
   );
 }

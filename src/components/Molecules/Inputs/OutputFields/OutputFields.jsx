@@ -40,6 +40,8 @@ export default function OutputFields({ fields = [], onFieldsChange, showInfo }) 
   const onChipDelete = (i) => onFieldsChange?.(fields.filter((_, idx) => idx !== i));
   const onCommitAdd = (v) => { onFieldsChange?.([...fields, v]); setAddingNew(false); };
 
+  const hasChips = fields.length > 0 || addingNew;
+
   return (
     <div className={styles.wrap}>
       <div className={styles.labelRow}>
@@ -48,33 +50,30 @@ export default function OutputFields({ fields = [], onFieldsChange, showInfo }) 
       </div>
 
       <div className={styles.chipContainer}>
-        {fields.map((f, i) => (
-          <VariableChip
-            key={`${f}-${i}`}
-            value={f}
-            onChange={(v) => onChipChange(i, v)}
-            onDelete={() => onChipDelete(i)}
-          />
-        ))}
-        {addingNew && (
-          <VariableChip
-            value=""
-            autoFocus
-            onChange={onCommitAdd}
-            onDelete={() => setAddingNew(false)}
-          />
+        {hasChips && (
+          <div className={styles.chipWrap}>
+            {fields.map((f, i) => (
+              <VariableChip
+                key={`${f}-${i}`}
+                value={f}
+                onChange={(v) => onChipChange(i, v)}
+                onDelete={() => onChipDelete(i)}
+              />
+            ))}
+            {addingNew && (
+              <VariableChip
+                value=""
+                autoFocus
+                onChange={onCommitAdd}
+                onDelete={() => setAddingNew(false)}
+              />
+            )}
+          </div>
         )}
-        {!addingNew && fields.length === 0 && (
-          <button className={styles.addBtn} type="button" onClick={() => setAddingNew(true)}>
-            <span className="material-symbols-outlined">add_circle</span>
-            <span className={styles.addBtnLabel}>Add</span>
-          </button>
-        )}
-        {!addingNew && fields.length > 0 && (
-          <button className={styles.addSmallBtn} type="button" onClick={() => setAddingNew(true)}>
-            <span className="material-symbols-outlined">add</span>
-          </button>
-        )}
+        <button className={styles.addBtn} type="button" onClick={() => setAddingNew(true)}>
+          <span className="material-symbols-outlined">add_circle</span>
+          <span className={styles.addBtnLabel}>Add</span>
+        </button>
       </div>
 
       {generateState === 'idle' && (

@@ -33,23 +33,25 @@
   cursor: pointer;
 }
 
-/* ─── Chip container ─── */
+/* ─── Chip container: chips row above, Add below ─── */
 
 .chipContainer {
   border: 1px solid #e5e9f0;
   border-radius: 4px;
-  min-height: 40px;
-  padding: 6px 10px;
+  padding: 16px 10px;
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  gap: 12px;
   box-sizing: border-box;
   width: 100%;
+  background: #fff;
 }
 
-.chipContainer:focus-within {
-  border-color: #1976d2;
+.chipWrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
 }
 
 .addBtn {
@@ -72,27 +74,4 @@
   font-size: 12px;
   line-height: 18px;
   letter-spacing: -0.24px;
-}
-
-.addSmallBtn {
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: 1px solid #c5d8fc;
-  border-radius: 50%;
-  cursor: pointer;
-  color: #1976d2;
-  padding: 0;
-  flex-shrink: 0;
-}
-
-.addSmallBtn:hover {
-  background: #e8f0fe;
-}
-
-.addSmallBtn .material-symbols-outlined {
-  font-size: 14px;
 }

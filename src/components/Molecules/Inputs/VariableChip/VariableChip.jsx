@@ -35,6 +35,9 @@ export default function VariableChip({ value, onChange, onDelete, autoFocus = fa
   if (editing) {
     return (
       <span className={`${styles.chip} ${styles.chipEditing}`}>
+        <span className={styles.chipIcon}>
+          <span className="material-symbols-outlined">data_object</span>
+        </span>
         <input
           ref={inputRef}
           className={styles.chipInput}
@@ -52,8 +55,13 @@ export default function VariableChip({ value, onChange, onDelete, autoFocus = fa
   }
 
   return (
-    <span className={styles.chip} onClick={() => setEditing(true)}>
-      <span className={styles.chipLabel}>{value}</span>
+    <span className={styles.chip}>
+      <span className={styles.chipIcon}>
+        <span className="material-symbols-outlined">data_object</span>
+      </span>
+      <span className={styles.chipLabel} onClick={() => setEditing(true)}>
+        {value}
+      </span>
       <button
         className={styles.deleteBtn}
         type="button"
