@@ -44,21 +44,20 @@ function buildFlow(nodeList, startData, nodeDetails = {}) {
 
     if (item.flowType === 'branch') {
       const branches = nodeDetails[nodeId]?.branches || [];
-      const spacing = 220;
+      const spacing = 280;
       const startX = -((branches.length - 1) * spacing) / 2;
       branches.forEach((branch, bi) => {
         nodes.push({
           id: branch.id,
           type: 'branchPath',
           position: { x: startX + bi * spacing, y: y + 150 },
-          data: { label: branch.name, hasIcons: true, parentId: nodeId },
+          data: { label: branch.name, parentId: nodeId, isFallback: !!branch.isFallback },
         });
         edges.push({
           id: `e-${nodeId}-${branch.id}`,
           source: nodeId,
           target: branch.id,
-          type: 'smoothstep',
-          style: { stroke: '#ccd5e4', strokeWidth: 1 },
+          type: 'branchFan',
         });
       });
       y += 150;
@@ -202,6 +201,32 @@ export default function AgentBuilder({
     }
   }, [selectedNodeId]);
 
+  const handleAddBranchPath = useCallback((branchNodeId) => {
+    const newPathId = `${branchNodeId}-path-${Date.now()}`;
+    setNodeDetails((prev) => {
+      const nodeD = prev[branchNodeId] || {};
+      const existing = nodeD.branches || [];
+      const nonFallback = existing.filter((b) => !b.isFallback);
+      const fallback = existing.filter((b) => b.isFallback);
+      const pathNumber = nonFallback.length + 1;
+      const newPath = { id: newPathId, name: `Branch ${pathNumber}` };
+      return {
+        ...prev,
+        [branchNodeId]: {
+          ...nodeD,
+          branches: [...nonFallback, newPath, ...fallback],
+        },
+        [newPathId]: {
+          branchName: newPath.name,
+          description: '',
+          conditions: [],
+          parentId: branchNodeId,
+          isBranchPath: true,
+        },
+      };
+    });
+  }, []);
+
   const startAgentName = nodeDetails[START_NODE_ID]?.agentName || pageTitle;
   const startData = { title: startAgentName, subtitle: 'All locations' };
   const { nodes: rawNodes, edges } = buildFlow(nodeList, startData, nodeDetails);
@@ -209,10 +234,9 @@ export default function AgentBuilder({
   const nodes = rawNodes.map((n) => {
     if (n.id === START_NODE_ID || n.id === END_NODE_ID) return n;
     if (n.type === 'branchPath') return n;
-    return {
-      ...n,
-      data: { ...n.data, onDelete: () => handleDeleteNode(n.id) },
-    };
+    const extra = { onDelete: () => handleDeleteNode(n.id) };
+    if (n.type === 'branch') extra.onAddBranch = () => handleAddBranchPath(n.id);
+    return { ...n, data: { ...n.data, ...extra } };
   });
 
   const selectedNode = nodeList.find((n) => n.id === selectedNodeId);
@@ -288,16 +312,19 @@ export default function AgentBuilder({
     } else if (label === 'Branch') {
       const path1Id = `${id}-path-1`;
       const path2Id = `${id}-path-2`;
+      const fallbackId = `${id}-path-fallback`;
       details = {
         basedOn: 'conditions',
         branches: [
           { id: path1Id, name: 'Branch 1' },
           { id: path2Id, name: 'Branch 2' },
+          { id: fallbackId, name: 'No conditions met', isFallback: true },
         ],
       };
       extraDetails = {
         [path1Id]: { branchName: 'Branch 1', description: '', conditions: [], parentId: id, isBranchPath: true },
         [path2Id]: { branchName: 'Branch 2', description: '', conditions: [], parentId: id, isBranchPath: true },
+        [fallbackId]: { branchName: 'No conditions met', description: '', conditions: [], parentId: id, isBranchPath: true, isFallback: true },
       };
     } else if (label === 'Delay') {
       details = { duration: '1', unit: 'hours' };

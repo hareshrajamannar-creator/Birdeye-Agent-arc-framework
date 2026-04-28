@@ -14,6 +14,7 @@ import StartNode from '../Molecules/Canvas/StartNode/StartNode';
 import EndNode from '../Molecules/Canvas/EndNode/EndNode';
 import CanvasNode from '../Molecules/Canvas/CanvasNode/CanvasNode';
 import './FlowCanvas.css';
+import branchStyles from './BranchPath.module.css';
 
 /* ─── Custom Node Wrappers ─── */
 function StartNodeWrapper({ id, data }) {
@@ -31,7 +32,7 @@ function TriggerNodeWrapper({ id, data }) {
   return (
     <div className="flow-canvas__node-center">
       <Handle type="target" position={Position.Top} />
-      <CanvasNode nodeType="trigger" label="Trigger" stepNumber={data.stepNumber} title={data.title} description={data.subtitle} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} state={isSelected ? 'selected' : 'default'} />
+      <CanvasNode nodeType="trigger" label="Trigger" stepNumber={data.stepNumber} title={data.title} description={data.subtitle} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} state={isSelected ? 'selected' : 'default'} onDelete={data.onDelete} />
       <Handle type="source" position={Position.Bottom} />
     </div>
   );
@@ -42,7 +43,7 @@ function TaskNodeWrapper({ id, data }) {
   return (
     <div className="flow-canvas__node-center">
       <Handle type="target" position={Position.Top} />
-      <CanvasNode nodeType="task" label="Task" stepNumber={data.stepNumber} title={data.title} description={data.subtitle} hasAiIcon={data.hasAiIcon} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} state={isSelected ? 'selected' : 'default'} />
+      <CanvasNode nodeType="task" label="Task" stepNumber={data.stepNumber} title={data.title} description={data.subtitle} hasAiIcon={data.hasAiIcon} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} state={isSelected ? 'selected' : 'default'} onDelete={data.onDelete} />
       <Handle type="source" position={Position.Bottom} />
     </div>
   );
@@ -53,7 +54,7 @@ function BranchNodeWrapper({ id, data }) {
   return (
     <div className="flow-canvas__node-center">
       <Handle type="target" position={Position.Top} />
-      <CanvasNode nodeType="branch" label="Branch" stepNumber={data.stepNumber} title={data.title} description={data.subtitle} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} hasAddButton state={isSelected ? 'selected' : 'default'} />
+      <CanvasNode nodeType="branch" label="Branch" stepNumber={data.stepNumber} title={data.title} description={data.subtitle} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} hasAddButton onAddClick={data.onAddBranch} state={isSelected ? 'selected' : 'default'} onDelete={data.onDelete} />
       <Handle type="source" position={Position.Bottom} />
     </div>
   );
@@ -61,17 +62,21 @@ function BranchNodeWrapper({ id, data }) {
 
 function BranchPathNodeWrapper({ id, data }) {
   const isSelected = id === data.selectedNodeId;
+  const chipClass = [
+    branchStyles.chip,
+    data.isFallback ? branchStyles.chipFallback : '',
+    isSelected ? branchStyles.chipSelected : '',
+  ].filter(Boolean).join(' ');
+
   return (
-    <div className="flow-canvas__branch-path-wrapper">
+    <div className={branchStyles.pathWrapper}>
       <Handle type="target" position={Position.Top} />
-      <div className={`flow-canvas__branch-path${isSelected ? ' flow-canvas__branch-path--selected' : ''}`}>
-        <span>{data.label}</span>
-        {data.hasIcons && (
-          <>
-            <span className="material-symbols-outlined flow-canvas__branch-path-icon">info</span>
-            <span className="material-symbols-outlined flow-canvas__branch-path-icon">more_vert</span>
-          </>
+      <div className={chipClass}>
+        <span className={branchStyles.chipLabel}>{data.label}</span>
+        {!data.isFallback && (
+          <span className={`material-symbols-outlined ${branchStyles.chipIcon}`}>info</span>
         )}
+        <span className={`material-symbols-outlined ${branchStyles.chipMenu}`}>more_vert</span>
       </div>
       <Handle type="source" position={Position.Bottom} />
     </div>
@@ -88,7 +93,7 @@ function EndNodeWrapper({ id, data }) {
   );
 }
 
-/* ─── Custom Edge with Add Button ─── */
+/* ─── Custom Edge: main connector with + button ─── */
 function AddButtonEdge({ id, sourceX, sourceY, targetX, targetY, style }) {
   const [edgePath, labelX, labelY] = getStraightPath({
     sourceX,
@@ -116,6 +121,13 @@ function AddButtonEdge({ id, sourceX, sourceY, targetX, targetY, style }) {
   );
 }
 
+/* ─── Custom Edge: branch fan (horizontal-bar tree pattern) ─── */
+function BranchFanEdge({ sourceX, sourceY, targetX, targetY }) {
+  const midY = sourceY + 30;
+  const d = `M ${sourceX} ${sourceY} L ${sourceX} ${midY} L ${targetX} ${midY} L ${targetX} ${targetY}`;
+  return <path d={d} className="flow-canvas__branch-fan" fill="none" />;
+}
+
 /* ─── Node & Edge Types (stable references) ─── */
 const NODE_TYPES = {
   start: StartNodeWrapper,
@@ -128,6 +140,7 @@ const NODE_TYPES = {
 
 const EDGE_TYPES = {
   addButton: AddButtonEdge,
+  branchFan: BranchFanEdge,
 };
 
 /* ─── Main FlowCanvas ─── */
@@ -154,7 +167,7 @@ function FlowCanvasInner({
   const defaultEdgeOptions = useMemo(
     () => ({
       type: 'addButton',
-      style: { stroke: '#ccd5e4', strokeDasharray: '4 4', strokeWidth: 1 },
+      style: { stroke: '#ccd5e4', strokeWidth: 1 },
     }),
     []
   );

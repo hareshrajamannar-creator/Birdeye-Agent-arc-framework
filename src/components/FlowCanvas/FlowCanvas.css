@@ -54,7 +54,6 @@
 
 .flow-canvas .react-flow__edge-path {
   stroke: #ccd5e4 !important;
-  stroke-dasharray: 4 4 !important;
   stroke-width: 1 !important;
 }
 
@@ -103,38 +102,8 @@
   color: #555;
 }
 
-/* ─── Branch path label node ─── */
-.flow-canvas__branch-path-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-}
-
-.flow-canvas__branch-path {
-  background: #fff;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 4px 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  font-family: 'Roboto', sans-serif;
-  color: #212121;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: border-color 0.15s ease;
-}
-
-.flow-canvas__branch-path-icon {
-  font-size: 16px !important;
-  width: 16px !important;
-  height: 16px !important;
-  color: #555;
-}
-
-/* ─── Branch path selected highlight ─── */
-.flow-canvas__branch-path--selected {
-  border-color: #1976d2;
+/* ─── Branch fan edge path ─── */
+.flow-canvas__branch-fan {
+  stroke: #ccd5e4;
+  stroke-width: 1;
 }
