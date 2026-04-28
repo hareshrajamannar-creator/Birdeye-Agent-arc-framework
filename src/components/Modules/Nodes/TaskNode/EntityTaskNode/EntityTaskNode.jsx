@@ -1,9 +1,11 @@
 import React from 'react';
+import styles from './EntityTaskNode.module.css';
 
-export default function EntityTaskNode() {
+export default function EntityTaskNode({ id, data }) {
+  const isSelected = id === data?.selectedNodeId;
   return (
-    <div style={{ padding: 24, color: '#9e9e9e', fontFamily: 'sans-serif', fontSize: 14 }}>
-      EntityTaskNode — not yet implemented
+    <div className={`${styles.node}${isSelected ? ` ${styles['node--selected']}` : ''}`}>
+      {/* EntityTaskNode — implementation pending */}
     </div>
   );
 }

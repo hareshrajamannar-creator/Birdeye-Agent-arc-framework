@@ -1,6 +1,6 @@
 import React from 'react';
 import './EndNode.css';
 
-export default function EndNode() {
-  return <div className="end-node">End</div>;
+export default function EndNode({ selected = false }) {
+  return <div className={`end-node${selected ? ' end-node--selected' : ''}`}>End</div>;
 }

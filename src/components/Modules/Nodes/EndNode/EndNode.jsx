@@ -1,11 +1,11 @@
 import React from 'react';
-import styles from './EntityTriggerNode.module.css';
+import styles from './EndNode.module.css';
 
-export default function EntityTriggerNode({ id, data }) {
+export default function EndNode({ id, data }) {
   const isSelected = id === data?.selectedNodeId;
   return (
     <div className={`${styles.node}${isSelected ? ` ${styles['node--selected']}` : ''}`}>
-      {/* EntityTriggerNode — implementation pending */}
+      {/* EndNode — implementation pending */}
     </div>
   );
 }

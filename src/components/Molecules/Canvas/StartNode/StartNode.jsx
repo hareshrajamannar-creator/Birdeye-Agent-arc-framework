@@ -1,9 +1,9 @@
 import React from 'react';
 import './StartNode.css';
 
-export default function StartNode({ title = 'Agent workflow', subtitle = 'All locations' }) {
+export default function StartNode({ title = 'Agent workflow', subtitle = 'All locations', selected = false }) {
   return (
-    <div className="start-node">
+    <div className={`start-node${selected ? ' start-node--selected' : ''}`}>
       <div className="start-node__icon">
         <span className="material-symbols-outlined">auto_awesome</span>
       </div>

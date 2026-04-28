@@ -1,9 +1,11 @@
 import React from 'react';
+import styles from './ParallelNode.module.css';
 
-export default function ParallelNode() {
+export default function ParallelNode({ id, data }) {
+  const isSelected = id === data?.selectedNodeId;
   return (
-    <div style={{ padding: 24, color: '#9e9e9e', fontFamily: 'sans-serif', fontSize: 14 }}>
-      ParallelNode — not yet implemented
+    <div className={`${styles.node}${isSelected ? ` ${styles['node--selected']}` : ''}`}>
+      {/* ParallelNode — implementation pending */}
     </div>
   );
 }

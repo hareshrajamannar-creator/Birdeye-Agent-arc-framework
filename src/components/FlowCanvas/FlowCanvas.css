@@ -113,7 +113,7 @@
 
 .flow-canvas__branch-path {
   background: #fff;
-  border: 1px solid #ccd5e4;
+  border: 2px solid #ccd5e4;
   border-radius: 6px;
   padding: 6px 12px;
   display: flex;
@@ -122,6 +122,7 @@
   font-size: 13px;
   color: #1a2b4a;
   white-space: nowrap;
+  transition: border-color 0.15s ease;
 }
 
 .flow-canvas__branch-path-icon {
@@ -131,13 +132,7 @@
   color: #8d9dca;
 }
 
-/* ─── Selected node highlight ─── */
-.flow-canvas .react-flow__node.flow-canvas__node--selected .flow-node--card {
-  outline: 2px solid #1976d2 !important;
-  outline-offset: 2px;
-}
-
-.flow-canvas .react-flow__node.flow-canvas__node--selected .start-node {
-  border-color: #1976d2 !important;
-  border-width: 2px !important;
+/* ─── Branch path selected highlight ─── */
+.flow-canvas__branch-path--selected {
+  border-color: #1976d2;
 }

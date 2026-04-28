@@ -16,50 +16,55 @@ import CanvasNode from '../Molecules/Canvas/CanvasNode/CanvasNode';
 import './FlowCanvas.css';
 
 /* ─── Custom Node Wrappers ─── */
-function StartNodeWrapper({ data }) {
+function StartNodeWrapper({ id, data }) {
+  const isSelected = id === data.selectedNodeId;
   return (
     <div className="flow-canvas__node-center">
-      <StartNode title={data.title} subtitle={data.subtitle} />
+      <StartNode title={data.title} subtitle={data.subtitle} selected={isSelected} />
       <Handle type="source" position={Position.Bottom} />
     </div>
   );
 }
 
-function TriggerNodeWrapper({ data }) {
-  return (
-    <div className="flow-canvas__node-center">
-      <Handle type="target" position={Position.Top} />
-      <CanvasNode nodeType="trigger" label={data.title} stepNumber={data.stepNumber} title={data.description} description={data.subtitle} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} />
-      <Handle type="source" position={Position.Bottom} />
-    </div>
-  );
-}
-
-function TaskNodeWrapper({ data }) {
+function TriggerNodeWrapper({ id, data }) {
+  const isSelected = id === data.selectedNodeId;
   return (
     <div className="flow-canvas__node-center">
       <Handle type="target" position={Position.Top} />
-      <CanvasNode nodeType="task" label={data.title} stepNumber={data.stepNumber} title={data.description} description={data.subtitle} hasAiIcon={data.hasAiIcon} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} />
+      <CanvasNode nodeType="trigger" label={data.title} stepNumber={data.stepNumber} title={data.description} description={data.subtitle} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} state={isSelected ? 'selected' : 'default'} />
       <Handle type="source" position={Position.Bottom} />
     </div>
   );
 }
 
-function BranchNodeWrapper({ data }) {
+function TaskNodeWrapper({ id, data }) {
+  const isSelected = id === data.selectedNodeId;
   return (
     <div className="flow-canvas__node-center">
       <Handle type="target" position={Position.Top} />
-      <CanvasNode nodeType="branch" label={data.title} stepNumber={data.stepNumber} title={data.description} description={data.subtitle} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} hasAddButton />
+      <CanvasNode nodeType="task" label={data.title} stepNumber={data.stepNumber} title={data.description} description={data.subtitle} hasAiIcon={data.hasAiIcon} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} state={isSelected ? 'selected' : 'default'} />
       <Handle type="source" position={Position.Bottom} />
     </div>
   );
 }
 
-function BranchPathNodeWrapper({ data }) {
+function BranchNodeWrapper({ id, data }) {
+  const isSelected = id === data.selectedNodeId;
+  return (
+    <div className="flow-canvas__node-center">
+      <Handle type="target" position={Position.Top} />
+      <CanvasNode nodeType="branch" label={data.title} stepNumber={data.stepNumber} title={data.description} description={data.subtitle} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} hasAddButton state={isSelected ? 'selected' : 'default'} />
+      <Handle type="source" position={Position.Bottom} />
+    </div>
+  );
+}
+
+function BranchPathNodeWrapper({ id, data }) {
+  const isSelected = id === data.selectedNodeId;
   return (
     <div className="flow-canvas__branch-path-wrapper">
       <Handle type="target" position={Position.Top} />
-      <div className="flow-canvas__branch-path">
+      <div className={`flow-canvas__branch-path${isSelected ? ' flow-canvas__branch-path--selected' : ''}`}>
         <span>{data.label}</span>
         {data.hasIcons && (
           <>
@@ -73,11 +78,12 @@ function BranchPathNodeWrapper({ data }) {
   );
 }
 
-function EndNodeWrapper() {
+function EndNodeWrapper({ id, data }) {
+  const isSelected = id === data.selectedNodeId;
   return (
     <div className="flow-canvas__node-center">
       <Handle type="target" position={Position.Top} />
-      <EndNode />
+      <EndNode selected={isSelected} />
     </div>
   );
 }
@@ -185,7 +191,7 @@ function FlowCanvasInner({
     () =>
       nodes.map((n) => ({
         ...n,
-        className: n.id === selectedNodeId ? 'flow-canvas__node--selected' : '',
+        data: { ...n.data, selectedNodeId },
       })),
     [nodes, selectedNodeId]
   );

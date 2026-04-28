@@ -1,9 +1,11 @@
 import React from 'react';
+import styles from './LoopNode.module.css';
 
-export default function LoopNode() {
+export default function LoopNode({ id, data }) {
+  const isSelected = id === data?.selectedNodeId;
   return (
-    <div style={{ padding: 24, color: '#9e9e9e', fontFamily: 'sans-serif', fontSize: 14 }}>
-      LoopNode — not yet implemented
+    <div className={`${styles.node}${isSelected ? ` ${styles['node--selected']}` : ''}`}>
+      {/* LoopNode — implementation pending */}
     </div>
   );
 }

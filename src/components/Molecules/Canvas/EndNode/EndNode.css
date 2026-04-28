@@ -9,4 +9,10 @@
   color: #555;
   white-space: nowrap;
   font-family: 'Roboto', sans-serif;
+  border: 2px solid transparent;
+  transition: border-color 0.15s ease;
+}
+
+.end-node--selected {
+  border-color: #1976d2;
 }
