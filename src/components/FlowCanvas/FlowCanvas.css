@@ -113,15 +113,17 @@
 
 .flow-canvas__branch-path {
   background: #fff;
-  border: 2px solid #ccd5e4;
-  border-radius: 6px;
-  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px 8px;
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: #1a2b4a;
+  gap: 8px;
+  font-size: 12px;
+  font-family: 'Roboto', sans-serif;
+  color: #212121;
   white-space: nowrap;
+  cursor: pointer;
   transition: border-color 0.15s ease;
 }
 
@@ -129,7 +131,7 @@
   font-size: 16px !important;
   width: 16px !important;
   height: 16px !important;
-  color: #8d9dca;
+  color: #555;
 }
 
 /* ─── Branch path selected highlight ─── */

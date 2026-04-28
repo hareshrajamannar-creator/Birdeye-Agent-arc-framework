@@ -221,7 +221,7 @@ export default function AgentBuilder({
       title = label || 'Trigger';
     } else if (type === 'branch' && label === 'Branch') {
       flowType = 'branch';
-      title = label;
+      title = 'Based on conditions';
     } else if (label === 'Delay') {
       flowType = 'delay';
       title = 'Delay';
@@ -246,7 +246,7 @@ export default function AgentBuilder({
         subtype: label,
         stepNumber: null,
         description,
-        subtitle: `${label}: ${description}`,
+        subtitle: flowType === 'branch' ? 'Build condition-specific flows' : `${label}: ${description}`,
         hasAiIcon,
         hasToggle: true,
         toggleEnabled: true,
@@ -280,7 +280,7 @@ export default function AgentBuilder({
       const path1Id = `${id}-path-1`;
       const path2Id = `${id}-path-2`;
       details = {
-        basedOn: 'Conditions',
+        basedOn: 'conditions',
         branches: [
           { id: path1Id, name: 'Branch 1' },
           { id: path2Id, name: 'Branch 2' },
