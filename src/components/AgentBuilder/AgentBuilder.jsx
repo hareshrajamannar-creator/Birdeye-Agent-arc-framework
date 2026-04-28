@@ -57,6 +57,7 @@ function buildFlow(nodeList, startData, nodeDetails = {}) {
           id: `e-${nodeId}-${branch.id}`,
           source: nodeId,
           target: branch.id,
+          type: 'smoothstep',
           style: { stroke: '#ccd5e4', strokeWidth: 1 },
         });
       });
@@ -147,22 +148,30 @@ export default function AgentBuilder({
 
   /* ─── Live node sync: RHS → canvas ─── */
   const handleNodeFieldChange = useCallback((nodeId, field, value) => {
-    // Always persist to nodeDetails
-    setNodeDetails((prev) => ({
-      ...prev,
-      [nodeId]: { ...prev[nodeId], [field]: value },
-    }));
+    setNodeDetails((prev) => {
+      const nodeDet = prev[nodeId] || {};
+      const updated = { ...prev, [nodeId]: { ...nodeDet, [field]: value } };
+      // When a branch path's name changes, sync it into the parent's branches array
+      // so buildFlow picks up the new label for the canvas chip
+      if (field === 'branchName' && nodeDet.isBranchPath && nodeDet.parentId) {
+        const parentId = nodeDet.parentId;
+        const parentDet = prev[parentId] || {};
+        updated[parentId] = {
+          ...parentDet,
+          branches: (parentDet.branches || []).map((b) =>
+            b.id === nodeId ? { ...b, name: value } : b
+          ),
+        };
+      }
+      return updated;
+    });
     // Mirror name/description changes into the canvas node body
     setNodeList((prev) =>
       prev.map((n) => {
         if (n.id !== nodeId) return n;
         const updates = {};
-        if (field === 'triggerName' || field === 'taskName') {
-          updates.title = value;
-        }
-        if (field === 'description') {
-          updates.subtitle = `${n.data.subtype || n.data.title}: ${value}`;
-        }
+        if (field === 'triggerName' || field === 'taskName') updates.title = value;
+        if (field === 'description') updates.subtitle = `${n.data.subtype || n.data.title}: ${value}`;
         return { ...n, data: { ...n.data, ...updates } };
       })
     );
@@ -371,7 +380,7 @@ export default function AgentBuilder({
       return (
         <RHS
           variant="branch"
-          title={currentDetails.branchName || 'Branch details'}
+          title="Branch"
           bodyProps={{ initialValues: currentDetails, onFieldChange: activeFieldChange }}
           onClose={handleCloseDrawer}
           onSave={handleCloseDrawer}

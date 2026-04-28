@@ -29,7 +29,7 @@ const DEFAULT_CONDITION_OPTIONS = {
 
 const makeCondition = (id) => ({ id, fieldValue: '', operatorValue: '', valueValue: '' });
 
-export default function BranchBody({ initialValues = {} }) {
+export default function BranchBody({ initialValues = {}, onFieldChange }) {
   const [branchName, setBranchName] = useState(initialValues.branchName ?? '');
   const [description, setDescription] = useState(initialValues.description ?? '');
   const [conditions, setConditions] = useState(
@@ -66,7 +66,7 @@ export default function BranchBody({ initialValues = {} }) {
         label="Branch name"
         placeholder="Enter name"
         value={branchName}
-        onChange={(e) => setBranchName(e.target.value)}
+        onChange={(e) => { setBranchName(e.target.value); onFieldChange?.('branchName', e.target.value); }}
         required
       />
       <TextArea
