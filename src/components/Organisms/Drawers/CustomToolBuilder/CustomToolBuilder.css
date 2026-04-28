@@ -13,12 +13,23 @@
 .ctb__header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 0 20px;
-  height: 56px;
+  justify-content: space-between;
+  padding: 24px 24px 16px;
   border-bottom: 1px solid #e5e9f0;
   flex-shrink: 0;
   background: #fff;
+}
+
+.ctb__header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ctb__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .ctb__back-btn {
@@ -45,10 +56,11 @@
 }
 
 .ctb__header-title {
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 400;
   color: #212121;
-  line-height: 22px;
+  line-height: 20px;
+  letter-spacing: -0.28px;
   font-family: 'Roboto', sans-serif;
 }
 
@@ -74,10 +86,10 @@
 .ctb__left-scroll {
   flex: 1;
   overflow-y: auto;
-  padding: 20px;
+  padding: 12px 24px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 32px;
 }
 
 /* ─── Right panel — live preview ────────────────────────────────────────────── */
@@ -315,12 +327,11 @@
 
 .ctb__option-input {
   flex: 1;
-  height: 30px;
-  padding: 0 8px;
-  border: 1px solid #e5e9f0;
+  padding: 6px 8px 6px 12px;
+  border: 1px solid #eaeaea;
   border-radius: 4px;
   font-family: 'Roboto', sans-serif;
-  font-size: 13px;
+  font-size: 14px;
   color: #212121;
   outline: none;
   transition: border-color 0.15s;
@@ -387,12 +398,11 @@
 
 .ctb__input {
   width: 100%;
-  height: 36px;
-  padding: 0 10px;
-  border: 1px solid #e5e9f0;
+  padding: 8px 8px 8px 12px;
+  border: 1px solid #eaeaea;
   border-radius: 4px;
   font-family: 'Roboto', sans-serif;
-  font-size: 13px;
+  font-size: 14px;
   color: #212121;
   box-sizing: border-box;
   outline: none;
@@ -405,11 +415,11 @@
 
 .ctb__textarea {
   width: 100%;
-  padding: 8px 10px;
-  border: 1px solid #e5e9f0;
+  padding: 8px 8px 8px 12px;
+  border: 1px solid #eaeaea;
   border-radius: 4px;
   font-family: 'Roboto', sans-serif;
-  font-size: 13px;
+  font-size: 14px;
   color: #212121;
   box-sizing: border-box;
   outline: none;
@@ -522,6 +532,12 @@
   gap: 4px;
 }
 
+.ctb__fields-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .ctb__fields-header {
   display: flex;
   align-items: center;
@@ -544,7 +560,7 @@
 .ctb__divider {
   height: 1px;
   background: #e5e9f0;
-  margin: 0 -20px;
+  margin: 0 -24px;
 }
 
 .ctb__required-row {

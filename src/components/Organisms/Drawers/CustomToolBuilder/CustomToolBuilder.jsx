@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import CommonSideDrawer from '@birdeye/elemental/core/atoms/CommonSideDrawer/index.js';
 import Button from '@birdeye/elemental/core/atoms/Button/index.js';
 import './CustomToolBuilder.css';
@@ -302,13 +302,22 @@ export function AddFieldPanel({ onAdd, onCancel }) {
 
 // ─── Main component ────────────────────────────────────────────────────────────
 
-export default function CustomToolBuilder({ isOpen = false, onClose, onSave }) {
+export default function CustomToolBuilder({ isOpen = false, onClose, onSave, initialTool = null }) {
   const [toolName, setToolName] = useState('');
   const [toolDescription, setToolDescription] = useState('');
   const [iconDataUrl, setIconDataUrl] = useState(null);
   const [fields, setFields] = useState([]);
   const [showAddPanel, setShowAddPanel] = useState(false);
   const iconInputRef = useRef(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setToolName(initialTool?.name ?? '');
+    setToolDescription(initialTool?.description ?? '');
+    setIconDataUrl(initialTool?.iconDataUrl ?? null);
+    setFields(initialTool?.fields ?? []);
+    setShowAddPanel(false);
+  }, [isOpen, initialTool]);
 
   const handleIconChange = (e) => {
     const file = e.target.files?.[0];
@@ -352,18 +361,13 @@ export default function CustomToolBuilder({ isOpen = false, onClose, onSave }) {
   const handleSave = () => {
     if (!toolName.trim()) return;
     onSave?.({
-      id: makeId(),
+      id: initialTool?.id ?? makeId(),
       name: toolName.trim(),
       description: toolDescription.trim(),
       fields,
       iconDataUrl,
-      createdAt: new Date().toISOString(),
+      createdAt: initialTool?.createdAt ?? new Date().toISOString(),
     });
-    setToolName('');
-    setToolDescription('');
-    setIconDataUrl(null);
-    setFields([]);
-    setShowAddPanel(false);
   };
 
   const handleClose = () => {
@@ -384,10 +388,17 @@ export default function CustomToolBuilder({ isOpen = false, onClose, onSave }) {
       <div className="ctb-outer">
         {/* ─── Custom header with back arrow ─── */}
         <div className="ctb__header">
-          <button className="ctb__back-btn" type="button" onClick={handleClose}>
-            <span className="material-symbols-outlined">arrow_back</span>
-          </button>
-          <span className="ctb__header-title">Build custom tool</span>
+          <div className="ctb__header-left">
+            <button className="ctb__back-btn" type="button" onClick={handleClose}>
+              <span className="material-symbols-outlined">arrow_left_alt</span>
+            </button>
+            <span className="ctb__header-title">
+              {initialTool ? 'Edit custom tool' : 'Build custom tool'}
+            </span>
+          </div>
+          <div className="ctb__header-actions">
+            <Button theme="primary" label="Save tool" disabled={!canSave} onClick={handleSave} />
+          </div>
         </div>
 
         {/* ─── Two-panel body ─── */}
@@ -447,56 +458,48 @@ export default function CustomToolBuilder({ isOpen = false, onClose, onSave }) {
               <div className="ctb__divider" />
 
               {/* Fields section */}
-              <div className="ctb__fields-header">
-                <span className="ctb__fields-title">Form fields</span>
-                <span className="ctb__fields-count">{fields.length} field{fields.length !== 1 ? 's' : ''}</span>
+              <div className="ctb__fields-section">
+                <div className="ctb__fields-header">
+                  <span className="ctb__fields-title">Form fields</span>
+                  <span className="ctb__fields-count">{fields.length} field{fields.length !== 1 ? 's' : ''}</span>
+                </div>
+
+                {fields.length > 0 && (
+                  <div className="ctb__fields">
+                    {fields.map((field, i) => (
+                      <FieldCard
+                        key={field.id}
+                        field={field}
+                        index={i}
+                        total={fields.length}
+                        onChange={(updated) => handleUpdateField(field.id, updated)}
+                        onDelete={() => handleDeleteField(field.id)}
+                        onMoveUp={() => handleMoveUp(i)}
+                        onMoveDown={() => handleMoveDown(i)}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {showAddPanel ? (
+                  <AddFieldPanel
+                    onAdd={handleAddField}
+                    onCancel={() => setShowAddPanel(false)}
+                  />
+                ) : (
+                  <button
+                    className="ctb__add-field-btn"
+                    type="button"
+                    onClick={() => setShowAddPanel(true)}
+                  >
+                    <span className="material-symbols-outlined">add_circle</span>
+                    Add a field
+                  </button>
+                )}
               </div>
 
-              {fields.length > 0 && (
-                <div className="ctb__fields">
-                  {fields.map((field, i) => (
-                    <FieldCard
-                      key={field.id}
-                      field={field}
-                      index={i}
-                      total={fields.length}
-                      onChange={(updated) => handleUpdateField(field.id, updated)}
-                      onDelete={() => handleDeleteField(field.id)}
-                      onMoveUp={() => handleMoveUp(i)}
-                      onMoveDown={() => handleMoveDown(i)}
-                    />
-                  ))}
-                </div>
-              )}
-
-              {showAddPanel ? (
-                <AddFieldPanel
-                  onAdd={handleAddField}
-                  onCancel={() => setShowAddPanel(false)}
-                />
-              ) : (
-                <button
-                  className="ctb__add-field-btn"
-                  type="button"
-                  onClick={() => setShowAddPanel(true)}
-                >
-                  <span className="material-symbols-outlined">add_circle</span>
-                  Add a field
-                </button>
-              )}
-
             </div>
 
-            {/* Footer */}
-            <div className="ctb__footer">
-              <Button theme="secondary" label="Cancel" onClick={handleClose} />
-              <Button
-                theme="primary"
-                label="Save tool"
-                disabled={!canSave}
-                onClick={handleSave}
-              />
-            </div>
           </div>
 
           {/* Right: live preview */}

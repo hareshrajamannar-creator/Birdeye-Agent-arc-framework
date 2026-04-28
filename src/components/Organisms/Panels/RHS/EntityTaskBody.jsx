@@ -2,15 +2,14 @@ import React, { useState } from 'react';
 import FormInput from '@birdeye/elemental/core/atoms/FormInput/index.js';
 import TextArea from '@birdeye/elemental/core/atoms/TextArea/index.js';
 import CustomToolBuilder from '../../Drawers/CustomToolBuilder/CustomToolBuilder.jsx';
-import CustomToolViewer from '../../Drawers/CustomToolViewer/CustomToolViewer.jsx';
 import styles from './EntityTaskBody.module.css';
 
 export default function EntityTaskBody({ initialValues = {}, onFieldChange }) {
   const [taskName, setTaskName] = useState(initialValues.taskName ?? '');
   const [description, setDescription] = useState(initialValues.description ?? '');
-  const [isCustomToolBuilderOpen, setIsCustomToolBuilderOpen] = useState(false);
+  const [isBuilderOpen, setIsBuilderOpen] = useState(false);
+  const [editingTool, setEditingTool] = useState(null);
   const [customTools, setCustomTools] = useState([]);
-  const [viewerTool, setViewerTool] = useState(null);
 
   const handleTaskName = (e) => {
     const val = e.target.value;
@@ -24,13 +23,37 @@ export default function EntityTaskBody({ initialValues = {}, onFieldChange }) {
     onFieldChange?.('description', val);
   };
 
-  const handleDeleteTool = (id) => {
-    setCustomTools((prev) => prev.filter((t) => t.id !== id));
+  const openCreate = () => {
+    setEditingTool(null);
+    setIsBuilderOpen(true);
   };
 
-  const handleUpdateTool = (updated) => {
-    setCustomTools((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
-    setViewerTool(null);
+  const openEdit = (tool) => {
+    setEditingTool(tool);
+    setIsBuilderOpen(true);
+  };
+
+  const handleBuilderClose = () => {
+    setIsBuilderOpen(false);
+    setEditingTool(null);
+  };
+
+  const handleBuilderSave = (tool) => {
+    setCustomTools((prev) => {
+      const idx = prev.findIndex((t) => t.id === tool.id);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = tool;
+        return next;
+      }
+      return [...prev, tool];
+    });
+    setIsBuilderOpen(false);
+    setEditingTool(null);
+  };
+
+  const handleDeleteTool = (id) => {
+    setCustomTools((prev) => prev.filter((t) => t.id !== id));
   };
 
   return (
@@ -55,20 +78,19 @@ export default function EntityTaskBody({ initialValues = {}, onFieldChange }) {
         />
 
         <div className={styles.toolsSection}>
-          {/* Section label */}
           <div className={styles.sectionLabelWrapper}>
             <span className={styles.sectionLabelText}>Tools</span>
             <span className={`material-symbols-outlined ${styles.sectionLabelIcon}`}>info</span>
           </div>
 
-          {/* Add box */}
           <div className={styles.addBox}>
-            <button className={styles.addBtn} onClick={() => setIsCustomToolBuilderOpen(true)}>
-              <span className={`material-symbols-outlined ${styles.addBtnIcon}`}>add_circle</span>
-              <span className={styles.addBtnLabel}>Add</span>
-            </button>
+            {customTools.length === 0 && (
+              <button className={styles.addBtn} onClick={openCreate}>
+                <span className={`material-symbols-outlined ${styles.addBtnIcon}`}>add_circle</span>
+                <span className={styles.addBtnLabel}>Add</span>
+              </button>
+            )}
 
-            {/* Saved tool rows */}
             {customTools.map((tool) => (
               <div key={tool.id} className={styles.toolRow}>
                 <div className={styles.toolIconWrap}>
@@ -82,7 +104,7 @@ export default function EntityTaskBody({ initialValues = {}, onFieldChange }) {
                 <div className={styles.toolActions}>
                   <button
                     className={styles.iconBtn}
-                    onClick={() => setViewerTool(tool)}
+                    onClick={() => openEdit(tool)}
                     title="Edit tool"
                   >
                     <span className={`material-symbols-outlined ${styles.iconBtnIcon}`}>edit</span>
@@ -102,22 +124,11 @@ export default function EntityTaskBody({ initialValues = {}, onFieldChange }) {
       </div>
 
       <CustomToolBuilder
-        isOpen={isCustomToolBuilderOpen}
-        onClose={() => setIsCustomToolBuilderOpen(false)}
-        onSave={(tool) => {
-          setCustomTools((prev) => [...prev, tool]);
-          setIsCustomToolBuilderOpen(false);
-        }}
+        isOpen={isBuilderOpen}
+        initialTool={editingTool}
+        onClose={handleBuilderClose}
+        onSave={handleBuilderSave}
       />
-
-      {viewerTool && (
-        <CustomToolViewer
-          isOpen
-          tool={viewerTool}
-          onClose={() => setViewerTool(null)}
-          onUpdate={handleUpdateTool}
-        />
-      )}
     </>
   );
 }
