@@ -33,6 +33,125 @@
   flex-direction: column;
 }
 
+/* ─── Build mode wrapper ─── */
+.agent-builder-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ─── Mode toggle bar ─── */
+.agent-builder__mode-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 44px;
+  padding: 0 16px;
+  background: #fff;
+  border-bottom: 1px solid #e9e9eb;
+  flex-shrink: 0;
+}
+
+.agent-builder__mode-bar-modes {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.agent-builder__mode-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.agent-builder__mode-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font-family: 'Roboto', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: #555;
+  cursor: pointer;
+  letter-spacing: -0.26px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.agent-builder__mode-btn .material-symbols-outlined {
+  font-size: 16px !important;
+  width: 16px;
+  height: 16px;
+  line-height: 1;
+}
+
+.agent-builder__mode-btn:hover {
+  background: #f2f4f7;
+  color: #212121;
+}
+
+.agent-builder__mode-btn--active {
+  background: #e8f0fe;
+  border-color: #c5d8fc;
+  color: #1976d2;
+}
+
+/* ─── Save agent modal form ─── */
+.agent-builder__save-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.agent-builder__save-field {
+  width: 100%;
+}
+
+/* ─── AI Prompt panel (left, prompt mode) ─── */
+.agent-builder__prompt-panel {
+  width: 360px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-right: 1px solid #e5e9f0;
+  overflow: hidden;
+}
+
+.agent-builder__prompt-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.agent-builder__prompt-user-msg {
+  align-self: flex-end;
+  max-width: 80%;
+  background: #e8f0fe;
+  border-radius: 12px 12px 2px 12px;
+  padding: 8px 12px;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: -0.28px;
+  color: #212121;
+}
+
+.agent-builder__prompt-input {
+  flex-shrink: 0;
+  padding: 8px;
+  border-top: 1px solid #e5e9f0;
+}
+
 /* ─── Empty state ─── */
 .agent-builder__empty {
   position: absolute;
