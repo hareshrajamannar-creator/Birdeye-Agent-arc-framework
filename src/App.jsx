@@ -4,20 +4,8 @@ import AgentBuilder from './components/AgentBuilder/AgentBuilder';
 import AgentsDashboardTemplate from './components/Templates/AgentsDashboardTemplate/AgentsDashboardTemplate';
 import { getModuleTemplates } from './components/Modules/agentFrameworkData';
 import { getModuleNav } from './components/Modules/moduleNavigation';
+import { subscribeToAgents, deleteAgent, saveAgent } from './services/agentService';
 import '@xyflow/react/dist/style.css';
-
-const LS_KEY = 'birdeye_agent_arc';
-
-/* ─── Storage ─── */
-
-function loadAgentsFromStorage() {
-  try {
-    const raw = localStorage.getItem(LS_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
 
 /* ─── Helpers ─── */
 
@@ -42,22 +30,6 @@ function toDashboardAgent(agent) {
   };
 }
 
-function toTemplateAgent(template, index) {
-  const regions = ['North Region', 'East Region', 'South Region', 'West Region'];
-  const statuses = ['Running', 'Running', 'Paused', 'Draft'];
-
-  return {
-    id: `template-${index}`,
-    name: `${template.title} - ${regions[index % regions.length]}`,
-    status: statuses[index % statuses.length],
-    reviewsResponded: 120 - index * 18,
-    responseRate: `${92 - index * 4}%`,
-    avgResponseTime: index % 2 === 0 ? '20m' : '45m',
-    timeSaved: index % 2 === 0 ? '4h 20m' : '2h 10m',
-    locations: 500 - index * 75,
-  };
-}
-
 function getPageTitle(activeItemId, moduleNav) {
   const child = moduleNav.menuItems
     .flatMap((item) => item.children || [item])
@@ -77,18 +49,24 @@ function isAgentSection(itemId) {
 function App() {
   const [currentModule, setCurrentModule] = useState('reviews');
   const [activeL2Item, setActiveL2Item] = useState(() => getModuleNav('reviews').defaultItemId);
-  const [agents, setAgents] = useState(loadAgentsFromStorage);
+  const [agents, setAgents] = useState([]);
   const [builderOpen, setBuilderOpen] = useState(false);
   const [builderTemplate, setBuilderTemplate] = useState(null);
   const [editingAgent, setEditingAgent] = useState(null);
+  const [builderAgentId, setBuilderAgentId] = useState(null);
 
+  // Subscribe to all agents in real-time from Firestore
   useEffect(() => {
-    try {
-      localStorage.setItem(LS_KEY, JSON.stringify(agents));
-    } catch {
-      // Ignore unavailable storage.
-    }
-  }, [agents]);
+    const unsubscribe = subscribeToAgents((data) => {
+      const sorted = data.sort((a, b) => {
+        const ta = a.updatedAt?.seconds ?? 0;
+        const tb = b.updatedAt?.seconds ?? 0;
+        return tb - ta;
+      });
+      setAgents(sorted);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const moduleNav = getModuleNav(currentModule);
   const moduleTemplates = useMemo(() => getModuleTemplates(currentModule), [currentModule]);
@@ -97,9 +75,7 @@ function App() {
     [agents, currentModule]
   );
 
-  // Show only user-created agents — no template fallback
   const dashboardAgents = moduleAgents;
-
 
   /* ─── Module change ─── */
   function handleModuleChange(moduleId) {
@@ -113,6 +89,7 @@ function App() {
 
   /* ─── Agent builder open / close ─── */
   function handleCreateAgent(template) {
+    setBuilderAgentId(crypto.randomUUID());
     setBuilderTemplate(template || null);
     setEditingAgent(null);
     setBuilderOpen(true);
@@ -132,32 +109,29 @@ function App() {
   }
 
   function handleDeleteAgent(agentId) {
-    setAgents((prev) => prev.filter((a) => a.id !== agentId));
+    // onSnapshot subscription will automatically remove it from agents state
+    deleteAgent(agentId);
   }
 
-  function handleAgentUpdate(agentId, field, value) {
-    setAgents((prev) =>
-      prev.map((a) => a.id === agentId ? { ...a, [field]: value } : a)
-    );
+  async function handleAgentUpdate(agentId, field, value) {
+    const agent = agents.find((a) => a.id === agentId);
+    if (!agent) return;
+    const { updatedAt, ...rest } = agent;
+    await saveAgent(agentId, { ...rest, [field]: value });
   }
 
   function handleOpenAgent(agentId) {
     const agent = agents.find((a) => a.id === agentId);
     if (!agent) return;
+    setBuilderAgentId(agentId);
     setEditingAgent(agent);
     setBuilderTemplate(null);
     setBuilderOpen(true);
   }
 
-  /* ─── Save / update ─── */
-  function handleSaveAgent(agentData) {
-    if (editingAgent) {
-      setAgents((prev) =>
-        prev.map((a) => (a.id === editingAgent.id ? { ...agentData, id: editingAgent.id } : a))
-      );
-    } else {
-      setAgents((prev) => [agentData, ...prev]);
-    }
+  /* ─── Save ─── */
+  function handleSaveAgent() {
+    // Firestore write is done inside AgentBuilder — just close the builder here
     setBuilderOpen(false);
     setBuilderTemplate(null);
     setEditingAgent(null);
@@ -175,15 +149,15 @@ function App() {
     URL.revokeObjectURL(url);
   }
 
-  function handleImportAgent(data) {
+  async function handleImportAgent(data) {
+    const agentId = crypto.randomUUID();
     const imported = {
       ...data,
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
+      id: agentId,
       moduleContext: data.moduleContext || currentModule,
       status: data.status || 'Draft',
     };
-    setAgents((prev) => [imported, ...prev]);
+    await saveAgent(agentId, imported);
   }
 
   /* ─── Builder view ─── */
@@ -191,6 +165,7 @@ function App() {
     return (
       <ReactFlowProvider>
         <AgentBuilder
+          agentId={builderAgentId}
           moduleContext={currentModule}
           appTitle={moduleNav.title}
           pageTitle={editingAgent?.name || builderTemplate?.title || 'Untitled agent'}

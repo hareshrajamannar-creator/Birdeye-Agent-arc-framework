@@ -8,6 +8,7 @@ import Button from '@birdeye/elemental/core/atoms/Button/index.js';
 import CustomModal from '@birdeye/elemental/core/atoms/CustomModal/index.js';
 import FormInput from '@birdeye/elemental/core/atoms/FormInput/index.js';
 import TextArea from '@birdeye/elemental/core/atoms/TextArea/index.js';
+import { saveAgent } from '../../services/agentService';
 import './AgentBuilder.css';
 
 const START_NODE_ID = '__start__';
@@ -90,6 +91,7 @@ function nextId() {
 }
 
 export default function AgentBuilder({
+  agentId: propAgentId,
   appTitle = 'Reviews AI',
   pageTitle = 'Review response agent 1',
   activeNavId = 'reviews',
@@ -100,6 +102,7 @@ export default function AgentBuilder({
   onSaveAgent,
   onClose,
 }) {
+  const [agentId] = useState(() => propAgentId || crypto.randomUUID());
   const [navId, setNavId] = useState(activeNavId);
   const [nodeList, setNodeList] = useState(() => initialNodes || []);
   const [selectedNodeId, setSelectedNodeId] = useState(null);
@@ -125,20 +128,39 @@ export default function AgentBuilder({
   const [agentName, setAgentName] = useState(pageTitle || '');
   const [agentDesc, setAgentDesc] = useState(initialDescription);
 
-  const handleSaveConfirm = useCallback(() => {
+  /* ─── Auto-save to Firestore (debounced 1.5 s) ─── */
+  const saveTimerRef = useRef(null);
+  useEffect(() => {
+    if (!agentId || !agentName) return;
+    clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      saveAgent(agentId, {
+        id: agentId,
+        name: agentName,
+        description: agentDesc,
+        status: 'Draft',
+        moduleContext,
+        nodes: nodeList,
+        nodeDetails,
+      });
+    }, 1500);
+    return () => clearTimeout(saveTimerRef.current);
+  }, [agentName, nodeList, nodeDetails, agentId, moduleContext]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleSaveConfirm = useCallback(async () => {
     if (!agentName.trim()) return;
-    onSaveAgent?.({
-      id: crypto.randomUUID(),
+    await saveAgent(agentId, {
+      id: agentId,
       name: agentName.trim(),
       description: agentDesc.trim(),
-      createdAt: new Date().toISOString(),
       status: 'Draft',
       moduleContext,
       nodes: nodeList,
       nodeDetails,
     });
     setSaveModalOpen(false);
-  }, [agentName, agentDesc, moduleContext, nodeList, nodeDetails, onSaveAgent]);
+    onSaveAgent?.();
+  }, [agentId, agentName, agentDesc, moduleContext, nodeList, nodeDetails, onSaveAgent]);
 
   /* ─── Download handler ─── */
   const handleExport = useCallback(() => {
