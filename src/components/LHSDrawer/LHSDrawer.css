@@ -183,9 +183,6 @@
   text-align: left !important;
 }
 
-.lhs-drawer__sections .accordionHeadingContent span {
-  display: none !important;
-}
 
 .lhs-drawer__sections .accordionIcon {
   font-size: 20px !important;
