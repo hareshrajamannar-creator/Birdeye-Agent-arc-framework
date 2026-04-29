@@ -80,25 +80,23 @@
   letter-spacing: -0.24px;
 }
 
-/* ─── Add row: positions the type picker dropdown ─── */
+/* ─── Add row: wraps add button + inline type picker ─── */
 
 .addRow {
-  position: relative;
-  display: inline-flex;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
 }
 
-/* ─── Type picker dropdown ─── */
+/* ─── Type picker dropdown (inline, avoids overflow-y clip) ─── */
 
 .typePicker {
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 0;
   background: #fff;
   border: 1px solid #e5e9f0;
   border-radius: 6px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
   min-width: 172px;
-  z-index: 100;
   overflow: hidden;
 }
 
