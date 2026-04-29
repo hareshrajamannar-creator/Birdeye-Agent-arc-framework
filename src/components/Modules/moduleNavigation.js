@@ -100,6 +100,43 @@ export const MODULE_NAV = {
           'Fix failed replies',
         ],
       },
+      {
+        label: 'Reports',
+        children: [
+          'Overview',
+          'Volume and ratings',
+          'Leaderboard',
+          'Distribution',
+          'Responses',
+          'NPS',
+          'Tags',
+          'QR Codes',
+          'Review impressions',
+        ],
+      },
+      {
+        label: 'Competitors',
+        children: ['Benchmarking', 'Head to head', 'Reviews'],
+      },
+      {
+        label: 'Agents',
+        children: ['Review generation agents', 'Review response agents'],
+      },
+      {
+        label: 'Settings',
+        children: [
+          'Review sites',
+          'Request templates',
+          'Reply templates',
+          'Approvals',
+          'QR codes',
+          'Widgets',
+          'Rating display',
+          'Auto share rules',
+          'Auto reply rules',
+          'AI prompts',
+        ],
+      },
     ]),
   },
   referrals: {
