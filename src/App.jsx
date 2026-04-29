@@ -140,7 +140,14 @@ function App() {
   }
 
   /* ─── Save / Publish ─── */
-  function handleSaveAgent(isPublish = false) {
+  function handleSaveAgent(isPublish = false, publishedAgent = null) {
+    if (publishedAgent) {
+      setAgents((prev) => {
+        const entry = { ...publishedAgent, updatedAt: { seconds: Math.floor(Date.now() / 1000) } };
+        const rest = prev.filter((a) => a.id !== publishedAgent.id);
+        return [entry, ...rest];
+      });
+    }
     setBuilderOpen(false);
     setBuilderTemplate(null);
     setEditingAgent(null);

@@ -7,14 +7,15 @@
   align-items: center;
   gap: 8px;
   padding: 12px 20px;
-  background: #212121;
-  color: #ffffff;
+  background: #ffffff;
+  color: #212121;
   border-radius: 8px;
+  border: 1px solid #e5e9f0;
   font-family: 'Roboto', sans-serif;
   font-size: 14px;
   font-weight: 400;
   letter-spacing: -0.28px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.24);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
   z-index: 9999;
   animation: toast-in 0.2s ease;
   white-space: nowrap;
@@ -23,7 +24,7 @@
 
 .toast :global(.material-symbols-outlined) {
   font-size: 18px !important;
-  color: #81c784;
+  color: #2e7d32;
 }
 
 @keyframes toast-in {

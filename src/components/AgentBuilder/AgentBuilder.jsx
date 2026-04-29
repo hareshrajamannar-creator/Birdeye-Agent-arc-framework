@@ -169,22 +169,23 @@ export default function AgentBuilder({
     const { agentId: id, agentName: name, agentDesc: desc, moduleContext: mod, sectionContext: sec, nodeList: nodes, nodeDetails: details } = latestRef.current;
     const finalName = (name || details?.[START_NODE_ID]?.agentName || '').trim();
     if (!finalName) return;
+    const payload = {
+      id,
+      name: finalName,
+      description: (desc || '').trim(),
+      status: 'Running',
+      moduleContext: mod,
+      sectionContext: sec,
+      nodes,
+      nodeDetails: details,
+    };
     try {
-      await saveAgent(id, {
-        id,
-        name: finalName,
-        description: (desc || '').trim(),
-        status: 'Running',
-        moduleContext: mod,
-        sectionContext: sec,
-        nodes,
-        nodeDetails: details,
-      });
+      await saveAgent(id, payload);
       setAgentStatus('Running');
     } catch (e) {
       console.error('Publish failed', e);
     }
-    onSaveAgent?.(true);
+    onSaveAgent?.(true, payload);
   }, [onSaveAgent]);
 
   /* ─── Download handler ─── */
