@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useCallback } from 'react';
 import '../prompt-chip.css';
 import { serializeFrom, deserializeInto, insertChipAt } from '../promptChipHelpers.js';
+import { VariableIcon, BuildIcon, ExpandIcon } from '../PromptToolbarIcons.jsx';
 import styles from './UserPromptInput.module.css';
 
 export default function UserPromptInput({ value, onChange, required }) {
@@ -52,15 +53,35 @@ export default function UserPromptInput({ value, onChange, required }) {
           data-placeholder="Enter prompt"
         />
         <div className={styles.toolbar}>
-          <button
-            type="button"
-            className={styles.toolbarBtn}
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={handleInsertChip}
-            title="Insert variable"
-          >
-            <span className="material-symbols-outlined">data_object</span>
-          </button>
+          <div className={styles.toolbarLeft}>
+            <button
+              type="button"
+              className={styles.toolbarBtn}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={handleInsertChip}
+              title="Insert variable"
+            >
+              <VariableIcon />
+            </button>
+            <button
+              type="button"
+              className={styles.toolbarBtn}
+              onMouseDown={(e) => e.preventDefault()}
+              title="Tools"
+            >
+              <BuildIcon />
+            </button>
+          </div>
+          <div className={styles.toolbarRight}>
+            <button
+              type="button"
+              className={styles.toolbarBtn}
+              onMouseDown={(e) => e.preventDefault()}
+              title="Expand"
+            >
+              <ExpandIcon />
+            </button>
+          </div>
         </div>
       </div>
     </div>
