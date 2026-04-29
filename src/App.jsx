@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import ReactDOM from 'react-dom';
 import { ReactFlowProvider } from '@xyflow/react';
 import AgentBuilder from './components/AgentBuilder/AgentBuilder';
 import AgentsDashboardTemplate from './components/Templates/AgentsDashboardTemplate/AgentsDashboardTemplate';
@@ -6,6 +7,7 @@ import AgentViewerPage from './pages/AgentViewerPage';
 import { getModuleTemplates } from './components/Modules/agentFrameworkData';
 import { getModuleNav } from './components/Modules/moduleNavigation';
 import { subscribeToAgents, deleteAgent, saveAgent } from './services/agentService';
+import styles from './App.module.css';
 import '@xyflow/react/dist/style.css';
 
 /* ─── Helpers ─── */
@@ -55,6 +57,8 @@ function App() {
   const [builderTemplate, setBuilderTemplate] = useState(null);
   const [editingAgent, setEditingAgent] = useState(null);
   const [builderAgentId, setBuilderAgentId] = useState(null);
+  const [toastVisible, setToastVisible] = useState(false);
+  const toastTimerRef = useRef(null);
 
   // Subscribe to all agents in real-time from Firestore
   useEffect(() => {
@@ -77,15 +81,12 @@ function App() {
         .filter((a) => {
           if (a.moduleContext !== currentModule) return false;
           if (activeL2Item === 'view-all-agents') return true;
-          // agents without a sectionContext are legacy — show them in all sections
           if (!a.sectionContext) return true;
           return a.sectionContext === activeL2Item;
         })
         .map(toDashboardAgent),
     [agents, currentModule, activeL2Item]
   );
-
-  const dashboardAgents = moduleAgents;
 
   /* ─── Module change ─── */
   function handleModuleChange(moduleId) {
@@ -119,7 +120,6 @@ function App() {
   }
 
   function handleDeleteAgent(agentId) {
-    // onSnapshot subscription will automatically remove it from agents state
     deleteAgent(agentId);
   }
 
@@ -139,12 +139,16 @@ function App() {
     setBuilderOpen(true);
   }
 
-  /* ─── Save ─── */
-  function handleSaveAgent() {
-    // Firestore write is done inside AgentBuilder — just close the builder here
+  /* ─── Save / Publish ─── */
+  function handleSaveAgent(isPublish = false) {
     setBuilderOpen(false);
     setBuilderTemplate(null);
     setEditingAgent(null);
+    if (isPublish) {
+      clearTimeout(toastTimerRef.current);
+      setToastVisible(true);
+      toastTimerRef.current = setTimeout(() => setToastVisible(false), 3000);
+    }
   }
 
   /* ─── Export / Import ─── */
@@ -170,6 +174,17 @@ function App() {
     await saveAgent(agentId, imported);
   }
 
+  /* ─── Toast portal (always mounted so it survives builder unmount) ─── */
+  const toast = toastVisible
+    ? ReactDOM.createPortal(
+        <div className={styles.toast}>
+          <span className="material-symbols-outlined">check_circle</span>
+          Agent published successfully
+        </div>,
+        document.body
+      )
+    : null;
+
   /* ─── View-only shared agent route ─── */
   if (window.location.pathname.startsWith('/view/')) {
     return <AgentViewerPage />;
@@ -178,52 +193,58 @@ function App() {
   /* ─── Builder view ─── */
   if (builderOpen) {
     return (
-      <ReactFlowProvider>
-        <AgentBuilder
-          agentId={builderAgentId}
-          moduleContext={currentModule}
-          sectionContext={editingAgent?.sectionContext || activeL2Item}
-          appTitle={moduleNav.title}
-          pageTitle={editingAgent?.name || builderTemplate?.title || 'Untitled agent'}
-          activeNavId={currentModule}
-          initialDescription={editingAgent?.description || builderTemplate?.description || ''}
-          initialNodes={editingAgent?.nodes || null}
-          initialNodeDetails={editingAgent?.nodeDetails || null}
-          onSaveAgent={handleSaveAgent}
-          onClose={() => {
-            setBuilderOpen(false);
-            setBuilderTemplate(null);
-            setEditingAgent(null);
-          }}
-        />
-      </ReactFlowProvider>
+      <>
+        <ReactFlowProvider>
+          <AgentBuilder
+            agentId={builderAgentId}
+            moduleContext={currentModule}
+            sectionContext={editingAgent?.sectionContext || activeL2Item}
+            appTitle={moduleNav.title}
+            pageTitle={editingAgent?.name || builderTemplate?.title || 'Untitled agent'}
+            activeNavId={currentModule}
+            initialDescription={editingAgent?.description || builderTemplate?.description || ''}
+            initialNodes={editingAgent?.nodes || null}
+            initialNodeDetails={editingAgent?.nodeDetails || null}
+            onSaveAgent={handleSaveAgent}
+            onClose={() => {
+              setBuilderOpen(false);
+              setBuilderTemplate(null);
+              setEditingAgent(null);
+            }}
+          />
+        </ReactFlowProvider>
+        {toast}
+      </>
     );
   }
 
-  /* ─── Dashboard routing ─── */
+  /* ─── Dashboard ─── */
   const showDashboard = isAgentSection(activeL2Item);
 
   return (
-    <AgentsDashboardTemplate
-      navTitle={moduleNav.title}
-      ctaLabel={moduleNav.ctaLabel}
-      menuItems={moduleNav.menuItems}
-      pageTitle={getPageTitle(activeL2Item, moduleNav)}
-      activeNavId={currentModule}
-      activeMenuItemId={activeL2Item}
-      agents={dashboardAgents}
-      templates={moduleTemplates}
-      showDashboard={showDashboard}
-      onCreateAgent={() => handleCreateAgent()}
-      onUseTemplate={handleUseTemplate}
-      onNavChange={handleModuleChange}
-      onMenuItemClick={handleL2ItemClick}
-      onOpenAgent={handleOpenAgent}
-      onDeleteAgent={handleDeleteAgent}
-      onAgentUpdate={handleAgentUpdate}
-      onExportAgent={handleExportAgent}
-      onImportAgent={handleImportAgent}
-    />
+    <>
+      <AgentsDashboardTemplate
+        navTitle={moduleNav.title}
+        ctaLabel={moduleNav.ctaLabel}
+        menuItems={moduleNav.menuItems}
+        pageTitle={getPageTitle(activeL2Item, moduleNav)}
+        activeNavId={currentModule}
+        activeMenuItemId={activeL2Item}
+        agents={moduleAgents}
+        templates={moduleTemplates}
+        showDashboard={showDashboard}
+        onCreateAgent={() => handleCreateAgent()}
+        onUseTemplate={handleUseTemplate}
+        onNavChange={handleModuleChange}
+        onMenuItemClick={handleL2ItemClick}
+        onOpenAgent={handleOpenAgent}
+        onDeleteAgent={handleDeleteAgent}
+        onAgentUpdate={handleAgentUpdate}
+        onExportAgent={handleExportAgent}
+        onImportAgent={handleImportAgent}
+      />
+      {toast}
+    </>
   );
 }
 

@@ -227,37 +227,28 @@
   border-top: 1px solid #e5e9f0;
 }
 
-/* ─── Publish toast ─── */
-.ab-toast {
-  position: fixed;
-  bottom: 32px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
-  background: #212121;
-  color: #ffffff;
-  border-radius: 8px;
-  font-family: 'Roboto', sans-serif;
-  font-size: 14px;
-  font-weight: 400;
-  letter-spacing: -0.28px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.24);
-  z-index: 9999;
-  animation: ab-toast-in 0.2s ease;
-  white-space: nowrap;
+/* ─── Inline editable agent name in AppShell header ─── */
+.ab-name-input {
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  background: none;
+  border: none;
+  border-bottom: 1.5px solid transparent;
+  padding: 0 2px;
+  margin: 0;
+  outline: none;
+  width: 260px;
+  cursor: text;
+  transition: border-color 0.15s;
 }
 
-.ab-toast .material-symbols-outlined {
-  font-size: 18px;
-  color: #81c784;
+.ab-name-input:hover {
+  border-bottom-color: #ccd5e4;
 }
 
-@keyframes ab-toast-in {
-  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
-  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+.ab-name-input:focus {
+  border-bottom-color: #1b72e8;
 }
 
 /* ─── View-only mode ─── */

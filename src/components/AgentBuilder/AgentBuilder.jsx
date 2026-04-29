@@ -109,9 +109,6 @@ export default function AgentBuilder({
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [nodeDetails, setNodeDetails] = useState(() => initialNodeDetails || {});
 
-  /* ─── Publish toast ─── */
-  const [toastVisible, setToastVisible] = useState(false);
-  const toastTimerRef = useRef(null);
 
   /* ─── Share modal ─── */
   const [shareModalOpen, setShareModalOpen] = useState(false);
@@ -168,10 +165,8 @@ export default function AgentBuilder({
     } catch (e) {
       console.error('Publish failed', e);
     }
-    clearTimeout(toastTimerRef.current);
-    setToastVisible(true);
-    toastTimerRef.current = setTimeout(() => setToastVisible(false), 3000);
-  }, [agentId, agentName, agentDesc, moduleContext, sectionContext, nodeList, nodeDetails]); // eslint-disable-line react-hooks/exhaustive-deps
+    onSaveAgent?.(true);
+  }, [agentId, agentName, agentDesc, moduleContext, sectionContext, nodeList, nodeDetails, onSaveAgent]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ─── Download handler ─── */
   const handleExport = useCallback(() => {
@@ -634,10 +629,27 @@ export default function AgentBuilder({
     </div>
   );
 
+  const editableName = viewOnly ? agentName : (
+    <input
+      className="ab-name-input"
+      value={agentName}
+      placeholder="Untitled agent"
+      onChange={(e) => {
+        const val = e.target.value;
+        setAgentName(val);
+        setNodeDetails((prev) => ({
+          ...prev,
+          [START_NODE_ID]: { ...(prev[START_NODE_ID] || {}), agentName: val },
+        }));
+      }}
+      onClick={(e) => e.stopPropagation()}
+    />
+  );
+
   return (
     <AppShell
       appTitle={appTitle}
-      pageTitle={agentName}
+      pageTitle={editableName}
       activeNavId={navId}
       onNavChange={viewOnly ? undefined : setNavId}
       showBack={!!onClose}
@@ -691,13 +703,6 @@ export default function AgentBuilder({
         <ShareModal agentId={agentId} onClose={() => setShareModalOpen(false)} />
       )}
 
-      {/* ─── Publish toast ─── */}
-      {toastVisible && (
-        <div className="ab-toast">
-          <span className="material-symbols-outlined">check_circle</span>
-          Agent published successfully
-        </div>
-      )}
     </AppShell>
   );
 }
