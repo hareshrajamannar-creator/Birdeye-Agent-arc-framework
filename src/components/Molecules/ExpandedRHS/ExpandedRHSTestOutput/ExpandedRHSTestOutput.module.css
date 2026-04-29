@@ -221,6 +221,48 @@
   font-variation-settings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20";
 }
 
+/* New-row chip */
+.newChip {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+  min-height: 26px;
+  background: #fff;
+  border: 1px solid #1976d2;
+  border-radius: 4px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.newChipSwatch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 25px;
+  flex-shrink: 0;
+  background: #ecf5fd;
+  border-right: 1px solid #d1e5f9;
+  padding: 0 0 0 1px;
+}
+
+.newChipInput {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: #555;
+  font-family: 'Inter', 'Roboto', sans-serif;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 4px 6px;
+}
+
+.newChipInput::placeholder {
+  color: #bbb;
+}
+
 .addRow {
   display: flex;
   align-items: center;
