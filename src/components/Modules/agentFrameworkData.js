@@ -25,24 +25,28 @@ export const MODULE_DEFINITIONS = {
     agents: [
       {
         id: 'reviews-response-templates',
+        sectionContext: 'review-response-agents',
         title: 'Review response agent replying using templates',
         description: 'Uses pre-defined templates and responds to reviews automatically.',
         steps: ['New review trigger', 'Sentiment check', 'LLM reply draft', 'Approval or publish'],
       },
       {
         id: 'reviews-response-autonomous',
+        sectionContext: 'review-response-agents',
         title: 'Review response agent replying autonomously',
         description: 'Uses AI to analyze review sentiment, generates and posts unique, context aware replies automatically.',
         steps: ['New review trigger', 'Sentiment check', 'LLM reply draft', 'Publish reply'],
       },
       {
         id: 'reviews-response-human-approval',
+        sectionContext: 'review-response-agents',
         title: 'Review response agent replying after human approval',
         description: 'Uses AI to analyze review sentiment, generates and sends unique, context-aware replies for a human approval before posting.',
         steps: ['New review trigger', 'Sentiment check', 'LLM reply draft', 'Approval or publish'],
       },
       {
         id: 'reviews-response-dashboard-suggestions',
+        sectionContext: 'review-response-agents',
         title: 'Review response agent suggesting replies in dashboard',
         description: 'Uses AI to analyze review sentiment, generates and shows unique, context-aware replies in the dashboard for one-click manual posting.',
         steps: ['Low rating trigger', 'Branch by urgency', 'Create ticket', 'Notify owner'],
@@ -336,9 +340,10 @@ export const MODULE_ORDER = [
   'settings',
 ];
 
-export function getModuleTemplates(moduleId) {
+export function getModuleTemplates(moduleId, sectionId) {
   if (moduleId !== 'reviews') return [];
-  return MODULE_DEFINITIONS[moduleId]?.agents || [];
+  return (MODULE_DEFINITIONS[moduleId]?.agents || [])
+    .filter((agent) => !sectionId || agent.sectionContext === sectionId);
 }
 
 export function getAllTemplates() {

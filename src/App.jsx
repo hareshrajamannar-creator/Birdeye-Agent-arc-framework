@@ -48,17 +48,18 @@ function isAgentSection(itemId) {
   return !itemId || itemId.endsWith('-agents');
 }
 
-function withTemplateContext(template, moduleId) {
+function withTemplateContext(template, moduleId, sectionId) {
   return {
     ...template,
     moduleContext: template.moduleContext || moduleId,
+    sectionContext: template.sectionContext || sectionId,
     source: template.source || 'default',
   };
 }
 
-function mergeTemplates(defaultTemplates, savedTemplates, moduleId) {
+function mergeTemplates(defaultTemplates, savedTemplates, moduleId, sectionId) {
   const moduleSaved = savedTemplates
-    .filter((template) => template.moduleContext === moduleId)
+    .filter((template) => template.moduleContext === moduleId && template.sectionContext === sectionId)
     .sort((a, b) => {
       const aTime = a.updatedAt?.seconds ?? 0;
       const bTime = b.updatedAt?.seconds ?? 0;
@@ -67,11 +68,11 @@ function mergeTemplates(defaultTemplates, savedTemplates, moduleId) {
   const savedById = new Map(moduleSaved.map((template) => [template.id, template]));
   const defaults = defaultTemplates.map((template) => {
     const saved = savedById.get(template.id);
-    return withTemplateContext(saved ? { ...template, ...saved } : template, moduleId);
+    return withTemplateContext(saved ? { ...template, ...saved } : template, moduleId, sectionId);
   });
   const custom = moduleSaved
     .filter((template) => !defaultTemplates.some((item) => item.id === template.id))
-    .map((template) => withTemplateContext(template, moduleId));
+    .map((template) => withTemplateContext(template, moduleId, sectionId));
 
   return [...defaults, ...custom];
 }
@@ -112,12 +113,12 @@ function App() {
 
   const moduleNav = getModuleNav(currentModule);
   const defaultModuleTemplates = useMemo(
-    () => getModuleTemplates(currentModule).map((template) => withTemplateContext(template, currentModule)),
-    [currentModule]
+    () => getModuleTemplates(currentModule, activeL2Item).map((template) => withTemplateContext(template, currentModule, activeL2Item)),
+    [currentModule, activeL2Item]
   );
   const moduleTemplates = useMemo(
-    () => mergeTemplates(defaultModuleTemplates, savedTemplates, currentModule),
-    [defaultModuleTemplates, savedTemplates, currentModule]
+    () => mergeTemplates(defaultModuleTemplates, savedTemplates, currentModule, activeL2Item),
+    [defaultModuleTemplates, savedTemplates, currentModule, activeL2Item]
   );
   const moduleAgents = useMemo(
     () =>
