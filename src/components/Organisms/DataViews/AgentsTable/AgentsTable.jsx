@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import Chip from '@birdeye/elemental/core/atoms/Chip/index.js';
+import EmptyStates from '../../../Patterns/EmptyStates/EmptyStates';
 import styles from './AgentsTable.module.css';
 
 const DEFAULT_COLUMNS = [
@@ -71,11 +72,11 @@ export default function AgentsTable({ agents = [], onRowClick, onDeleteAgent, on
   /* ─── Empty state ─── */
   if (agents.length === 0) {
     return (
-      <div className={styles.emptyContainer}>
-        <span className={`material-symbols-outlined ${styles.emptyIcon}`}>smart_toy</span>
-        <p className={styles.emptyTitle}>No agents yet</p>
-        <p className={styles.emptySubtitle}>Create your first agent to start automating</p>
-      </div>
+      <EmptyStates
+        icon="smart_toy"
+        title="No agents yet"
+        description="Create your first agent to start automating responses"
+      />
     );
   }
 

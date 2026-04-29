@@ -100,24 +100,6 @@ function App() {
   // Show only user-created agents — no template fallback
   const dashboardAgents = moduleAgents;
 
-  // Enrich L2 nav: inject user-created agents under the "Agents" section
-  const enrichedMenuItems = useMemo(() => {
-    return moduleNav.menuItems.map((section) => {
-      if (section.id !== 'agents') return section;
-      const agentItems = moduleAgents.map((a) => ({
-        id: `agent-detail-${a.id}`,
-        label: a.name.length > 28 ? a.name.slice(0, 28) + '…' : a.name,
-      }));
-      return {
-        ...section,
-        children: [
-          ...agentItems,
-          ...section.children,
-          { id: 'add-agent-nav', label: '+ Add section' },
-        ],
-      };
-    });
-  }, [moduleNav, moduleAgents]);
 
   /* ─── Module change ─── */
   function handleModuleChange(moduleId) {
@@ -142,13 +124,8 @@ function App() {
   }
 
   function handleL2ItemClick(itemId) {
-    if (itemId === 'create-agent' || itemId === 'add-agent-nav') {
+    if (itemId === 'create-agent') {
       handleCreateAgent();
-      return;
-    }
-    if (itemId.startsWith('agent-detail-')) {
-      const agentId = itemId.replace('agent-detail-', '');
-      handleOpenAgent(agentId);
       return;
     }
     setActiveL2Item(itemId);
@@ -239,7 +216,7 @@ function App() {
     <AgentsDashboardTemplate
       navTitle={moduleNav.title}
       ctaLabel={moduleNav.ctaLabel}
-      menuItems={enrichedMenuItems}
+      menuItems={moduleNav.menuItems}
       pageTitle={getPageTitle(activeL2Item, moduleNav)}
       activeNavId={currentModule}
       activeMenuItemId={activeL2Item}
