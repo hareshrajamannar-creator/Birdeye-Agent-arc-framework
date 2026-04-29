@@ -261,7 +261,7 @@ function FlowCanvasInner({
   viewOnly = false,
 }) {
   const { screenToFlowPosition, zoomTo, fitView, getNodes } = useReactFlow();
-  const [zoom, setZoom] = useState(100);
+  const [zoom, setZoom] = useState(110);
   const [isDraggingFromLHS, setIsDraggingFromLHS] = useState(false);
 
   const onDropNodeRef = useRef(onDropNode);
@@ -303,7 +303,7 @@ function FlowCanvasInner({
   useEffect(() => {
     if (nodes.length !== prevNodeCountRef.current) {
       prevNodeCountRef.current = nodes.length;
-      setTimeout(() => fitView({ padding: 0.25, duration: 300 }), 80);
+      setTimeout(() => fitView({ padding: 0.25, duration: 300, maxZoom: 1.1 }), 80);
     }
   }, [nodes.length, fitView]);
 
@@ -418,7 +418,7 @@ function FlowCanvasInner({
         onNodeDragStop={viewOnly ? undefined : handleNodeDragStop}
         onViewportChange={handleViewportChange}
         fitView
-        fitViewOptions={{ padding: 0.25 }}
+        fitViewOptions={{ padding: 0.25, maxZoom: 1.1 }}
         proOptions={{ hideAttribution: true }}
         nodesDraggable={!viewOnly}
         nodesConnectable={false}
