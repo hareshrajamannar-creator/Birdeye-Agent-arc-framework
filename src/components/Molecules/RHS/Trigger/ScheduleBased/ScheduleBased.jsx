@@ -8,14 +8,18 @@ import RHSPanelFooter from '../../RHSFooter/RHSFooter';
 const font = '"Roboto", arial, sans-serif';
 
 export function ScheduleBasedBody({
+  triggerName = 'Run on schedule',
+  description = 'Triggers the agent to generate posts based on your selected schedule',
   frequencyOptions = [],
   dayOptions = [],
   timeOptions = [],
   defaultFrequency,
   defaultDay,
   defaultTime,
-  onSave,
+  onFieldChange,
 }) {
+  const [localTriggerName, setLocalTriggerName] = useState(triggerName);
+  const [localDescription, setLocalDescription] = useState(description);
   const [frequency, setFrequency] = useState(defaultFrequency ?? null);
   const [day, setDay] = useState(defaultDay ?? null);
   const [time, setTime] = useState(defaultTime ?? null);
@@ -26,15 +30,23 @@ export function ScheduleBasedBody({
         name="triggerName"
         type="text"
         label="Trigger name"
-        value="Schedule based"
-        readOnly
+        value={localTriggerName}
+        onChange={(event) => {
+          const value = event.target.value;
+          setLocalTriggerName(value);
+          onFieldChange?.('triggerName', value);
+        }}
         required
       />
       <TextArea
         name="description"
         label="Description"
-        value="Runs the workflow on a set schedule"
-        readOnly
+        value={localDescription}
+        onChange={(event) => {
+          const value = event.target.value;
+          setLocalDescription(value);
+          onFieldChange?.('description', value);
+        }}
         required
         noFloatingLabel
       />
@@ -47,7 +59,10 @@ export function ScheduleBasedBody({
           name="frequency"
           selected={frequency}
           options={frequencyOptions.map((opt) => ({ value: opt, label: opt }))}
-          onChange={(opt) => setFrequency(opt.value)}
+          onChange={(opt) => {
+            setFrequency(opt.value);
+            onFieldChange?.('frequency', opt.value);
+          }}
           placeholder="Select"
         />
       </div>
@@ -60,7 +75,10 @@ export function ScheduleBasedBody({
           name="day"
           selected={day}
           options={dayOptions.map((opt) => ({ value: opt, label: opt }))}
-          onChange={(opt) => setDay(opt.value)}
+          onChange={(opt) => {
+            setDay(opt.value);
+            onFieldChange?.('day', opt.value);
+          }}
           placeholder="Select"
         />
       </div>
@@ -73,7 +91,10 @@ export function ScheduleBasedBody({
           name="time"
           selected={time}
           options={timeOptions.map((opt) => ({ value: opt, label: opt }))}
-          onChange={(opt) => setTime(opt.value)}
+          onChange={(opt) => {
+            setTime(opt.value);
+            onFieldChange?.('time', opt.value);
+          }}
           placeholder="Select"
         />
       </div>
@@ -89,13 +110,27 @@ export default function ScheduleBased({
   frequencyOptions = [],
   dayOptions = [],
   timeOptions = [],
+  triggerName = 'Run on schedule',
+  description = 'Triggers the agent to generate posts based on your selected schedule',
   defaultFrequency,
   defaultDay,
   defaultTime,
+  onFieldChange,
 }) {
+  const [localTriggerName, setLocalTriggerName] = useState(triggerName);
+  const [localDescription, setLocalDescription] = useState(description);
   const [frequency, setFrequency] = useState(defaultFrequency ?? null);
   const [day, setDay] = useState(defaultDay ?? null);
   const [time, setTime] = useState(defaultTime ?? null);
+
+  const handleFieldChange = (field, value) => {
+    if (field === 'triggerName') setLocalTriggerName(value);
+    if (field === 'description') setLocalDescription(value);
+    if (field === 'frequency') setFrequency(value);
+    if (field === 'day') setDay(value);
+    if (field === 'time') setTime(value);
+    onFieldChange?.(field, value);
+  };
 
   return (
     <div style={{
@@ -104,7 +139,7 @@ export default function ScheduleBased({
       fontFamily: font,
     }}>
       <RHSPanelHeader
-        title="Trigger"
+        title="Schedule-based trigger"
         showActions
         onPreview={onPreview}
         onExpand={onExpand}
@@ -113,16 +148,25 @@ export default function ScheduleBased({
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '16px 15px', boxSizing: 'border-box' }}>
         <ScheduleBasedBody
+          triggerName={localTriggerName}
+          description={localDescription}
           frequencyOptions={frequencyOptions}
           dayOptions={dayOptions}
           timeOptions={timeOptions}
           defaultFrequency={frequency}
           defaultDay={day}
           defaultTime={time}
+          onFieldChange={handleFieldChange}
         />
       </div>
 
-      <RHSPanelFooter onSave={() => onSave?.({ frequency, day, time })} />
+      <RHSPanelFooter onSave={() => onSave?.({
+        triggerName: localTriggerName,
+        description: localDescription,
+        frequency,
+        day,
+        time,
+      })} />
     </div>
   );
 }

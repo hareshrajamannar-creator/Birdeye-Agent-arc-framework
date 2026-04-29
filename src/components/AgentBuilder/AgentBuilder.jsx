@@ -32,7 +32,14 @@ function buildFlow(nodeList, startData, nodeDetails = {}) {
       id: nodeId,
       type: item.flowType,
       position: { x: 0, y },
-      data: { ...item.data },
+      data: item.data?.subtype === 'Schedule-based'
+        ? {
+            ...item.data,
+            headerLabel: 'Schedule-based trigger',
+            title: nodeDetails[nodeId]?.triggerName || item.data.title || 'Run on schedule',
+            subtitle: nodeDetails[nodeId]?.description || item.data.subtitle || 'Triggers the agent to generate posts based on your selected schedule',
+          }
+        : { ...item.data },
     });
     edges.push({
       id: `e-${prevId}-${nodeId}`,
@@ -374,7 +381,10 @@ export default function AgentBuilder({
     let title = 'Task';
     let hasAiIcon = false;
 
-    if (type === 'trigger') {
+    if (type === 'trigger' && label === 'Schedule-based') {
+      flowType = 'trigger';
+      title = 'Run on schedule';
+    } else if (type === 'trigger') {
       flowType = 'trigger';
       title = label || 'Trigger';
     } else if (type === 'branch') {
@@ -397,16 +407,22 @@ export default function AgentBuilder({
 
     // For drag-type cards, description === label (no meaningful subtitle); only show it when distinct
     const subtitleFromDrag = (description && description !== label) ? description : '';
+    const scheduleDescription = 'Triggers the agent to generate posts based on your selected schedule';
 
     const newNode = {
       id,
       flowType,
       data: {
         title,
+        headerLabel: type === 'trigger' && label === 'Schedule-based' ? 'Schedule-based trigger' : undefined,
         subtype: label,
         stepNumber: null,
         description,
-        subtitle: flowType === 'branch' ? 'Build condition-specific flows' : subtitleFromDrag,
+        subtitle: type === 'trigger' && label === 'Schedule-based'
+          ? scheduleDescription
+          : flowType === 'branch'
+            ? 'Build condition-specific flows'
+            : subtitleFromDrag,
         hasAiIcon,
         hasToggle: true,
         toggleEnabled: true,
@@ -430,7 +446,13 @@ export default function AgentBuilder({
     let extraDetails = {};
 
     if (type === 'trigger' && label === 'Schedule-based') {
-      details = { frequency: 'Daily', day: '7 days', time: '9:00 AM' };
+      details = {
+        triggerName: 'Run on schedule',
+        description: scheduleDescription,
+        frequency: 'Daily',
+        day: '7 days',
+        time: '9:00 AM',
+      };
     } else if (type === 'trigger') {
       details = {
         triggerName: label || '',
@@ -555,9 +577,18 @@ export default function AgentBuilder({
       return (
         <ScheduleBased
           onClose={handleCloseDrawer}
-          onSave={handleCloseDrawer}
+          onSave={(values) => {
+            setNodeDetails((prev) => ({
+              ...prev,
+              [selectedNodeId]: { ...(prev[selectedNodeId] || {}), ...values },
+            }));
+            handleCloseDrawer();
+          }}
           onPreview={() => {}}
           onExpand={() => {}}
+          triggerName={currentDetails.triggerName || 'Run on schedule'}
+          description={currentDetails.description || 'Triggers the agent to generate posts based on your selected schedule'}
+          onFieldChange={activeFieldChange}
           frequencyOptions={['Hourly', 'Daily', 'Weekly', 'Monthly']}
           dayOptions={['1 day', '2 days', '3 days', '7 days', '14 days', '30 days']}
           timeOptions={['9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM', '11:00 AM']}

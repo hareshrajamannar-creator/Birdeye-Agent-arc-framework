@@ -46,7 +46,7 @@ function TriggerNodeWrapper({ id, data }) {
       <Handle type="target" position={Position.Top} />
       <div className="flow-canvas__node-draggable-row">
         <DragHandle />
-        <CanvasNode nodeType="trigger" label="Trigger" stepNumber={data.stepNumber} title={data.title} description={data.subtitle} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} state={isSelected ? 'selected' : 'default'} onDelete={data.onDelete} />
+        <CanvasNode nodeType="trigger" label={data.headerLabel || (data.subtype === 'Schedule-based' ? 'Schedule-based trigger' : 'Trigger')} stepNumber={data.stepNumber} title={data.title} description={data.subtitle} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} state={isSelected ? 'selected' : 'default'} onDelete={data.onDelete} />
       </div>
       <Handle type="source" position={Position.Bottom} />
     </div>
@@ -233,6 +233,7 @@ function FlowCanvasInner({
   // Sync parent → local whenever nodes change and no drag is in progress
   useEffect(() => {
     if (!isDraggingRef.current) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLocalNodes(styledNodes);
     }
   }, [styledNodes]);
