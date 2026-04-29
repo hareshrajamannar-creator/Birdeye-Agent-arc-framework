@@ -272,26 +272,27 @@ export default function AgentBuilder({
 
     if (type === 'trigger') {
       flowType = 'trigger';
-      // body title = the specific trigger variant (e.g. "Review mentioned")
       title = label || 'Trigger';
-    } else if (type === 'branch' && label === 'Branch') {
+    } else if (type === 'branch') {
       flowType = 'branch';
       title = 'Based on conditions';
-    } else if (label === 'Delay') {
+    } else if (type === 'delay') {
       flowType = 'delay';
       title = 'Delay';
-    } else if (label === 'Parallel') {
+    } else if (type === 'parallel') {
       flowType = 'parallel';
       title = 'Parallel tasks';
-    } else if (label === 'Loop') {
+    } else if (type === 'loop') {
       flowType = 'loop';
       title = 'Loop';
     } else if (type === 'task') {
       flowType = 'task';
       hasAiIcon = label === 'Custom';
-      // body title = the LHS description for entity tasks; keep generic for LLM tasks
       title = hasAiIcon ? 'Task' : (description || 'Task');
     }
+
+    // For drag-type cards, description === label (no meaningful subtitle); only show it when distinct
+    const subtitleFromDrag = (description && description !== label) ? description : '';
 
     const newNode = {
       id,
@@ -301,7 +302,7 @@ export default function AgentBuilder({
         subtype: label,
         stepNumber: null,
         description,
-        subtitle: flowType === 'branch' ? 'Build condition-specific flows' : (description || ''),
+        subtitle: flowType === 'branch' ? 'Build condition-specific flows' : subtitleFromDrag,
         hasAiIcon,
         hasToggle: true,
         toggleEnabled: true,
@@ -336,7 +337,7 @@ export default function AgentBuilder({
           { field: '', operator: '', value: '' },
         ],
       };
-    } else if (label === 'Branch') {
+    } else if (type === 'branch') {
       const path1Id = `${id}-path-1`;
       const path2Id = `${id}-path-2`;
       const fallbackId = `${id}-path-fallback`;
@@ -353,11 +354,11 @@ export default function AgentBuilder({
         [path2Id]: { branchName: 'Branch 2', description: '', conditions: [], parentId: id, isBranchPath: true },
         [fallbackId]: { branchName: 'No conditions met', description: '', conditions: [], parentId: id, isBranchPath: true, isFallback: true },
       };
-    } else if (label === 'Delay') {
+    } else if (type === 'delay') {
       details = { duration: '1', unit: 'hours' };
-    } else if (label === 'Parallel') {
+    } else if (type === 'parallel') {
       details = { tasks: [] };
-    } else if (label === 'Loop') {
+    } else if (type === 'loop') {
       details = { iterations: 3, exitCondition: '' };
     } else if (label === 'Custom') {
       details = {

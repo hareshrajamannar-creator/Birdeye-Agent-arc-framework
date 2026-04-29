@@ -71,11 +71,12 @@
 
 /* ─── Custom edge add button ─── */
 .flow-canvas__edge-add-wrapper {
-  width: 28px;
-  height: 28px;
+  width: 56px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
+  pointer-events: all;
 }
 
 .flow-canvas__edge-add {

@@ -182,7 +182,7 @@ function FlowCanvasInner({
   onRun,
   selectedNodeId,
 }) {
-  const { screenToFlowPosition, zoomTo, fitView } = useReactFlow();
+  const { screenToFlowPosition, zoomTo, fitView, getNodes } = useReactFlow();
   const [zoom, setZoom] = useState(100);
   const [isDraggingFromLHS, setIsDraggingFromLHS] = useState(false);
   const prevNodeCountRef = useRef(nodes.length);
@@ -244,16 +244,17 @@ function FlowCanvasInner({
     [screenToFlowPosition]
   );
 
-  // Node drag-stop: reorder nodeList by Y position
+  // Node drag-stop: reorder nodeList by Y position using ALL nodes (not just the dragged one)
   const handleNodeDragStop = useCallback(
-    (event, node, currentNodes) => {
+    () => {
       if (!onNodesReorder) return;
-      const draggable = currentNodes
+      const allNodes = getNodes();
+      const draggable = allNodes
         .filter((n) => n.type !== 'start' && n.type !== 'end' && n.type !== 'branchPath')
         .sort((a, b) => a.position.y - b.position.y);
       onNodesReorder(draggable.map((n) => n.id));
     },
-    [onNodesReorder]
+    [onNodesReorder, getNodes]
   );
 
   const styledNodes = useMemo(
