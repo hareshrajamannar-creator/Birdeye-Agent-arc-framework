@@ -114,13 +114,20 @@
   cursor: grab;
 }
 
+/* Dragging node: lift with shadow + slight fade; other nodes stay fully visible */
 .flow-canvas .react-flow__node.dragging {
-  opacity: 0.65;
+  opacity: 0.75;
   z-index: 999;
+  filter: drop-shadow(0 8px 24px rgba(33, 33, 33, 0.18));
 }
 
 .flow-canvas .react-flow__node.dragging .flow-canvas__node-draggable {
   cursor: grabbing;
+}
+
+/* Smooth position snap when layout regenerates after drop */
+.flow-canvas .react-flow__node:not(.dragging) {
+  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ─── LHS drag → pulse all + buttons ─── */

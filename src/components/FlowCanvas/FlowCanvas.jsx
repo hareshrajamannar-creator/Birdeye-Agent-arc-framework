@@ -7,6 +7,7 @@ import {
   getStraightPath,
   ReactFlowProvider,
   useReactFlow,
+  applyNodeChanges,
 } from '@xyflow/react';
 import GraphControls from '../Modules/FlowCanvas/GraphControls/GraphControls';
 import '@xyflow/react/dist/style.css';
@@ -185,10 +186,32 @@ function FlowCanvasInner({
   const { screenToFlowPosition, zoomTo, fitView, getNodes } = useReactFlow();
   const [zoom, setZoom] = useState(100);
   const [isDraggingFromLHS, setIsDraggingFromLHS] = useState(false);
-  const prevNodeCountRef = useRef(nodes.length);
+
+  // ─── Stable callback refs ───
   const onDropNodeRef = useRef(onDropNode);
   useEffect(() => { onDropNodeRef.current = onDropNode; }, [onDropNode]);
+  const onNodesReorderRef = useRef(onNodesReorder);
+  useEffect(() => { onNodesReorderRef.current = onNodesReorder; }, [onNodesReorder]);
 
+  // ─── Local node state for smooth drag ───
+  // Controlled `nodes` prop drives layout; local state lets React Flow update
+  // positions during drag without snapping back on every parent re-render.
+  const styledNodes = useMemo(
+    () => nodes.map((n) => ({ ...n, data: { ...n.data, selectedNodeId } })),
+    [nodes, selectedNodeId]
+  );
+  const [localNodes, setLocalNodes] = useState(styledNodes);
+  const isDraggingNodeRef = useRef(false);
+
+  // Sync from parent only when not mid-drag
+  useEffect(() => {
+    if (!isDraggingNodeRef.current) {
+      setLocalNodes(styledNodes);
+    }
+  }, [styledNodes]);
+
+  // Fit view whenever the node count changes (new node added / deleted)
+  const prevNodeCountRef = useRef(nodes.length);
   useEffect(() => {
     if (nodes.length !== prevNodeCountRef.current) {
       prevNodeCountRef.current = nodes.length;
@@ -196,7 +219,12 @@ function FlowCanvasInner({
     }
   }, [nodes.length, fitView]);
 
-  // Detect when a drag from the LHS panel starts/ends
+  // Allow React Flow to update positions during drag via applyNodeChanges
+  const handleNodesChange = useCallback((changes) => {
+    setLocalNodes((nds) => applyNodeChanges(changes, nds));
+  }, []);
+
+  // Detect when a drag from the LHS panel starts/ends (HTML5 drag API)
   useEffect(() => {
     const onDragStart = (e) => {
       if (e.dataTransfer?.types?.includes('application/reactflow-type')) {
@@ -213,10 +241,7 @@ function FlowCanvasInner({
   }, []);
 
   const defaultEdgeOptions = useMemo(
-    () => ({
-      type: 'addButton',
-      style: { stroke: '#ccd5e4', strokeWidth: 1 },
-    }),
+    () => ({ type: 'addButton', style: { stroke: '#ccd5e4', strokeWidth: 1 } }),
     []
   );
 
@@ -225,12 +250,27 @@ function FlowCanvasInner({
     [onNodeClick]
   );
 
+  const handleNodeDragStart = useCallback(() => {
+    isDraggingNodeRef.current = true;
+  }, []);
+
+  // After drag ends, sort all draggable nodes by final Y and reorder the list
+  const handleNodeDragStop = useCallback(() => {
+    isDraggingNodeRef.current = false;
+    if (!onNodesReorderRef.current) return;
+    const allNodes = getNodes();
+    const draggable = allNodes
+      .filter((n) => n.type !== 'start' && n.type !== 'end' && n.type !== 'branchPath')
+      .sort((a, b) => a.position.y - b.position.y);
+    onNodesReorderRef.current(draggable.map((n) => n.id));
+  }, [getNodes]);
+
   const handleDragOver = useCallback((event) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
   }, []);
 
-  // Canvas-wide drop (append to end) — only fires if not caught by an edge's foreignObject
+  // Canvas-wide drop (append to end) — only fires if not caught by an edge foreignObject
   const handleDrop = useCallback(
     (event) => {
       event.preventDefault();
@@ -242,24 +282,6 @@ function FlowCanvasInner({
       onDropNodeRef.current?.({ type, label, description, position });
     },
     [screenToFlowPosition]
-  );
-
-  // Node drag-stop: reorder nodeList by Y position using ALL nodes (not just the dragged one)
-  const handleNodeDragStop = useCallback(
-    () => {
-      if (!onNodesReorder) return;
-      const allNodes = getNodes();
-      const draggable = allNodes
-        .filter((n) => n.type !== 'start' && n.type !== 'end' && n.type !== 'branchPath')
-        .sort((a, b) => a.position.y - b.position.y);
-      onNodesReorder(draggable.map((n) => n.id));
-    },
-    [onNodesReorder, getNodes]
-  );
-
-  const styledNodes = useMemo(
-    () => nodes.map((n) => ({ ...n, data: { ...n.data, selectedNodeId } })),
-    [nodes, selectedNodeId]
   );
 
   // Enrich edges with drop callbacks and isDraggingFromLHS flag
@@ -296,15 +318,17 @@ function FlowCanvasInner({
       </div>
 
       <ReactFlow
-        nodes={styledNodes}
+        nodes={localNodes}
         edges={styledEdges}
         nodeTypes={NODE_TYPES}
         edgeTypes={EDGE_TYPES}
         defaultEdgeOptions={defaultEdgeOptions}
+        onNodesChange={handleNodesChange}
         onNodeClick={handleNodeClick}
+        onNodeDragStart={handleNodeDragStart}
+        onNodeDragStop={handleNodeDragStop}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
-        onNodeDragStop={handleNodeDragStop}
         onViewportChange={handleViewportChange}
         fitView
         fitViewOptions={{ padding: 0.3 }}
