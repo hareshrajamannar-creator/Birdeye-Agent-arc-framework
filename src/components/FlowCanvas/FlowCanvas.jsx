@@ -17,7 +17,18 @@ import CanvasNode from '../Molecules/Canvas/CanvasNode/CanvasNode';
 import './FlowCanvas.css';
 import branchStyles from './BranchPath.module.css';
 
+const DRAG_HANDLE_CLASS = 'flow-canvas__drag-handle';
+const DRAGGABLE_TYPES = new Set(['trigger', 'task', 'branch', 'delay', 'parallel', 'loop']);
+
 /* ─── Custom Node Wrappers ─── */
+function DragHandle() {
+  return (
+    <div className={DRAG_HANDLE_CLASS} title="Drag to reorder">
+      <span className="material-symbols-outlined">drag_indicator</span>
+    </div>
+  );
+}
+
 function StartNodeWrapper({ id, data }) {
   const isSelected = id === data.selectedNodeId;
   return (
@@ -31,9 +42,12 @@ function StartNodeWrapper({ id, data }) {
 function TriggerNodeWrapper({ id, data }) {
   const isSelected = id === data.selectedNodeId;
   return (
-    <div className="flow-canvas__node-center flow-canvas__node-draggable">
+    <div className="flow-canvas__node-center">
       <Handle type="target" position={Position.Top} />
-      <CanvasNode nodeType="trigger" label="Trigger" stepNumber={data.stepNumber} title={data.title} description={data.subtitle} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} state={isSelected ? 'selected' : 'default'} onDelete={data.onDelete} />
+      <div className="flow-canvas__node-draggable-row">
+        <DragHandle />
+        <CanvasNode nodeType="trigger" label="Trigger" stepNumber={data.stepNumber} title={data.title} description={data.subtitle} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} state={isSelected ? 'selected' : 'default'} onDelete={data.onDelete} />
+      </div>
       <Handle type="source" position={Position.Bottom} />
     </div>
   );
@@ -42,9 +56,12 @@ function TriggerNodeWrapper({ id, data }) {
 function TaskNodeWrapper({ id, data }) {
   const isSelected = id === data.selectedNodeId;
   return (
-    <div className="flow-canvas__node-center flow-canvas__node-draggable">
+    <div className="flow-canvas__node-center">
       <Handle type="target" position={Position.Top} />
-      <CanvasNode nodeType="task" label="Task" stepNumber={data.stepNumber} title={data.title} description={data.subtitle} hasAiIcon={data.hasAiIcon} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} state={isSelected ? 'selected' : 'default'} onDelete={data.onDelete} />
+      <div className="flow-canvas__node-draggable-row">
+        <DragHandle />
+        <CanvasNode nodeType="task" label="Task" stepNumber={data.stepNumber} title={data.title} description={data.subtitle} hasAiIcon={data.hasAiIcon} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} state={isSelected ? 'selected' : 'default'} onDelete={data.onDelete} />
+      </div>
       <Handle type="source" position={Position.Bottom} />
     </div>
   );
@@ -53,9 +70,12 @@ function TaskNodeWrapper({ id, data }) {
 function BranchNodeWrapper({ id, data }) {
   const isSelected = id === data.selectedNodeId;
   return (
-    <div className="flow-canvas__node-center flow-canvas__node-draggable">
+    <div className="flow-canvas__node-center">
       <Handle type="target" position={Position.Top} />
-      <CanvasNode nodeType="branch" label="Branch" stepNumber={data.stepNumber} title={data.title} description={data.subtitle} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} hasAddButton onAddClick={data.onAddBranch} state={isSelected ? 'selected' : 'default'} onDelete={data.onDelete} />
+      <div className="flow-canvas__node-draggable-row">
+        <DragHandle />
+        <CanvasNode nodeType="branch" label="Branch" stepNumber={data.stepNumber} title={data.title} description={data.subtitle} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} hasAddButton onAddClick={data.onAddBranch} state={isSelected ? 'selected' : 'default'} onDelete={data.onDelete} />
+      </div>
       <Handle type="source" position={Position.Bottom} />
     </div>
   );
@@ -149,14 +169,14 @@ function AddButtonEdge({ id, sourceX, sourceY, targetX, targetY, style, data }) 
   );
 }
 
-/* ─── Custom Edge: branch fan (horizontal-bar tree pattern) ─── */
+/* ─── Custom Edge: branch fan ─── */
 function BranchFanEdge({ sourceX, sourceY, targetX, targetY }) {
   const midY = sourceY + 30;
   const d = `M ${sourceX} ${sourceY} L ${sourceX} ${midY} L ${targetX} ${midY} L ${targetX} ${targetY}`;
   return <path d={d} className="flow-canvas__branch-fan" fill="none" />;
 }
 
-/* ─── Node & Edge Types (stable references) ─── */
+/* ─── Stable node / edge type maps ─── */
 const NODE_TYPES = {
   start: StartNodeWrapper,
   trigger: TriggerNodeWrapper,
@@ -193,38 +213,65 @@ function FlowCanvasInner({
   const onNodesReorderRef = useRef(onNodesReorder);
   useEffect(() => { onNodesReorderRef.current = onNodesReorder; }, [onNodesReorder]);
 
-  // ─── Local node state for smooth drag ───
-  // Controlled `nodes` prop drives layout; local state lets React Flow update
-  // positions during drag without snapping back on every parent re-render.
+  // ─── Enrich controlled nodes with selectedNodeId + dragHandle ───
   const styledNodes = useMemo(
-    () => nodes.map((n) => ({ ...n, data: { ...n.data, selectedNodeId } })),
+    () => nodes.map((n) => ({
+      ...n,
+      data: { ...n.data, selectedNodeId },
+      // Restrict drag to the handle element so clicking the node body
+      // selects it without accidentally starting a drag
+      dragHandle: DRAGGABLE_TYPES.has(n.type) ? `.${DRAG_HANDLE_CLASS}` : undefined,
+    })),
     [nodes, selectedNodeId]
   );
+
+  // ─── Local node state for smooth drag ───
+  // Controlled `nodes` drives layout; `localNodes` lets React Flow update
+  // positions ONLY while actively dragging (dragging: true changes).
+  // Any other change type (dimensions, select, reset, etc.) is ignored to
+  // prevent React Flow's internal bookkeeping from corrupting our layout.
   const [localNodes, setLocalNodes] = useState(styledNodes);
   const isDraggingNodeRef = useRef(false);
+  const prevNodeCountRef = useRef(styledNodes.length);
 
-  // Sync from parent only when not mid-drag
+  // Sync parent → local whenever styledNodes changes, but not mid-drag
   useEffect(() => {
-    if (!isDraggingNodeRef.current) {
-      setLocalNodes(styledNodes);
-    }
-  }, [styledNodes]);
-
-  // Fit view whenever the node count changes (new node added / deleted)
-  const prevNodeCountRef = useRef(nodes.length);
-  useEffect(() => {
-    if (nodes.length !== prevNodeCountRef.current) {
-      prevNodeCountRef.current = nodes.length;
+    if (isDraggingNodeRef.current) return;
+    setLocalNodes(styledNodes);
+    // Fit view whenever nodes are added or removed
+    if (styledNodes.length !== prevNodeCountRef.current) {
+      prevNodeCountRef.current = styledNodes.length;
       setTimeout(() => fitView({ padding: 0.3, duration: 300 }), 50);
     }
-  }, [nodes.length, fitView]);
+  }, [styledNodes, fitView]);
 
-  // Allow React Flow to update positions during drag via applyNodeChanges
+  // CRITICAL FIX: only apply position changes while the node is actively
+  // being dragged (dragging === true). React Flow also emits position changes
+  // with dragging:false during viewport sync — applying those corrupts the layout.
   const handleNodesChange = useCallback((changes) => {
-    setLocalNodes((nds) => applyNodeChanges(changes, nds));
+    const activePositionChanges = changes.filter(
+      (c) => c.type === 'position' && c.dragging === true
+    );
+    if (activePositionChanges.length === 0) return;
+    setLocalNodes((nds) => applyNodeChanges(activePositionChanges, nds));
   }, []);
 
-  // Detect when a drag from the LHS panel starts/ends (HTML5 drag API)
+  const handleNodeDragStart = useCallback(() => {
+    isDraggingNodeRef.current = true;
+  }, []);
+
+  // After drag ends, sort all draggable nodes by final Y and reorder
+  const handleNodeDragStop = useCallback(() => {
+    isDraggingNodeRef.current = false;
+    if (!onNodesReorderRef.current) return;
+    const allNodes = getNodes();
+    const draggable = allNodes
+      .filter((n) => n.type !== 'start' && n.type !== 'end' && n.type !== 'branchPath')
+      .sort((a, b) => a.position.y - b.position.y);
+    onNodesReorderRef.current(draggable.map((n) => n.id));
+  }, [getNodes]);
+
+  // Detect LHS panel drag start/end (HTML5 drag API)
   useEffect(() => {
     const onDragStart = (e) => {
       if (e.dataTransfer?.types?.includes('application/reactflow-type')) {
@@ -250,21 +297,6 @@ function FlowCanvasInner({
     [onNodeClick]
   );
 
-  const handleNodeDragStart = useCallback(() => {
-    isDraggingNodeRef.current = true;
-  }, []);
-
-  // After drag ends, sort all draggable nodes by final Y and reorder the list
-  const handleNodeDragStop = useCallback(() => {
-    isDraggingNodeRef.current = false;
-    if (!onNodesReorderRef.current) return;
-    const allNodes = getNodes();
-    const draggable = allNodes
-      .filter((n) => n.type !== 'start' && n.type !== 'end' && n.type !== 'branchPath')
-      .sort((a, b) => a.position.y - b.position.y);
-    onNodesReorderRef.current(draggable.map((n) => n.id));
-  }, [getNodes]);
-
   const handleDragOver = useCallback((event) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
@@ -284,7 +316,7 @@ function FlowCanvasInner({
     [screenToFlowPosition]
   );
 
-  // Enrich edges with drop callbacks and isDraggingFromLHS flag
+  // Enrich edges with drop callbacks and LHS-drag flag
   const styledEdges = useMemo(
     () =>
       edges.map((edge) => ({
