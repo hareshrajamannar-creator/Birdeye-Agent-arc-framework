@@ -8,8 +8,8 @@ import RHSPanelFooter from '../../RHSFooter/RHSFooter';
 const font = '"Roboto", arial, sans-serif';
 
 export function ScheduleBasedBody({
-  triggerName = 'Run on schedule',
-  description = 'Triggers the agent to generate posts based on your selected schedule',
+  triggerName = '',
+  description = '',
   frequencyOptions = [],
   dayOptions = [],
   timeOptions = [],
@@ -30,6 +30,7 @@ export function ScheduleBasedBody({
         name="triggerName"
         type="text"
         label="Trigger name"
+        placeholder="Enter trigger name"
         value={localTriggerName}
         onChange={(event) => {
           const value = event.target.value;
@@ -41,6 +42,7 @@ export function ScheduleBasedBody({
       <TextArea
         name="description"
         label="Description"
+        placeholder="Enter description"
         value={localDescription}
         onChange={(event) => {
           const value = event.target.value;
@@ -110,8 +112,8 @@ export default function ScheduleBased({
   frequencyOptions = [],
   dayOptions = [],
   timeOptions = [],
-  triggerName = 'Run on schedule',
-  description = 'Triggers the agent to generate posts based on your selected schedule',
+  triggerName = '',
+  description = '',
   defaultFrequency,
   defaultDay,
   defaultTime,

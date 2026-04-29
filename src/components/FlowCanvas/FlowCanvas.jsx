@@ -46,7 +46,7 @@ function TriggerNodeWrapper({ id, data }) {
       <Handle type="target" position={Position.Top} />
       <div className="flow-canvas__node-draggable-row">
         <DragHandle />
-        <CanvasNode nodeType="trigger" label={data.headerLabel || (data.subtype === 'Schedule-based' ? 'Schedule-based trigger' : 'Trigger')} stepNumber={data.stepNumber} title={data.title} description={data.subtitle} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} state={isSelected ? 'selected' : 'default'} onDelete={data.onDelete} />
+        <CanvasNode nodeType="trigger" label={data.headerLabel || (data.subtype === 'Schedule-based' ? 'Schedule-based trigger' : 'Trigger')} stepNumber={data.stepNumber} title={data.title} description={data.subtitle} titlePlaceholder={data.titlePlaceholder} descriptionPlaceholder={data.descriptionPlaceholder} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} state={isSelected ? 'selected' : 'default'} onDelete={data.onDelete} />
       </div>
       <Handle type="source" position={Position.Bottom} />
     </div>
@@ -60,7 +60,7 @@ function TaskNodeWrapper({ id, data }) {
       <Handle type="target" position={Position.Top} />
       <div className="flow-canvas__node-draggable-row">
         <DragHandle />
-        <CanvasNode nodeType="task" label="Task" stepNumber={data.stepNumber} title={data.title} description={data.subtitle} hasAiIcon={data.hasAiIcon} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} state={isSelected ? 'selected' : 'default'} onDelete={data.onDelete} />
+        <CanvasNode nodeType="task" label="Task" stepNumber={data.stepNumber} title={data.title} description={data.subtitle} titlePlaceholder={data.titlePlaceholder} descriptionPlaceholder={data.descriptionPlaceholder} hasAiIcon={data.hasAiIcon} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} state={isSelected ? 'selected' : 'default'} onDelete={data.onDelete} />
       </div>
       <Handle type="source" position={Position.Bottom} />
     </div>
@@ -74,11 +74,49 @@ function BranchNodeWrapper({ id, data }) {
       <Handle type="target" position={Position.Top} />
       <div className="flow-canvas__node-draggable-row">
         <DragHandle />
-        <CanvasNode nodeType="branch" label="Branch" stepNumber={data.stepNumber} title={data.title} description={data.subtitle} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} hasAddButton onAddClick={data.onAddBranch} state={isSelected ? 'selected' : 'default'} onDelete={data.onDelete} />
+        <CanvasNode nodeType="branch" label="Branch" stepNumber={data.stepNumber} title={data.title} description={data.subtitle} titlePlaceholder={data.titlePlaceholder} descriptionPlaceholder={data.descriptionPlaceholder} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} hasAddButton onAddClick={data.onAddBranch} state={isSelected ? 'selected' : 'default'} onDelete={data.onDelete} />
       </div>
       <Handle type="source" position={Position.Bottom} />
     </div>
   );
+}
+
+function ControlNodeWrapper({ id, data, nodeType, label }) {
+  const isSelected = id === data.selectedNodeId;
+  return (
+    <div className="flow-canvas__node-center">
+      <Handle type="target" position={Position.Top} />
+      <div className="flow-canvas__node-draggable-row">
+        <DragHandle />
+        <CanvasNode
+          nodeType={nodeType}
+          label={label}
+          stepNumber={data.stepNumber}
+          title={data.title}
+          description={data.subtitle}
+          titlePlaceholder={data.titlePlaceholder}
+          descriptionPlaceholder={data.descriptionPlaceholder}
+          hasToggle={data.hasToggle}
+          toggleEnabled={data.toggleEnabled}
+          state={isSelected ? 'selected' : 'default'}
+          onDelete={data.onDelete}
+        />
+      </div>
+      <Handle type="source" position={Position.Bottom} />
+    </div>
+  );
+}
+
+function DelayNodeWrapper(props) {
+  return <ControlNodeWrapper {...props} nodeType="delay" label="Delay" />;
+}
+
+function ParallelNodeWrapper(props) {
+  return <ControlNodeWrapper {...props} nodeType="parallel" label="Parallel tasks" />;
+}
+
+function LoopNodeWrapper(props) {
+  return <ControlNodeWrapper {...props} nodeType="loop" label="Loop" />;
 }
 
 function BranchPathNodeWrapper({ id, data }) {
@@ -185,6 +223,9 @@ const NODE_TYPES = {
   trigger: TriggerNodeWrapper,
   task: TaskNodeWrapper,
   branch: BranchNodeWrapper,
+  delay: DelayNodeWrapper,
+  parallel: ParallelNodeWrapper,
+  loop: LoopNodeWrapper,
   branchPath: BranchPathNodeWrapper,
   end: EndNodeWrapper,
 };

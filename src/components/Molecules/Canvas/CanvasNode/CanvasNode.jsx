@@ -9,6 +9,8 @@ export default function CanvasNode({
   stepNumber,
   title,
   description,
+  titlePlaceholder,
+  descriptionPlaceholder,
   hasAiIcon = false,
   hasToggle = false,
   toggleEnabled = true,
@@ -46,6 +48,8 @@ export default function CanvasNode({
           stepNumber={stepNumber}
           title={title}
           description={description}
+          titlePlaceholder={titlePlaceholder}
+          descriptionPlaceholder={descriptionPlaceholder}
         />
       )}
     </div>

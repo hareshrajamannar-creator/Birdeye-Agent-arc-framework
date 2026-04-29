@@ -31,7 +31,7 @@ function BranchRow({ branch, index, onChange, onRemove }) {
   );
 }
 
-export default function ParallelBody({ initialValues = {} }) {
+export default function ParallelBody({ initialValues = {}, onFieldChange }) {
   const [nodeName, setNodeName] = useState(initialValues.nodeName ?? '');
   const [description, setDescription] = useState(initialValues.description ?? '');
   const [branches, setBranches] = useState(initialValues.branches ?? [
@@ -40,16 +40,28 @@ export default function ParallelBody({ initialValues = {} }) {
   ]);
 
   function addBranch() {
-    setBranches((prev) => [...prev, { name: `Branch ${prev.length + 1}` }]);
+    setBranches((prev) => {
+      const next = [...prev, { name: '' }];
+      onFieldChange?.('branches', next);
+      return next;
+    });
   }
 
   function updateBranch(index, name) {
-    setBranches((prev) => prev.map((b, i) => i === index ? { ...b, name } : b));
+    setBranches((prev) => {
+      const next = prev.map((b, i) => i === index ? { ...b, name } : b);
+      onFieldChange?.('branches', next);
+      return next;
+    });
   }
 
   function removeBranch(index) {
     if (branches.length <= 2) return;
-    setBranches((prev) => prev.filter((_, i) => i !== index));
+    setBranches((prev) => {
+      const next = prev.filter((_, i) => i !== index);
+      onFieldChange?.('branches', next);
+      return next;
+    });
   }
 
   return (
@@ -60,7 +72,11 @@ export default function ParallelBody({ initialValues = {} }) {
         label="Name"
         placeholder="Enter name"
         value={nodeName}
-        onChange={(e) => setNodeName(e.target.value)}
+        onChange={(e) => {
+          const value = e.target.value;
+          setNodeName(value);
+          onFieldChange?.('nodeName', value);
+        }}
         required
       />
       <TextArea
@@ -68,7 +84,11 @@ export default function ParallelBody({ initialValues = {} }) {
         label="Description"
         placeholder="Enter description"
         value={description}
-        onChange={(e) => setDescription(e.target.value)}
+        onChange={(e) => {
+          const value = e.target.value;
+          setDescription(value);
+          onFieldChange?.('description', value);
+        }}
         noFloatingLabel
       />
 

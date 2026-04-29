@@ -36,8 +36,8 @@ function buildFlow(nodeList, startData, nodeDetails = {}) {
         ? {
             ...item.data,
             headerLabel: 'Schedule-based trigger',
-            title: nodeDetails[nodeId]?.triggerName || item.data.title || 'Run on schedule',
-            subtitle: nodeDetails[nodeId]?.description || item.data.subtitle || 'Triggers the agent to generate posts based on your selected schedule',
+            title: nodeDetails[nodeId]?.triggerName ?? item.data.title,
+            subtitle: nodeDetails[nodeId]?.description ?? item.data.subtitle,
           }
         : { ...item.data },
     });
@@ -294,7 +294,9 @@ export default function AgentBuilder({
       prev.map((n) => {
         if (n.id !== nodeId) return n;
         const updates = {};
-        if (field === 'triggerName' || field === 'taskName') updates.title = value;
+        if (['triggerName', 'taskName', 'name', 'nodeName', 'branchName'].includes(field)) {
+          updates.title = value;
+        }
         if (field === 'description') updates.subtitle = value;
         return { ...n, data: { ...n.data, ...updates } };
       })
@@ -378,51 +380,43 @@ export default function AgentBuilder({
     const id = nextId();
 
     let flowType = 'task';
-    let title = 'Task';
     let hasAiIcon = false;
+    let titlePlaceholder = 'Enter name';
+    let descriptionPlaceholder = 'Enter description';
 
     if (type === 'trigger' && label === 'Schedule-based') {
       flowType = 'trigger';
-      title = 'Run on schedule';
+      titlePlaceholder = 'Enter trigger name';
     } else if (type === 'trigger') {
       flowType = 'trigger';
-      title = label || 'Trigger';
+      titlePlaceholder = 'Enter trigger name';
     } else if (type === 'branch') {
       flowType = 'branch';
-      title = 'Based on conditions';
+      titlePlaceholder = 'Enter branch name';
     } else if (type === 'delay') {
       flowType = 'delay';
-      title = 'Delay';
     } else if (type === 'parallel') {
       flowType = 'parallel';
-      title = 'Parallel tasks';
     } else if (type === 'loop') {
       flowType = 'loop';
-      title = 'Loop';
     } else if (type === 'task') {
       flowType = 'task';
       hasAiIcon = label === 'Custom';
-      title = hasAiIcon ? 'Task' : (description || 'Task');
+      titlePlaceholder = 'Enter task name';
     }
-
-    // For drag-type cards, description === label (no meaningful subtitle); only show it when distinct
-    const subtitleFromDrag = (description && description !== label) ? description : '';
-    const scheduleDescription = 'Triggers the agent to generate posts based on your selected schedule';
 
     const newNode = {
       id,
       flowType,
       data: {
-        title,
+        title: '',
         headerLabel: type === 'trigger' && label === 'Schedule-based' ? 'Schedule-based trigger' : undefined,
         subtype: label,
         stepNumber: null,
         description,
-        subtitle: type === 'trigger' && label === 'Schedule-based'
-          ? scheduleDescription
-          : flowType === 'branch'
-            ? 'Build condition-specific flows'
-            : subtitleFromDrag,
+        subtitle: '',
+        titlePlaceholder,
+        descriptionPlaceholder,
         hasAiIcon,
         hasToggle: true,
         toggleEnabled: true,
@@ -447,16 +441,16 @@ export default function AgentBuilder({
 
     if (type === 'trigger' && label === 'Schedule-based') {
       details = {
-        triggerName: 'Run on schedule',
-        description: scheduleDescription,
+        triggerName: '',
+        description: '',
         frequency: 'Daily',
         day: '7 days',
         time: '9:00 AM',
       };
     } else if (type === 'trigger') {
       details = {
-        triggerName: label || '',
-        description: description || '',
+        triggerName: '',
+        description: '',
         conditions: [
           { field: '', operator: '', value: '' },
           { field: '', operator: '', value: '' },
@@ -481,22 +475,22 @@ export default function AgentBuilder({
         [fallbackId]: { branchName: 'No conditions met', description: '', conditions: [], parentId: id, isBranchPath: true, isFallback: true },
       };
     } else if (type === 'delay') {
-      details = { duration: '1', unit: 'hours' };
+      details = { name: '', duration: '', unit: '' };
     } else if (type === 'parallel') {
-      details = { tasks: [] };
+      details = { nodeName: '', description: '', branches: [{ name: '' }, { name: '' }] };
     } else if (type === 'loop') {
-      details = { iterations: 3, exitCondition: '' };
+      details = { name: '', description: '', loopMode: 'manual', loopOver: null };
     } else if (label === 'Custom') {
       details = {
-        taskName: 'Identify relevant mentions in the review',
-        description: 'Extract product or service-specific feedback from the review',
+        taskName: '',
+        description: '',
         llmModel: 'Fast',
         systemPrompt: '',
         userPrompt: '',
       };
     } else {
       details = {
-        taskName: description,
+        taskName: '',
         description: '',
       };
     }
@@ -586,8 +580,8 @@ export default function AgentBuilder({
           }}
           onPreview={() => {}}
           onExpand={() => {}}
-          triggerName={currentDetails.triggerName || 'Run on schedule'}
-          description={currentDetails.description || 'Triggers the agent to generate posts based on your selected schedule'}
+          triggerName={currentDetails.triggerName ?? ''}
+          description={currentDetails.description ?? ''}
           onFieldChange={activeFieldChange}
           frequencyOptions={['Hourly', 'Daily', 'Weekly', 'Monthly']}
           dayOptions={['1 day', '2 days', '3 days', '7 days', '14 days', '30 days']}
