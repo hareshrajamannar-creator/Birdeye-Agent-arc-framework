@@ -91,12 +91,14 @@ function App() {
   const [builderAgentId, setBuilderAgentId] = useState(null);
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [toastTone, setToastTone] = useState('success');
   const [dashboardInitialTab, setDashboardInitialTab] = useState('agents');
   const toastTimerRef = useRef(null);
 
-  function showToast(message) {
+  function showToast(message, tone = 'success') {
     clearTimeout(toastTimerRef.current);
     setToastMessage(message);
+    setToastTone(tone);
     setToastVisible(true);
     toastTimerRef.current = setTimeout(() => setToastVisible(false), 3000);
   }
@@ -169,7 +171,8 @@ function App() {
 
   async function handleSaveTemplate(template) {
     const templateId = template.id || crypto.randomUUID();
-    await saveTemplate(templateId, {
+    const previousTemplate = savedTemplates.find((item) => item.id === templateId);
+    const nextTemplate = {
       ...template,
       id: templateId,
       moduleContext: template.moduleContext || currentModule,
@@ -177,9 +180,26 @@ function App() {
       source: template.source || 'custom',
       title: template.title,
       description: template.description,
+    };
+
+    setSavedTemplates((prev) => {
+      const rest = prev.filter((item) => item.id !== templateId);
+      return [...rest, { ...nextTemplate, updatedAt: { seconds: Math.floor(Date.now() / 1000) } }];
     });
-    setDashboardInitialTab('library');
-    showToast('Template saved successfully');
+
+    try {
+      await saveTemplate(templateId, nextTemplate);
+      setDashboardInitialTab('library');
+      showToast('Template saved successfully');
+    } catch (error) {
+      setSavedTemplates((prev) => {
+        const rest = prev.filter((item) => item.id !== templateId);
+        return previousTemplate ? [...rest, previousTemplate] : rest;
+      });
+      console.error('Template save failed', error);
+      showToast('Template could not be saved', 'error');
+      throw error;
+    }
   }
 
   function handleCreateTemplate(template) {
@@ -277,8 +297,8 @@ function App() {
   /* ─── Toast portal (always mounted so it survives builder unmount) ─── */
   const toast = toastVisible
     ? ReactDOM.createPortal(
-        <div className={styles.toast}>
-          <span className="material-symbols-outlined">check_circle</span>
+        <div className={`${styles.toast} ${toastTone === 'error' ? styles.toastError : ''}`}>
+          <span className="material-symbols-outlined">{toastTone === 'error' ? 'error' : 'check_circle'}</span>
           {toastMessage}
         </div>,
         document.body
