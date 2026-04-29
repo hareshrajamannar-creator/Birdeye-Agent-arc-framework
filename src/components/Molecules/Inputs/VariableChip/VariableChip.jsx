@@ -18,7 +18,7 @@ function CloseIcon() {
   );
 }
 
-export default function VariableChip({ value, onChange, onDelete, autoFocus = false }) {
+export default function VariableChip({ value, onChange, onDelete, autoFocus = false, fullWidth = false }) {
   const [editing, setEditing] = useState(autoFocus);
   const [draft, setDraft] = useState(value ?? '');
   const inputRef = useRef(null);
@@ -51,7 +51,7 @@ export default function VariableChip({ value, onChange, onDelete, autoFocus = fa
 
   if (editing) {
     return (
-      <span className={`${styles.chip} ${styles.chipEditing}`}>
+      <span className={`${styles.chip} ${styles.chipEditing} ${fullWidth ? styles.chipFullWidth : ''}`}>
         <span className={styles.chipSwatch}>
           <DataTypeIcon />
         </span>
@@ -72,11 +72,14 @@ export default function VariableChip({ value, onChange, onDelete, autoFocus = fa
   }
 
   return (
-    <span className={styles.chip}>
+    <span className={`${styles.chip} ${fullWidth ? styles.chipFullWidth : ''}`}>
       <span className={styles.chipSwatch}>
         <DataTypeIcon />
       </span>
-      <span className={styles.chipLabel} onClick={() => setEditing(true)}>
+      <span
+        className={`${styles.chipLabel} ${fullWidth ? styles.chipLabelWrap : ''}`}
+        onClick={() => setEditing(true)}
+      >
         {value}
       </span>
       <button

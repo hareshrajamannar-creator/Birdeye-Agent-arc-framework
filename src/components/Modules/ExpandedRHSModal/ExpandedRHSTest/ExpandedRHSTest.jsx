@@ -54,7 +54,8 @@ export default function ExpandedRHSTest({
       />
 
       <ExpandedRHSTestOutput
-        rows={hasRun ? localOutputFields : []}
+        rows={localOutputFields}
+        onChange={setLocalOutputFields}
       />
 
       {hasRun && (

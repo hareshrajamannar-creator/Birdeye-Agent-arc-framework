@@ -73,6 +73,7 @@ export default function ExpandedRHSTestInput({ fields = [], onChange }) {
               autoFocus={!!field._isNew}
               onChange={(name) => handleNameChange(idx, name)}
               onDelete={() => handleDelete(idx)}
+              fullWidth
             />
           </div>
 

@@ -15,6 +15,14 @@
   cursor: default;
 }
 
+/* Full-width variant for table/list contexts — chip fills container, label wraps */
+.chipFullWidth {
+  width: 100%;
+  height: auto;
+  min-height: 26px;
+  align-items: flex-start;
+}
+
 .chipEditing {
   border-color: #1976d2;
 }
@@ -38,6 +46,14 @@
   font-family: 'Inter', 'Roboto', sans-serif;
   white-space: nowrap;
   cursor: pointer;
+}
+
+.chipLabelWrap {
+  white-space: normal;
+  word-break: break-word;
+  flex: 1;
+  min-width: 0;
+  padding: 4px 0;
 }
 
 .deleteBtn {
