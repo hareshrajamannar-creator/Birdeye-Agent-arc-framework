@@ -1,45 +1,111 @@
-.container {
+.root {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 0 0;
+  width: 100%;
+  min-height: 420px;
+  background: #fff;
+}
+
+.inner {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--space-3, 12px);
-  min-height: 240px;
-  width: 100%;
-  padding: var(--space-6, 24px);
-  border: 1px dashed var(--color-border, #e5e9f0);
-  border-radius: var(--radius-lg, 12px);
-  background: var(--color-neutral-50, #f8fafc);
-  color: var(--color-text-secondary, #555);
-  font-family: var(--font-family-base, 'Roboto', sans-serif);
+  gap: 16px;
+  padding: 50px;
   text-align: center;
 }
 
-.compact {
-  min-height: 220px;
+/* ─── Illustration ─── */
+
+.outerBox {
+  width: 218px;
+  height: 205px;
+  background: rgba(141, 157, 202, 0.3);
+  border-radius: 24px 0 24px 0;
+  position: relative;
+  flex-shrink: 0;
 }
 
-.icon {
-  color: var(--color-primary, #1976d2);
-  font-size: 36px;
+.card {
+  position: absolute;
+  width: 184px;
+  height: 145px;
+  left: 17px;
+  top: 30px;
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  align-items: stretch;
+  box-shadow: 0 2px 8px rgba(33, 33, 33, 0.08);
 }
+
+.contentBox {
+  flex: 1;
+  background: #ebeff6;
+  border-radius: 4px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+.imgArea {
+  height: 76px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.bars {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.barFull {
+  height: 5px;
+  background: #8d9dca;
+  border-radius: 100px;
+  width: 100%;
+}
+
+.barShort {
+  height: 5px;
+  background: rgba(141, 157, 202, 0.3);
+  border-radius: 100px;
+  width: 44px;
+}
+
+/* ─── Copy ─── */
 
 .copy {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1, 4px);
+  gap: 8px;
+  width: 100%;
 }
 
 .title {
   margin: 0;
-  color: var(--color-text-primary, #212121);
-  font-size: 15px;
-  line-height: 1.35;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 26px;
+  letter-spacing: -0.36px;
+  color: #212121;
 }
 
 .description {
   margin: 0;
-  color: var(--color-text-secondary, #555);
-  font-size: 13px;
-  line-height: 1.45;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: -0.28px;
+  color: #555;
 }

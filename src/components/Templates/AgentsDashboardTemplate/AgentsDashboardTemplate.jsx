@@ -8,8 +8,158 @@ import SecondaryRailNav from '../../Organisms/Nav/SecondaryRailNav/SecondaryRail
 import MetricsGroup from '../../Organisms/MetricsGroup/MetricsGroup';
 import AgentsTable from '../../Organisms/DataViews/AgentsTable/AgentsTable';
 import TemplateLibrary from '../../Organisms/TemplateLibrary/TemplateLibrary';
+import EmptyStates from '../../Patterns/EmptyStates/EmptyStates';
 
 const font = '"Roboto", sans-serif';
+
+/* ─── Empty state copy per agent section ─── */
+
+const EMPTY_STATE_COPY = {
+  // Social AI
+  'Social publishing agents': {
+    title: 'Create your first social publishing agent',
+    description: 'Automatically create and publish social posts to keep your audience engaged',
+  },
+  'Social engagement agents': {
+    title: 'Create your first social engagement agent',
+    description: 'Automatically engage and respond to your audience across social platforms',
+  },
+  // Reviews AI
+  'Review response agents': {
+    title: 'Create your first review response agent',
+    description: 'Automatically respond to customer reviews and protect your reputation',
+  },
+  'Review generation agents': {
+    title: 'Create your first review generation agent',
+    description: 'Automatically request reviews from customers at the perfect moment',
+  },
+  'Negative review escalation agents': {
+    title: 'Create your first escalation agent',
+    description: 'Automatically flag and escalate negative reviews before they affect your business',
+  },
+  // Inbox AI
+  'Conversation intent routing agents': {
+    title: 'Create your first routing agent',
+    description: 'Automatically route conversations to the right team based on intent',
+  },
+  'Inbox reply assistant agents': {
+    title: 'Create your first reply assistant agent',
+    description: 'Automatically suggest and send replies to inbox messages',
+  },
+  // Listings AI
+  'Listings scan agents': {
+    title: 'Create your first listings scan agent',
+    description: 'Automatically scan and fix listing inaccuracies across directories',
+  },
+  'Holiday hours agents': {
+    title: 'Create your first holiday hours agent',
+    description: 'Automatically update your business hours for holidays and special events',
+  },
+  // Overview
+  'Business summary agents': {
+    title: 'Create your first business summary agent',
+    description: 'Automatically generate business performance summaries',
+  },
+  'Risk detection agents': {
+    title: 'Create your first risk detection agent',
+    description: 'Automatically detect and alert on business risks before they escalate',
+  },
+  // Referrals AI
+  'Referral request agents': {
+    title: 'Create your first referral request agent',
+    description: 'Automatically request referrals from satisfied customers',
+  },
+  'Referral follow-up agents': {
+    title: 'Create your first referral follow-up agent',
+    description: 'Automatically follow up on referral leads to drive conversions',
+  },
+  // Payments AI
+  'Payment reminder agents': {
+    title: 'Create your first payment reminder agent',
+    description: 'Automatically send payment reminders to reduce late and missed payments',
+  },
+  'Failed payment recovery agents': {
+    title: 'Create your first recovery agent',
+    description: 'Automatically recover failed payments and reduce customer churn',
+  },
+  // Appointments AI
+  'Appointment reminder agents': {
+    title: 'Create your first reminder agent',
+    description: 'Automatically remind customers of upcoming appointments to reduce no-shows',
+  },
+  'No-show recovery agents': {
+    title: 'Create your first no-show recovery agent',
+    description: 'Automatically re-engage customers who missed their appointments',
+  },
+  // Surveys AI
+  'Survey follow-up agents': {
+    title: 'Create your first survey follow-up agent',
+    description: 'Automatically follow up with survey respondents based on their answers',
+  },
+  'Survey insights agents': {
+    title: 'Create your first insights agent',
+    description: 'Automatically surface key insights and patterns from survey responses',
+  },
+  // Ticketing AI
+  'Ticket priority agents': {
+    title: 'Create your first ticket priority agent',
+    description: 'Automatically prioritize tickets based on urgency and customer value',
+  },
+  'SLA rescue agents': {
+    title: 'Create your first SLA rescue agent',
+    description: 'Automatically alert and escalate tickets at risk of missing SLAs',
+  },
+  // Contacts AI
+  'Contact enrichment agents': {
+    title: 'Create your first enrichment agent',
+    description: 'Automatically enrich contact data to keep your CRM accurate and complete',
+  },
+  'Duplicate merge agents': {
+    title: 'Create your first duplicate merge agent',
+    description: 'Automatically identify and merge duplicate contact records',
+  },
+  // Campaigns AI
+  'Campaign QA agents': {
+    title: 'Create your first QA agent',
+    description: 'Automatically review campaigns for errors before they go live',
+  },
+  'Campaign optimizer agents': {
+    title: 'Create your first optimizer agent',
+    description: 'Automatically optimize campaigns based on performance signals',
+  },
+  // Reports
+  'Report digest agents': {
+    title: 'Create your first report digest agent',
+    description: 'Automatically generate and deliver regular performance reports',
+  },
+  'Anomaly insight agents': {
+    title: 'Create your first anomaly agent',
+    description: 'Automatically detect and surface anomalies in your data',
+  },
+  // Insights
+  'Insight summary agents': {
+    title: 'Create your first insight agent',
+    description: 'Automatically summarize key insights from across your business',
+  },
+  'Trend detection agents': {
+    title: 'Create your first trend detection agent',
+    description: 'Automatically identify and surface emerging trends in your data',
+  },
+  // Competitors AI
+  'Competitor monitoring agents': {
+    title: 'Create your first monitoring agent',
+    description: 'Automatically track competitor changes and surface key insights',
+  },
+  'Benchmark summary agents': {
+    title: 'Create your first benchmark agent',
+    description: 'Automatically compare your performance against competitors',
+  },
+};
+
+const DEFAULT_EMPTY = {
+  title: 'Create your first agent',
+  description: 'Automate repetitive tasks and let AI handle the work for you',
+};
 
 /* ─── Template ─── */
 
@@ -50,6 +200,10 @@ export default function AgentsDashboardTemplate({
   // Lifted metrics state — survives tab switches
   const [savedMetrics, setSavedMetrics] = useState(metrics);
   const [savedPrimaryValue, setSavedPrimaryValue] = useState(primaryMetricValue);
+
+  const agentList = agents ?? [];
+  const isEmpty = agentList.length === 0;
+  const emptyCopy = EMPTY_STATE_COPY[pageTitle] ?? DEFAULT_EMPTY;
 
   return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: font, color: '#212121', overflow: 'hidden' }}>
@@ -149,8 +303,8 @@ export default function AgentsDashboardTemplate({
         </div>
 
         {/* Content */}
-        <div style={{ flex: 1, background: '#fff', overflow: 'auto' }}>
-          <div style={{ paddingLeft: 24 }}>
+        <div style={{ flex: 1, background: '#fff', overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ paddingLeft: 24, flexShrink: 0 }}>
             <TabHeader
               content={tabs.map(t => ({ value: t.id, label: t.label }))}
               activeTab={activeTab}
@@ -159,28 +313,37 @@ export default function AgentsDashboardTemplate({
           </div>
 
           {activeTab === 'agents' && (
-            <>
-              <div style={{ padding: '20px 24px 0' }}>
-                <MetricsGroup
-                  primaryValue={savedPrimaryValue}
-                  primaryType="time"
-                  showTrend
-                  primaryTrend="+1.3%"
-                  primaryTrendPositive
-                  metrics={savedMetrics}
-                  onMetricsChange={setSavedMetrics}
-                  onPrimaryValueChange={setSavedPrimaryValue}
-                />
-              </div>
-              <div style={{ padding: '20px 24px 24px' }}>
-                <AgentsTable
-                  agents={agents}
-                  onRowClick={(agent) => onOpenAgent?.(agent.id)}
-                  onDeleteAgent={onDeleteAgent}
-                  onAgentUpdate={onAgentUpdate}
-                />
-              </div>
-            </>
+            isEmpty ? (
+              <EmptyStates
+                title={emptyCopy.title}
+                description={emptyCopy.description}
+                actionLabel="Create agent"
+                onAction={onCreateAgent}
+              />
+            ) : (
+              <>
+                <div style={{ padding: '20px 24px 0', flexShrink: 0 }}>
+                  <MetricsGroup
+                    primaryValue={savedPrimaryValue}
+                    primaryType="time"
+                    showTrend
+                    primaryTrend="+1.3%"
+                    primaryTrendPositive
+                    metrics={savedMetrics}
+                    onMetricsChange={setSavedMetrics}
+                    onPrimaryValueChange={setSavedPrimaryValue}
+                  />
+                </div>
+                <div style={{ padding: '20px 24px 24px' }}>
+                  <AgentsTable
+                    agents={agentList}
+                    onRowClick={(agent) => onOpenAgent?.(agent.id)}
+                    onDeleteAgent={onDeleteAgent}
+                    onAgentUpdate={onAgentUpdate}
+                  />
+                </div>
+              </>
+            )
           )}
 
           {activeTab === 'library' && (
