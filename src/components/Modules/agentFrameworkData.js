@@ -24,15 +24,27 @@ export const MODULE_DEFINITIONS = {
     description: 'Automate review response, escalation, tagging, and quality monitoring workflows.',
     agents: [
       {
-        id: 'reviews-response',
-        title: 'Review response agent',
-        description: 'Drafts or publishes contextual responses across locations with approval controls.',
+        id: 'reviews-response-templates',
+        title: 'Review response agent replying using templates',
+        description: 'Uses pre-defined templates and responds to reviews automatically.',
         steps: ['New review trigger', 'Sentiment check', 'LLM reply draft', 'Approval or publish'],
       },
       {
-        id: 'reviews-escalation',
-        title: 'Negative review escalation agent',
-        description: 'Routes low-rating reviews to the right location owner before an SLA is missed.',
+        id: 'reviews-response-autonomous',
+        title: 'Review response agent replying autonomously',
+        description: 'Uses AI to analyze review sentiment, generates and posts unique, context aware replies automatically.',
+        steps: ['New review trigger', 'Sentiment check', 'LLM reply draft', 'Publish reply'],
+      },
+      {
+        id: 'reviews-response-human-approval',
+        title: 'Review response agent replying after human approval',
+        description: 'Uses AI to analyze review sentiment, generates and sends unique, context-aware replies for a human approval before posting.',
+        steps: ['New review trigger', 'Sentiment check', 'LLM reply draft', 'Approval or publish'],
+      },
+      {
+        id: 'reviews-response-dashboard-suggestions',
+        title: 'Review response agent suggesting replies in dashboard',
+        description: 'Uses AI to analyze review sentiment, generates and shows unique, context-aware replies in the dashboard for one-click manual posting.',
         steps: ['Low rating trigger', 'Branch by urgency', 'Create ticket', 'Notify owner'],
       },
     ],

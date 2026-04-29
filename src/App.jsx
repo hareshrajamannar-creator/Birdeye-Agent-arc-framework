@@ -7,6 +7,7 @@ import AgentViewerPage from './pages/AgentViewerPage';
 import { getModuleTemplates } from './components/Modules/agentFrameworkData';
 import { getModuleNav } from './components/Modules/moduleNavigation';
 import { subscribeToAgents, deleteAgent, saveAgent } from './services/agentService';
+import { saveTemplate, subscribeToTemplates } from './services/templateService';
 import styles from './App.module.css';
 import '@xyflow/react/dist/style.css';
 
@@ -47,12 +48,41 @@ function isAgentSection(itemId) {
   return !itemId || itemId.endsWith('-agents');
 }
 
+function withTemplateContext(template, moduleId) {
+  return {
+    ...template,
+    moduleContext: template.moduleContext || moduleId,
+    source: template.source || 'default',
+  };
+}
+
+function mergeTemplates(defaultTemplates, savedTemplates, moduleId) {
+  const moduleSaved = savedTemplates
+    .filter((template) => template.moduleContext === moduleId)
+    .sort((a, b) => {
+      const aTime = a.updatedAt?.seconds ?? 0;
+      const bTime = b.updatedAt?.seconds ?? 0;
+      return aTime - bTime;
+    });
+  const savedById = new Map(moduleSaved.map((template) => [template.id, template]));
+  const defaults = defaultTemplates.map((template) => {
+    const saved = savedById.get(template.id);
+    return withTemplateContext(saved ? { ...template, ...saved } : template, moduleId);
+  });
+  const custom = moduleSaved
+    .filter((template) => !defaultTemplates.some((item) => item.id === template.id))
+    .map((template) => withTemplateContext(template, moduleId));
+
+  return [...defaults, ...custom];
+}
+
 /* ─── App ─── */
 
 function App() {
   const [currentModule, setCurrentModule] = useState('reviews');
   const [activeL2Item, setActiveL2Item] = useState(() => getModuleNav('reviews').defaultItemId);
   const [agents, setAgents] = useState([]);
+  const [savedTemplates, setSavedTemplates] = useState([]);
   const [builderOpen, setBuilderOpen] = useState(false);
   const [builderTemplate, setBuilderTemplate] = useState(null);
   const [editingAgent, setEditingAgent] = useState(null);
@@ -73,8 +103,22 @@ function App() {
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    const unsubscribe = subscribeToTemplates((data) => {
+      setSavedTemplates(data);
+    });
+    return () => unsubscribe();
+  }, []);
+
   const moduleNav = getModuleNav(currentModule);
-  const moduleTemplates = useMemo(() => getModuleTemplates(currentModule), [currentModule]);
+  const defaultModuleTemplates = useMemo(
+    () => getModuleTemplates(currentModule).map((template) => withTemplateContext(template, currentModule)),
+    [currentModule]
+  );
+  const moduleTemplates = useMemo(
+    () => mergeTemplates(defaultModuleTemplates, savedTemplates, currentModule),
+    [defaultModuleTemplates, savedTemplates, currentModule]
+  );
   const moduleAgents = useMemo(
     () =>
       agents
@@ -111,6 +155,29 @@ function App() {
     handleCreateAgent(template || null);
   }
 
+  async function handleSaveTemplate(template) {
+    const templateId = template.id || crypto.randomUUID();
+    await saveTemplate(templateId, {
+      ...template,
+      id: templateId,
+      moduleContext: template.moduleContext || currentModule,
+      sectionContext: template.sectionContext || activeL2Item,
+      source: template.source || 'custom',
+      title: template.title,
+      description: template.description,
+    });
+  }
+
+  function handleCreateTemplate(template) {
+    return handleSaveTemplate({
+      ...template,
+      id: crypto.randomUUID(),
+      moduleContext: currentModule,
+      sectionContext: activeL2Item,
+      source: 'custom',
+    });
+  }
+
   function handleL2ItemClick(itemId) {
     if (itemId === 'create-agent') {
       handleCreateAgent();
@@ -126,7 +193,8 @@ function App() {
   async function handleAgentUpdate(agentId, field, value) {
     const agent = agents.find((a) => a.id === agentId);
     if (!agent) return;
-    const { updatedAt, ...rest } = agent;
+    const rest = { ...agent };
+    delete rest.updatedAt;
     await saveAgent(agentId, { ...rest, [field]: value });
   }
 
@@ -242,6 +310,8 @@ function App() {
         templates={moduleTemplates}
         showDashboard={showDashboard}
         onCreateAgent={() => handleCreateAgent()}
+        onCreateTemplate={handleCreateTemplate}
+        onSaveTemplate={handleSaveTemplate}
         onUseTemplate={handleUseTemplate}
         onNavChange={handleModuleChange}
         onMenuItemClick={handleL2ItemClick}

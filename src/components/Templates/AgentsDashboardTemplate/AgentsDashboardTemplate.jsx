@@ -180,7 +180,10 @@ export default function AgentsDashboardTemplate({
   metrics = DEFAULT_METRICS,
   primaryMetricValue = '6h 20m',
   agents,
+  templates,
   onCreateAgent,
+  onCreateTemplate,
+  onSaveTemplate,
   onUseTemplate,
   onOpenAgent,
   onDeleteAgent,
@@ -348,7 +351,13 @@ export default function AgentsDashboardTemplate({
 
           {activeTab === 'library' && (
             <div style={{ padding: 24 }}>
-              <TemplateLibrary variant={libraryView === 'table' ? 'list' : 'grid'} onUseTemplate={onUseTemplate} />
+              <TemplateLibrary
+                templates={templates}
+                variant={libraryView === 'table' ? 'list' : 'grid'}
+                onCreateTemplate={onCreateTemplate}
+                onSaveTemplate={onSaveTemplate}
+                onUseTemplate={onUseTemplate}
+              />
             </div>
           )}
         </div>
@@ -363,7 +372,10 @@ AgentsDashboardTemplate.propTypes = {
   metrics: PropTypes.array,
   primaryMetricValue: PropTypes.string,
   agents: PropTypes.array,
+  templates: PropTypes.array,
   onCreateAgent: PropTypes.func,
+  onCreateTemplate: PropTypes.func,
+  onSaveTemplate: PropTypes.func,
   onUseTemplate: PropTypes.func,
   onOpenAgent: PropTypes.func,
   avatarSrc: PropTypes.string,
