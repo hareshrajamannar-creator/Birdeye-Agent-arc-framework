@@ -30,7 +30,7 @@ function StartNodeWrapper({ id, data }) {
 function TriggerNodeWrapper({ id, data }) {
   const isSelected = id === data.selectedNodeId;
   return (
-    <div className="flow-canvas__node-center">
+    <div className="flow-canvas__node-center flow-canvas__node-draggable">
       <Handle type="target" position={Position.Top} />
       <CanvasNode nodeType="trigger" label="Trigger" stepNumber={data.stepNumber} title={data.title} description={data.subtitle} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} state={isSelected ? 'selected' : 'default'} onDelete={data.onDelete} />
       <Handle type="source" position={Position.Bottom} />
@@ -41,7 +41,7 @@ function TriggerNodeWrapper({ id, data }) {
 function TaskNodeWrapper({ id, data }) {
   const isSelected = id === data.selectedNodeId;
   return (
-    <div className="flow-canvas__node-center">
+    <div className="flow-canvas__node-center flow-canvas__node-draggable">
       <Handle type="target" position={Position.Top} />
       <CanvasNode nodeType="task" label="Task" stepNumber={data.stepNumber} title={data.title} description={data.subtitle} hasAiIcon={data.hasAiIcon} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} state={isSelected ? 'selected' : 'default'} onDelete={data.onDelete} />
       <Handle type="source" position={Position.Bottom} />
@@ -52,7 +52,7 @@ function TaskNodeWrapper({ id, data }) {
 function BranchNodeWrapper({ id, data }) {
   const isSelected = id === data.selectedNodeId;
   return (
-    <div className="flow-canvas__node-center">
+    <div className="flow-canvas__node-center flow-canvas__node-draggable">
       <Handle type="target" position={Position.Top} />
       <CanvasNode nodeType="branch" label="Branch" stepNumber={data.stepNumber} title={data.title} description={data.subtitle} hasToggle={data.hasToggle} toggleEnabled={data.toggleEnabled} hasAddButton onAddClick={data.onAddBranch} state={isSelected ? 'selected' : 'default'} onDelete={data.onDelete} />
       <Handle type="source" position={Position.Bottom} />
@@ -94,25 +94,52 @@ function EndNodeWrapper({ id, data }) {
 }
 
 /* ─── Custom Edge: main connector with + button ─── */
-function AddButtonEdge({ id, sourceX, sourceY, targetX, targetY, style }) {
-  const [edgePath, labelX, labelY] = getStraightPath({
-    sourceX,
-    sourceY,
-    targetX,
-    targetY,
-  });
+function AddButtonEdge({ id, sourceX, sourceY, targetX, targetY, style, data }) {
+  const [isDragOver, setIsDragOver] = useState(false);
+  const isDraggingFromLHS = data?.isDraggingFromLHS;
+
+  const [edgePath, labelX, labelY] = getStraightPath({ sourceX, sourceY, targetX, targetY });
+
+  const handleDragOver = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = 'copy';
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback(() => {
+    setIsDragOver(false);
+  }, []);
+
+  const handleDrop = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    const type = e.dataTransfer.getData('application/reactflow-type');
+    const label = e.dataTransfer.getData('application/reactflow-label');
+    const description = e.dataTransfer.getData('application/reactflow-description');
+    if (type && data?.onDropOnEdge) {
+      data.onDropOnEdge(type, label, description);
+    }
+  }, [data]);
+
+  const btnClass = [
+    'flow-canvas__edge-add',
+    isDraggingFromLHS ? 'flow-canvas__edge-add--lhs-drag' : '',
+    isDragOver ? 'flow-canvas__edge-add--drop-target' : '',
+  ].filter(Boolean).join(' ');
 
   return (
     <>
       <BaseEdge id={id} path={edgePath} style={style} />
-      <foreignObject
-        width={28}
-        height={28}
-        x={labelX - 14}
-        y={labelY - 14}
-      >
-        <div className="flow-canvas__edge-add-wrapper">
-          <button className="flow-canvas__edge-add">
+      <foreignObject width={56} height={56} x={labelX - 28} y={labelY - 28}>
+        <div
+          className="flow-canvas__edge-add-wrapper"
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          <button className={btnClass} type="button">
             <span className="material-symbols-outlined">add</span>
           </button>
         </div>
@@ -149,6 +176,7 @@ function FlowCanvasInner({
   edges = [],
   onNodeClick,
   onDropNode,
+  onNodesReorder,
   orientation = 'vertical',
   onOrientationChange,
   onRun,
@@ -156,13 +184,33 @@ function FlowCanvasInner({
 }) {
   const { screenToFlowPosition, zoomTo, fitView } = useReactFlow();
   const [zoom, setZoom] = useState(100);
+  const [isDraggingFromLHS, setIsDraggingFromLHS] = useState(false);
   const prevNodeCountRef = useRef(nodes.length);
+  const onDropNodeRef = useRef(onDropNode);
+  useEffect(() => { onDropNodeRef.current = onDropNode; }, [onDropNode]);
+
   useEffect(() => {
     if (nodes.length !== prevNodeCountRef.current) {
       prevNodeCountRef.current = nodes.length;
       setTimeout(() => fitView({ padding: 0.3, duration: 300 }), 50);
     }
   }, [nodes.length, fitView]);
+
+  // Detect when a drag from the LHS panel starts/ends
+  useEffect(() => {
+    const onDragStart = (e) => {
+      if (e.dataTransfer?.types?.includes('application/reactflow-type')) {
+        setIsDraggingFromLHS(true);
+      }
+    };
+    const onDragEnd = () => setIsDraggingFromLHS(false);
+    document.addEventListener('dragstart', onDragStart);
+    document.addEventListener('dragend', onDragEnd);
+    return () => {
+      document.removeEventListener('dragstart', onDragStart);
+      document.removeEventListener('dragend', onDragEnd);
+    };
+  }, []);
 
   const defaultEdgeOptions = useMemo(
     () => ({
@@ -182,6 +230,7 @@ function FlowCanvasInner({
     event.dataTransfer.dropEffect = 'move';
   }, []);
 
+  // Canvas-wide drop (append to end) — only fires if not caught by an edge's foreignObject
   const handleDrop = useCallback(
     (event) => {
       event.preventDefault();
@@ -189,24 +238,43 @@ function FlowCanvasInner({
       const label = event.dataTransfer.getData('application/reactflow-label');
       const description = event.dataTransfer.getData('application/reactflow-description');
       if (!type) return;
-
-      const position = screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY,
-      });
-
-      onDropNode?.({ type, label, description, position });
+      const position = screenToFlowPosition({ x: event.clientX, y: event.clientY });
+      onDropNodeRef.current?.({ type, label, description, position });
     },
-    [screenToFlowPosition, onDropNode]
+    [screenToFlowPosition]
+  );
+
+  // Node drag-stop: reorder nodeList by Y position
+  const handleNodeDragStop = useCallback(
+    (event, node, currentNodes) => {
+      if (!onNodesReorder) return;
+      const draggable = currentNodes
+        .filter((n) => n.type !== 'start' && n.type !== 'end' && n.type !== 'branchPath')
+        .sort((a, b) => a.position.y - b.position.y);
+      onNodesReorder(draggable.map((n) => n.id));
+    },
+    [onNodesReorder]
   );
 
   const styledNodes = useMemo(
-    () =>
-      nodes.map((n) => ({
-        ...n,
-        data: { ...n.data, selectedNodeId },
-      })),
+    () => nodes.map((n) => ({ ...n, data: { ...n.data, selectedNodeId } })),
     [nodes, selectedNodeId]
+  );
+
+  // Enrich edges with drop callbacks and isDraggingFromLHS flag
+  const styledEdges = useMemo(
+    () =>
+      edges.map((edge) => ({
+        ...edge,
+        data: {
+          ...edge.data,
+          isDraggingFromLHS,
+          onDropOnEdge: (type, label, description) => {
+            onDropNodeRef.current?.({ type, label, description, afterNodeId: edge.source });
+          },
+        },
+      })),
+    [edges, isDraggingFromLHS]
   );
 
   const handleViewportChange = useCallback(({ zoom: z }) => {
@@ -214,7 +282,7 @@ function FlowCanvasInner({
   }, []);
 
   return (
-    <div className="flow-canvas">
+    <div className={`flow-canvas${isDraggingFromLHS ? ' flow-canvas--lhs-dragging' : ''}`}>
       <div className="flow-canvas__toolbar-anchor">
         <GraphControls
           orientation={orientation}
@@ -228,18 +296,19 @@ function FlowCanvasInner({
 
       <ReactFlow
         nodes={styledNodes}
-        edges={edges}
+        edges={styledEdges}
         nodeTypes={NODE_TYPES}
         edgeTypes={EDGE_TYPES}
         defaultEdgeOptions={defaultEdgeOptions}
         onNodeClick={handleNodeClick}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
+        onNodeDragStop={handleNodeDragStop}
         onViewportChange={handleViewportChange}
         fitView
         fitViewOptions={{ padding: 0.3 }}
         proOptions={{ hideAttribution: true }}
-        nodesDraggable={false}
+        nodesDraggable
         nodesConnectable={false}
         panOnScroll
         zoomOnScroll

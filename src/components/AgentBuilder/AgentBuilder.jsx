@@ -255,7 +255,15 @@ export default function AgentBuilder({
 
   const selectedNode = nodeList.find((n) => n.id === selectedNodeId);
 
-  const handleDropNode = useCallback(({ type, label, description }) => {
+  const handleNodesReorder = useCallback((newIdOrder) => {
+    setNodeList((prev) => {
+      const byId = Object.fromEntries(prev.map((n) => [n.id, n]));
+      const reordered = newIdOrder.map((id) => byId[id]).filter(Boolean);
+      return reordered.map((n, i) => ({ ...n, data: { ...n.data, stepNumber: i + 1 } }));
+    });
+  }, []);
+
+  const handleDropNode = useCallback(({ type, label, description, afterNodeId }) => {
     const id = nextId();
 
     let flowType = 'task';
@@ -301,11 +309,16 @@ export default function AgentBuilder({
     };
 
     setNodeList((prev) => {
-      const updated = [...prev, newNode];
-      return updated.map((n, i) => ({
-        ...n,
-        data: { ...n.data, stepNumber: i + 1 },
-      }));
+      let updated;
+      if (afterNodeId) {
+        const idx = prev.findIndex((n) => n.id === afterNodeId);
+        updated = idx !== -1
+          ? [...prev.slice(0, idx + 1), newNode, ...prev.slice(idx + 1)]
+          : [...prev, newNode];
+      } else {
+        updated = [...prev, newNode];
+      }
+      return updated.map((n, i) => ({ ...n, data: { ...n.data, stepNumber: i + 1 } }));
     });
 
     let details = {};
@@ -586,6 +599,7 @@ export default function AgentBuilder({
             edges={edges}
             onNodeClick={handleNodeClick}
             onDropNode={handleDropNode}
+            onNodesReorder={handleNodesReorder}
             selectedNodeId={selectedNodeId}
             orientation="vertical"
           />
