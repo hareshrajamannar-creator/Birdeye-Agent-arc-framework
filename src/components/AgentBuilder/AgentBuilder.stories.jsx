@@ -257,7 +257,7 @@ function FilledPreview() {
         title: flowType === 'trigger' ? 'Trigger' : 'Task',
         stepNumber: nodes.filter((n) => n.type === flowType).length + 1,
         description,
-        subtitle: `${label}: ${description}`,
+        subtitle: (description && description !== label) ? description : '',
         hasAiIcon: label === 'Custom',
         hasToggle: true,
         toggleEnabled: true,
