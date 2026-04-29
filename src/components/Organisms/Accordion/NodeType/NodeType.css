@@ -45,14 +45,12 @@
   text-align: left !important;
 }
 
-.node-type-accordion .accordionHeadingContent span {
-  display: none !important;
-}
-
 .node-type-accordion .accordionIcon {
   font-size: 20px !important;
-  color: #212121 !important;
+  color: #555 !important;
   transition: transform 0.2s ease !important;
+  display: block !important;
+  flex-shrink: 0 !important;
 }
 
 .node-type-accordion li.open .accordionIcon {

@@ -159,8 +159,8 @@ export const CONTROL_CARDS = [
   { label: 'Loop', icon: 'repeat', action: 'drag', nodeType: 'loop' },
 ];
 
-/* ─── All sub-items merged ─── */
-const ALL_SUB_ITEMS = { ...TRIGGER_SUB_ITEMS, ...TASK_SUB_ITEMS };
+/* ─── All sub-items merged (initial state) ─── */
+const INITIAL_SUB_ITEMS = { ...TRIGGER_SUB_ITEMS, ...TASK_SUB_ITEMS };
 
 /* ─── Card Row ─── */
 export function CardRow({ label, icon, action, isActive, onClick, onHover, cardRef, nodeType }) {
@@ -218,8 +218,16 @@ export default function LHSDrawer({
   const [expandedCard, setExpandedCard] = useState(null);
   const [expandedSection, setExpandedSection] = useState(null);
   const [dropdownTop, setDropdownTop] = useState(0);
+  const [subItems, setSubItems] = useState(INITIAL_SUB_ITEMS);
   const panelRef = useRef(null);
   const cardRefs = useRef({});
+
+  const handleSubItemsChange = (key, newItems) => {
+    setSubItems((prev) => ({
+      ...prev,
+      [key]: { ...prev[key], items: newItems },
+    }));
+  };
 
   const handleCardHover = (card, section, subKey) => {
     if (card.action !== 'chevron') {
@@ -270,7 +278,7 @@ export default function LHSDrawer({
   const tasksContent = renderCards(TASK_CARDS, 'task', 'task');
   const controlsContent = renderCards(CONTROL_CARDS, 'control', 'branch');
 
-  const activeSubItems = expandedCard ? ALL_SUB_ITEMS[expandedCard] : null;
+  const activeSubItems = expandedCard ? subItems[expandedCard] : null;
 
   const closeDropdown = () => {
     setExpandedCard(null);
@@ -339,6 +347,7 @@ export default function LHSDrawer({
             items={activeSubItems.items}
             nodeType={expandedSection === 'trigger' ? 'trigger' : 'task'}
             parentLabel={expandedCard}
+            onItemsChange={(newItems) => handleSubItemsChange(expandedCard, newItems)}
           />
         </div>
       )}
