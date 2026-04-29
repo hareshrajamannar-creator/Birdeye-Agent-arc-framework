@@ -1,5 +1,7 @@
+const toId = (label) => label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
 const agentChildren = (items) => items.map((label) => ({
-  id: label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+  id: toId(label),
   label,
 }));
 
@@ -47,11 +49,11 @@ const standardSections = (agentLabels) => [
 ];
 
 const expandedSections = (sections) => sections.map(({ label, children = [] }) => ({
-  id: label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+  id: toId(label),
   label,
-  defaultExpanded: true,
+  defaultExpanded: label === 'Agents',
   children: children.map((child) => ({
-    id: child.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+    id: toId(child),
     label: child,
   })),
 }));
@@ -72,7 +74,7 @@ export const MODULE_NAV = {
   listings: {
     title: 'Listings AI',
     ctaLabel: 'Create agent',
-    defaultItemId: 'recommendations',
+    defaultItemId: 'lisiting-scan-agents',
     menuItems: expandedSections([
       {
         label: 'Actions',
@@ -81,6 +83,26 @@ export const MODULE_NAV = {
       {
         label: 'Ranking reports',
         children: ['Keywords', 'Citations', 'Rankings'],
+      },
+      {
+        label: 'Search performance',
+        children: ['All sites', 'Google', 'Apple', 'Facebook', 'Bing', 'Yelp'],
+      },
+      {
+        label: 'Accuracy',
+        children: ['Core sites', 'Other sites'],
+      },
+      {
+        label: 'Publish status',
+        children: ['All listings', 'By location', 'By site'],
+      },
+      {
+        label: 'Agents',
+        children: ['Lisiting scan agents', 'Lisiting optimization agents', 'Lisiting sync agents'],
+      },
+      {
+        label: 'Settings',
+        children: ['Profiles', 'Keywords', 'Ranking report', 'FAQs', 'Products', 'Google services'],
       },
     ]),
   },
@@ -160,7 +182,7 @@ export const MODULE_NAV = {
   social: {
     title: 'Social AI',
     ctaLabel: 'Create post',
-    defaultItemId: 'view-calendar',
+    defaultItemId: 'social-publishing-agents',
     menuItems: expandedSections([
       {
         label: 'Publish',
@@ -174,19 +196,64 @@ export const MODULE_NAV = {
       },
       {
         label: 'Engage',
+        children: [
+          'View all engagements',
+          'Assigned to me',
+          'Approve replies',
+          'Fix rejected replies',
+          'View spam',
+        ],
+      },
+      {
+        label: 'Reports',
+        children: ['All channels', 'Post performance', 'Response trends', 'Best time to post'],
+      },
+      {
+        label: 'Competitors',
+        children: ['Benchmarking', 'Posts'],
+      },
+      {
+        label: 'Libraries',
+        children: ['Post library', 'Media library', 'Reply templates'],
+      },
+      {
+        label: 'Agents',
+        children: [
+          'Social publishing agents',
+          'Social engagement agents',
+          'Social boosting agents',
+          'Social benchmarking agents',
+        ],
+      },
+      {
+        label: 'Settings',
+        children: ['Approvals', 'Link in bio', 'Tags', 'AI posts', 'AI prompts'],
       },
     ]),
   },
   surveys: {
     title: 'Surveys AI',
-    ctaLabel: 'Create agent',
-    defaultItemId: 'view-all-agents',
-    menuItems: standardSections(['Survey follow-up agents', 'Survey insights agents']),
+    ctaLabel: 'Create survey',
+    defaultItemId: 'survey-follow-up-agents',
+    menuItems: expandedSections([
+      {
+        label: 'Actions',
+        children: ['View surveys'],
+      },
+      {
+        label: 'Reports',
+        children: ['Survey NPS', 'Responses'],
+      },
+      {
+        label: 'Agents',
+        children: ['Survey follow-up agents', 'Survey insights agents'],
+      },
+    ]),
   },
   ticketing: {
     title: 'Ticketing AI',
     ctaLabel: 'Create ticket',
-    defaultItemId: 'my-tickets',
+    defaultItemId: 'ticketing-agents',
     menuItems: expandedSections([
       {
         label: 'Actions',
@@ -198,6 +265,7 @@ export const MODULE_NAV = {
       },
       {
         label: 'Agents',
+        children: ['Ticketing agents'],
       },
     ]),
   },
@@ -220,10 +288,27 @@ export const MODULE_NAV = {
     menuItems: standardSections(['Report digest agents', 'Anomaly insight agents']),
   },
   insights: {
-    title: 'Insights',
+    title: 'Insights AI',
     ctaLabel: 'Create insight agent',
-    defaultItemId: 'view-all-agents',
-    menuItems: standardSections(['Insight summary agents', 'Trend detection agents']),
+    defaultItemId: 'insight-summary-agents',
+    menuItems: expandedSections([
+      {
+        label: 'Actions',
+        children: ['Recommendations', 'Track progress'],
+      },
+      {
+        label: 'Analysis',
+        children: ['All signals', 'Reviews', 'Listings', 'Calls'],
+      },
+      {
+        label: 'Agents',
+        children: ['Insight summary agents', 'Trend detection agents'],
+      },
+      {
+        label: 'Settings',
+        children: ['Categories & keywords', 'Birdeye score'],
+      },
+    ]),
   },
   competitors: {
     title: 'Competitors AI',
