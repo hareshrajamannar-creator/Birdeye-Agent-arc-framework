@@ -1,0 +1,171 @@
+.wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Roboto', sans-serif;
+}
+
+/* ─── Header ─── */
+.th {
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #555;
+  border-bottom: 1px solid #eaeaea;
+  text-align: left;
+  white-space: nowrap;
+  position: relative;
+}
+
+.thInner {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: default;
+  user-select: none;
+}
+
+.thEditIcon {
+  opacity: 0;
+  transition: opacity 0.12s;
+  font-size: 14px !important;
+  width: 14px !important;
+  height: 14px !important;
+  line-height: 1 !important;
+  color: #aaa;
+  cursor: pointer;
+}
+
+.th:hover .thEditIcon {
+  opacity: 1;
+}
+
+.thInput {
+  border: none;
+  border-bottom: 1px solid #1976d2;
+  outline: none;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Roboto', sans-serif;
+  color: #555;
+  background: transparent;
+  width: 100%;
+  min-width: 60px;
+  padding: 0;
+}
+
+/* ─── Rows ─── */
+.tr {
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.tr:hover {
+  background: #f5f8ff;
+}
+
+.td {
+  padding: 12px;
+  font-size: 13px;
+  color: #212121;
+  vertical-align: middle;
+}
+
+.nameCell {
+  transition: color 0.1s;
+}
+
+.tr:hover .nameCell {
+  color: #1976d2;
+}
+
+/* ─── Delete action column ─── */
+.tdActions {
+  width: 44px;
+  padding: 0 8px;
+  text-align: right;
+}
+
+.deleteBtn {
+  opacity: 0;
+  transition: opacity 0.12s;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #e53935;
+}
+
+.tr:hover .deleteBtn {
+  opacity: 1;
+}
+
+.deleteBtn:hover {
+  background: #fde8e8;
+}
+
+.deleteBtnIcon {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+  line-height: 1 !important;
+}
+
+/* ─── Cell inline edit ─── */
+.cellInput {
+  border: none;
+  border-bottom: 1px solid #1976d2;
+  outline: none;
+  font-size: 13px;
+  font-family: 'Roboto', sans-serif;
+  color: #212121;
+  background: transparent;
+  width: 100%;
+  min-width: 60px;
+  padding: 0;
+}
+
+/* ─── Empty state ─── */
+.emptyContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  gap: 8px;
+}
+
+.emptyIcon {
+  font-size: 48px !important;
+  width: 48px !important;
+  height: 48px !important;
+  line-height: 1 !important;
+  color: #bdbdbd;
+  margin-bottom: 8px;
+}
+
+.emptyTitle {
+  font-size: 16px;
+  font-weight: 400;
+  color: #212121;
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  letter-spacing: -0.32px;
+}
+
+.emptySubtitle {
+  font-size: 13px;
+  color: #757575;
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  letter-spacing: -0.26px;
+}

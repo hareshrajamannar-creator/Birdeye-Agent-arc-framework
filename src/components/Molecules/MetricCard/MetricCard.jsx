@@ -1,6 +1,5 @@
-import React from 'react';
-
-const font = '"Roboto", sans-serif';
+import React, { useState, useRef } from 'react';
+import styles from './MetricCard.module.css';
 
 export default function MetricCard({
   value,
@@ -11,109 +10,107 @@ export default function MetricCard({
   showConfig = false,
   onConfig,
   dollarValue,
+  onValueChange,
+  onTitleChange,
 }) {
-  return (
-    <div style={{
-      position: 'relative',
-      display: 'flex',
-      flexDirection: 'column',
-      padding: 16,
-      border: '1px solid #eaeaea',
-      borderRadius: 4,
-      width: '100%',
-      boxSizing: 'border-box',
-      fontFamily: font,
-    }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingRight: showConfig ? 44 : 0 }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, minWidth: 0 }}>
-          <span style={{
-            minWidth: 0,
-            fontSize: 24,
-            fontWeight: 400,
-            lineHeight: '36px',
-            letterSpacing: '-0.48px',
-            color: '#212121',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}>
-            {value}
-          </span>
-          {showTrend && trend && (
-            <span style={{
-              flexShrink: 0,
-              fontSize: 12,
-              fontWeight: 400,
-              lineHeight: '18px',
-              color: trendPositive ? '#4eac5d' : '#e53935',
-            }}>
-              {trend}
-            </span>
-          )}
-        </div>
+  const [editing, setEditing] = useState(false);
+  const [draftValue, setDraftValue] = useState(value);
+  const [draftTitle, setDraftTitle] = useState(title);
+  const valueInputRef = useRef(null);
 
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, maxWidth: '100%', minWidth: 0 }}>
-          <span style={{
-            fontSize: 16,
-            fontWeight: 400,
-            lineHeight: '24px',
-            letterSpacing: '-0.32px',
-            color: '#212121',
-            minWidth: 0,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}>
-            {title}
-          </span>
-          <span
-            className="material-symbols-outlined"
-            style={{ fontSize: 16, color: '#757575', lineHeight: 1, flexShrink: 0 }}
-          >
-            info
-          </span>
-          {dollarValue && (
-            <span style={{
-              flexShrink: 0,
-              display: 'inline-flex',
-              alignItems: 'center',
-              padding: '4px 8px',
-              background: '#f1faf0',
-              borderRadius: 4,
-              fontSize: 12,
-              fontWeight: 400,
-              lineHeight: '18px',
-              color: '#377e2c',
-              whiteSpace: 'nowrap',
-            }}>
-              {dollarValue}
-            </span>
-          )}
+  function startEdit() {
+    setDraftValue(value);
+    setDraftTitle(title);
+    setEditing(true);
+    setTimeout(() => valueInputRef.current?.focus(), 0);
+  }
+
+  function commitEdit() {
+    const v = draftValue.trim() || value;
+    const t = draftTitle.trim() || title;
+    if (v !== value) onValueChange?.(v);
+    if (t !== title) onTitleChange?.(t);
+    setEditing(false);
+  }
+
+  function handleKeyDown(e) {
+    if (e.key === 'Enter') commitEdit();
+    if (e.key === 'Escape') setEditing(false);
+  }
+
+  return (
+    <div className={styles.card}>
+      {/* Edit hint shown on hover */}
+      {!editing && (onValueChange || onTitleChange) && (
+        <div className={styles.editHint} onClick={startEdit} title="Click to edit">
+          <span className={`material-symbols-outlined ${styles.editHintIcon}`}>edit</span>
         </div>
-      </div>
+      )}
+
+      {editing ? (
+        <div className={styles.editingContent}>
+          <input
+            ref={valueInputRef}
+            className={`${styles.editInput} ${styles.editInputValue}`}
+            value={draftValue}
+            onChange={(e) => setDraftValue(e.target.value)}
+            onBlur={commitEdit}
+            onKeyDown={handleKeyDown}
+            placeholder="Value"
+          />
+          <input
+            className={`${styles.editInput} ${styles.editInputTitle}`}
+            value={draftTitle}
+            onChange={(e) => setDraftTitle(e.target.value)}
+            onBlur={commitEdit}
+            onKeyDown={handleKeyDown}
+            placeholder="Label"
+          />
+        </div>
+      ) : (
+        <div
+          style={{ display: 'flex', flexDirection: 'column', paddingRight: showConfig ? 44 : 0 }}
+          onDoubleClick={onValueChange || onTitleChange ? startEdit : undefined}
+        >
+          <div className={styles.valueRow}>
+            <span className={styles.value}>{value}</span>
+            {showTrend && trend && (
+              <span
+                className={styles.trend}
+                style={{ color: trendPositive ? '#4eac5d' : '#e53935' }}
+              >
+                {trend}
+              </span>
+            )}
+          </div>
+
+          <div className={styles.titleRow}>
+            <span className={styles.title}>{title}</span>
+            <span className={`material-symbols-outlined ${styles.infoIcon}`}>info</span>
+            {dollarValue && (
+              <span style={{
+                flexShrink: 0,
+                display: 'inline-flex',
+                alignItems: 'center',
+                padding: '4px 8px',
+                background: '#f1faf0',
+                borderRadius: 4,
+                fontSize: 12,
+                lineHeight: '18px',
+                color: '#377e2c',
+                whiteSpace: 'nowrap',
+                fontFamily: 'Roboto, sans-serif',
+              }}>
+                {dollarValue}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
 
       {showConfig && (
-        <button
-          onClick={onConfig}
-          style={{
-            position: 'absolute',
-            top: 11,
-            right: 16,
-            width: 32,
-            height: 32,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            border: '1px solid #eaeaea',
-            borderRadius: 4,
-            background: 'none',
-            cursor: 'pointer',
-            padding: 0,
-          }}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: 16, color: '#555', lineHeight: 1 }}>
-            tune
-          </span>
+        <button className={styles.configBtn} onClick={onConfig}>
+          <span className={`material-symbols-outlined ${styles.configBtnIcon}`}>tune</span>
         </button>
       )}
     </div>

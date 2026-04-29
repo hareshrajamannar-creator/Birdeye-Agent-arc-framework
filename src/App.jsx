@@ -96,9 +96,28 @@ function App() {
     () => agents.filter((a) => a.moduleContext === currentModule).map(toDashboardAgent),
     [agents, currentModule]
   );
-  const dashboardAgents = moduleAgents.length > 0
-    ? moduleAgents
-    : moduleTemplates.map(toTemplateAgent);
+
+  // Show only user-created agents — no template fallback
+  const dashboardAgents = moduleAgents;
+
+  // Enrich L2 nav: inject user-created agents under the "Agents" section
+  const enrichedMenuItems = useMemo(() => {
+    return moduleNav.menuItems.map((section) => {
+      if (section.id !== 'agents') return section;
+      const agentItems = moduleAgents.map((a) => ({
+        id: `agent-detail-${a.id}`,
+        label: a.name.length > 28 ? a.name.slice(0, 28) + '…' : a.name,
+      }));
+      return {
+        ...section,
+        children: [
+          ...agentItems,
+          ...section.children,
+          { id: 'add-agent-nav', label: '+ Add section' },
+        ],
+      };
+    });
+  }, [moduleNav, moduleAgents]);
 
   /* ─── Module change ─── */
   function handleModuleChange(moduleId) {
@@ -123,11 +142,26 @@ function App() {
   }
 
   function handleL2ItemClick(itemId) {
-    if (itemId === 'create-agent') {
+    if (itemId === 'create-agent' || itemId === 'add-agent-nav') {
       handleCreateAgent();
       return;
     }
+    if (itemId.startsWith('agent-detail-')) {
+      const agentId = itemId.replace('agent-detail-', '');
+      handleOpenAgent(agentId);
+      return;
+    }
     setActiveL2Item(itemId);
+  }
+
+  function handleDeleteAgent(agentId) {
+    setAgents((prev) => prev.filter((a) => a.id !== agentId));
+  }
+
+  function handleAgentUpdate(agentId, field, value) {
+    setAgents((prev) =>
+      prev.map((a) => a.id === agentId ? { ...a, [field]: value } : a)
+    );
   }
 
   function handleOpenAgent(agentId) {
@@ -205,7 +239,7 @@ function App() {
     <AgentsDashboardTemplate
       navTitle={moduleNav.title}
       ctaLabel={moduleNav.ctaLabel}
-      menuItems={moduleNav.menuItems}
+      menuItems={enrichedMenuItems}
       pageTitle={getPageTitle(activeL2Item, moduleNav)}
       activeNavId={currentModule}
       activeMenuItemId={activeL2Item}
@@ -217,6 +251,8 @@ function App() {
       onNavChange={handleModuleChange}
       onMenuItemClick={handleL2ItemClick}
       onOpenAgent={handleOpenAgent}
+      onDeleteAgent={handleDeleteAgent}
+      onAgentUpdate={handleAgentUpdate}
       onExportAgent={handleExportAgent}
       onImportAgent={handleImportAgent}
     />

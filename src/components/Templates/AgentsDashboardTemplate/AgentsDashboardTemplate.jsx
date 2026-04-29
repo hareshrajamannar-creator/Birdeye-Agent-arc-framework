@@ -33,6 +33,8 @@ export default function AgentsDashboardTemplate({
   onCreateAgent,
   onUseTemplate,
   onOpenAgent,
+  onDeleteAgent,
+  onAgentUpdate,
   avatarSrc,
   activeNavId = 'reviews',
   activeMenuItemId = 'review-response-agents',
@@ -165,7 +167,12 @@ export default function AgentsDashboardTemplate({
                 />
               </div>
               <div style={{ padding: '20px 24px 24px' }}>
-                <AgentsTable agents={agents} onRowClick={(agent) => onOpenAgent?.(agent.id)} />
+                <AgentsTable
+                  agents={agents}
+                  onRowClick={(agent) => onOpenAgent?.(agent.id)}
+                  onDeleteAgent={onDeleteAgent}
+                  onAgentUpdate={onAgentUpdate}
+                />
               </div>
             </>
           )}

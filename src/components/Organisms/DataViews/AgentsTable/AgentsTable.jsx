@@ -1,103 +1,168 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import TableContainer from '@birdeye/elemental/core/components/TableContainer/index.js';
-import './AgentsTable.css';
+import React, { useState, useRef } from 'react';
 import Chip from '@birdeye/elemental/core/atoms/Chip/index.js';
+import styles from './AgentsTable.module.css';
 
-const STATUS_COLOR = {
-  Running: 'green',
-  Paused:  'yellow',
-  Draft:   'grey',
-};
+const DEFAULT_COLUMNS = [
+  { id: 'name',             label: 'Agent name' },
+  { id: 'status',           label: 'Status' },
+  { id: 'reviewsResponded', label: 'Reviews responded' },
+  { id: 'responseRate',     label: 'Response rate' },
+  { id: 'avgResponseTime',  label: 'Average response time' },
+  { id: 'timeSaved',        label: 'Time saved' },
+  { id: 'locations',        label: 'Locations' },
+];
 
-function StatusCell({ status }) {
-  return (
-    <Chip
-      label={status}
-      colorType={STATUS_COLOR[status] || 'grey'}
-      size="small"
-    />
-  );
-}
+const STATUS_COLOR = { Running: 'green', Paused: 'yellow', Draft: 'grey' };
 
-function LocationCell({ count }) {
-  return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-      <span style={{ fontSize: 13, color: '#212121' }}>{count}</span>
-      <span
-        className="material-symbols-outlined"
-        style={{
-          fontFamily: "'Material Symbols Outlined'",
-          fontStyle: 'normal',
-          fontSize: 16,
-          color: '#555',
-          lineHeight: 1,
-          fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20",
-        }}
-      >
-        expand_more
+const NON_EDITABLE_CELLS = new Set(['status', 'locations']);
+
+function CellValue({ colId, value }) {
+  if (colId === 'status') {
+    return <Chip label={String(value)} colorType={STATUS_COLOR[value] || 'grey'} size="small" />;
+  }
+  if (colId === 'locations') {
+    return (
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+        <span>{value}</span>
+        <span className="material-symbols-outlined" style={{ fontSize: 16, color: '#555', lineHeight: 1 }}>expand_more</span>
       </span>
-    </span>
-  );
+    );
+  }
+  return <span>{value}</span>;
 }
 
-const DEFAULT_AGENTS = [
-  { id: 1, name: 'Review response agent replying autonomously - North Region', status: 'Running',  reviewsResponded: 102, responseRate: '15%', avgResponseTime: '20m', timeSaved: '4h 20m', locations: 500 },
-  { id: 2, name: 'Review response agent replying autonomously - East Region',  status: 'Running',  reviewsResponded: 98,  responseRate: '9%',  avgResponseTime: '5m',  timeSaved: '1h 10m', locations: 250 },
-  { id: 3, name: 'Review response agent replying autonomously - South Region', status: 'Paused',   reviewsResponded: 53,  responseRate: '9%',  avgResponseTime: '10m', timeSaved: '45m',    locations: 200 },
-  { id: 4, name: 'Review response agent replying autonomously - West Region',  status: 'Draft',    reviewsResponded: 35,  responseRate: '8%',  avgResponseTime: '2m',  timeSaved: '3h 20m', locations: 100 },
-];
+export default function AgentsTable({ agents = [], onRowClick, onDeleteAgent, onAgentUpdate }) {
+  const [columns, setColumns] = useState(DEFAULT_COLUMNS);
+  const [editingHeader, setEditingHeader] = useState(null);
+  const [editingCell, setEditingCell] = useState(null);
+  const [draft, setDraft] = useState('');
+  const inputRef = useRef(null);
 
-const COLUMNS = [
-  { value: 'name',            tableHead: 'Agent name',            enabled: true, width: 320, enableSorting: true, align: 'left' },
-  { value: 'status',          tableHead: 'Status',                enabled: true, width: 110, enableSorting: true, align: 'left' },
-  { value: 'reviewsResponded',tableHead: 'Reviews responded',     enabled: true, width: 160, enableSorting: true, align: 'left' },
-  { value: 'responseRate',    tableHead: 'Response rate',         enabled: true, width: 130, enableSorting: true, align: 'left' },
-  { value: 'avgResponseTime', tableHead: 'Average response time', enabled: true, width: 170, enableSorting: true, align: 'left' },
-  { value: 'timeSaved',       tableHead: 'Time saved',            enabled: true, width: 120, enableSorting: true, align: 'left' },
-  { value: 'locations',       tableHead: 'Locations',             enabled: true, width: 110, enableSorting: true, align: 'left' },
-];
+  function focusInput() {
+    setTimeout(() => inputRef.current?.focus(), 0);
+  }
 
-function buildTableData(agents, onRowClick) {
-  return {
-    type: 'allColumns',
-    tableId: 'agents-table',
-    tableHead: { columns: COLUMNS },
-    tableRow: agents.map(agent => ({
-      onRowClick: onRowClick ? () => onRowClick(agent) : undefined,
-      rowsData: [
-        { rowValue: agent.name },
-        { rowValue: React.createElement(StatusCell, { status: agent.status }) },
-        { rowValue: String(agent.reviewsResponded) },
-        { rowValue: agent.responseRate },
-        { rowValue: agent.avgResponseTime },
-        { rowValue: agent.timeSaved },
-        { rowValue: React.createElement(LocationCell, { count: agent.locations }) },
-      ],
-    })),
-  };
-}
+  function startHeaderEdit(col) {
+    setEditingHeader(col.id);
+    setEditingCell(null);
+    setDraft(col.label);
+    focusInput();
+  }
 
-export default function AgentsTable({ agents = DEFAULT_AGENTS, onRowClick }) {
-  const tableData = buildTableData(agents, onRowClick);
+  function commitHeaderEdit(colId) {
+    setColumns((prev) => prev.map((c) => c.id === colId ? { ...c, label: draft.trim() || c.label } : c));
+    setEditingHeader(null);
+  }
+
+  function startCellEdit(agent, colId) {
+    if (NON_EDITABLE_CELLS.has(colId)) return;
+    setEditingCell({ rowId: agent.id, colId });
+    setEditingHeader(null);
+    setDraft(String(agent[colId] ?? ''));
+    focusInput();
+  }
+
+  function commitCellEdit() {
+    if (!editingCell) return;
+    onAgentUpdate?.(editingCell.rowId, editingCell.colId, draft.trim());
+    setEditingCell(null);
+  }
+
+  /* ─── Empty state ─── */
+  if (agents.length === 0) {
+    return (
+      <div className={styles.emptyContainer}>
+        <span className={`material-symbols-outlined ${styles.emptyIcon}`}>smart_toy</span>
+        <p className={styles.emptyTitle}>No agents yet</p>
+        <p className={styles.emptySubtitle}>Create your first agent to start automating</p>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ background: '#fff' }} className="agents-table">
-      <TableContainer tableData={tableData} />
+    <div className={styles.wrapper}>
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            {columns.map((col) => (
+              <th key={col.id} className={styles.th}>
+                {editingHeader === col.id ? (
+                  <input
+                    ref={inputRef}
+                    className={styles.thInput}
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    onBlur={() => commitHeaderEdit(col.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') commitHeaderEdit(col.id);
+                      if (e.key === 'Escape') setEditingHeader(null);
+                    }}
+                  />
+                ) : (
+                  <div className={styles.thInner}>
+                    {col.label}
+                    <span
+                      className={`material-symbols-outlined ${styles.thEditIcon}`}
+                      onClick={() => startHeaderEdit(col)}
+                    >
+                      edit
+                    </span>
+                  </div>
+                )}
+              </th>
+            ))}
+            <th className={styles.th} />
+          </tr>
+        </thead>
+
+        <tbody>
+          {agents.map((agent) => (
+            <tr
+              key={agent.id}
+              className={styles.tr}
+              onClick={() => !editingCell && onRowClick?.(agent)}
+            >
+              {columns.map((col) => {
+                const isEditing = editingCell?.rowId === agent.id && editingCell?.colId === col.id;
+                return (
+                  <td
+                    key={col.id}
+                    className={`${styles.td} ${col.id === 'name' ? styles.nameCell : ''}`}
+                    onDoubleClick={(e) => { e.stopPropagation(); startCellEdit(agent, col.id); }}
+                  >
+                    {isEditing ? (
+                      <input
+                        ref={inputRef}
+                        className={styles.cellInput}
+                        value={draft}
+                        onChange={(e) => setDraft(e.target.value)}
+                        onBlur={commitCellEdit}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') commitCellEdit();
+                          if (e.key === 'Escape') setEditingCell(null);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    ) : (
+                      <CellValue colId={col.id} value={agent[col.id]} />
+                    )}
+                  </td>
+                );
+              })}
+
+              <td className={`${styles.td} ${styles.tdActions}`}>
+                <button
+                  className={styles.deleteBtn}
+                  title="Delete agent"
+                  onClick={(e) => { e.stopPropagation(); onDeleteAgent?.(agent.id); }}
+                >
+                  <span className={`material-symbols-outlined ${styles.deleteBtnIcon}`}>delete</span>
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
-
-AgentsTable.propTypes = {
-  agents: PropTypes.arrayOf(PropTypes.shape({
-    id: PropTypes.number.isRequired,
-    name: PropTypes.string.isRequired,
-    status: PropTypes.oneOf(['Running', 'Paused', 'Draft']),
-    reviewsResponded: PropTypes.number,
-    responseRate: PropTypes.string,
-    avgResponseTime: PropTypes.string,
-    timeSaved: PropTypes.string,
-    locations: PropTypes.number,
-  })),
-  onRowClick: PropTypes.func,
-};
