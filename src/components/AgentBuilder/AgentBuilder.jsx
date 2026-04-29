@@ -139,7 +139,7 @@ function buildFlow(nodeList, startData, nodeDetails = {}) {
 
     if (item.flowType === 'branch') {
       const branches = nodeDetails[nodeId]?.branches || [];
-      const spacing = 280;
+      const spacing = 480;
       const startX = -((branches.length - 1) * spacing) / 2;
       const branchChipY = y + 150;
       const branchNodeStartY = y + 260;
@@ -197,6 +197,7 @@ function buildFlow(nodeList, startData, nodeDetails = {}) {
           data: {
             branchPathId: branch.id,
             afterNodeId: previousId === branch.id ? null : previousId,
+            viewOnly: !!branch.isFallback,
           },
         });
       });
