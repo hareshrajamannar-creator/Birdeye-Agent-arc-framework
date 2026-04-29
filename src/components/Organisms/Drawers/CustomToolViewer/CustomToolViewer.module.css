@@ -168,6 +168,29 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.optionLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #212121;
+  font-family: 'Roboto', sans-serif;
+  line-height: 20px;
+  width: 100%;
+}
+
+.optionInput {
+  accent-color: #1976d2;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  margin: 0;
+  cursor: pointer;
 }
 
 .toggleRow {
@@ -175,4 +198,66 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+/* ─── Tags input ─── */
+
+.tagsInput {
+  min-height: 40px;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  background: #fff;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  cursor: text;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.tagChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #f2f4f7;
+  border: 1px solid #e5e9f0;
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 13px;
+  color: #212121;
+  font-family: 'Roboto', sans-serif;
+  white-space: nowrap;
+}
+
+.tagChipRemove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.tagChipRemove :global(.material-symbols-outlined) {
+  font-size: 14px;
+  color: #888;
+}
+
+.tagChipRemove:hover :global(.material-symbols-outlined) {
+  color: #212121;
+}
+
+.tagInputInner {
+  flex: 1;
+  min-width: 80px;
+  border: none;
+  outline: none;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  color: #212121;
+  background: transparent;
+  padding: 0;
 }

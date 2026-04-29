@@ -15,6 +15,8 @@ function InteractiveField({ field }) {
   const [checkValues, setCheckValues] = useState([]);
   const [selectValue, setSelectValue] = useState(undefined);
   const [toggled, setToggled] = useState(false);
+  const [tags, setTags] = useState([]);
+  const [tagInput, setTagInput] = useState('');
 
   const label = field.label || 'Untitled field';
   const required = field.required;
@@ -78,15 +80,17 @@ function InteractiveField({ field }) {
           </span>
           <div className={styles.optionGroup}>
             {field.options.map((opt) => (
-              <FormInput
-                key={opt}
-                name={`view_radio_${field.id}`}
-                type="radio"
-                label={opt}
-                labelInside
-                checked={radioValue === opt}
-                onChange={() => setRadioValue(opt)}
-              />
+              <label key={opt} className={styles.optionLabel}>
+                <input
+                  type="radio"
+                  name={`view_radio_${field.id}`}
+                  value={opt}
+                  checked={radioValue === opt}
+                  onChange={() => setRadioValue(opt)}
+                  className={styles.optionInput}
+                />
+                <span>{opt}</span>
+              </label>
             ))}
           </div>
         </div>
@@ -100,21 +104,22 @@ function InteractiveField({ field }) {
           </span>
           <div className={styles.optionGroup}>
             {field.options.map((opt) => (
-              <FormInput
-                key={opt}
-                name={`view_chk_${field.id}_${opt}`}
-                type="checkbox"
-                label={opt}
-                labelInside
-                checked={checkValues.includes(opt)}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    setCheckValues((prev) => [...prev, opt]);
-                  } else {
-                    setCheckValues((prev) => prev.filter((o) => o !== opt));
-                  }
-                }}
-              />
+              <label key={opt} className={styles.optionLabel}>
+                <input
+                  type="checkbox"
+                  value={opt}
+                  checked={checkValues.includes(opt)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setCheckValues((prev) => [...prev, opt]);
+                    } else {
+                      setCheckValues((prev) => prev.filter((o) => o !== opt));
+                    }
+                  }}
+                  className={styles.optionInput}
+                />
+                <span>{opt}</span>
+              </label>
             ))}
           </div>
         </div>
@@ -129,6 +134,57 @@ function InteractiveField({ field }) {
             checked={toggled}
             onChange={(instance, e) => setToggled(e.target.checked)}
           />
+        </div>
+      );
+
+    case 'variable':
+      return (
+        <div className={styles.fieldWrap}>
+          <FormInput
+            name={`view_${field.id}`}
+            type="text"
+            label={label}
+            placeholder={field.placeholder || 'Select a variable...'}
+            value={textValue}
+            onChange={(e) => setTextValue(e.target.value)}
+            required={required}
+          />
+        </div>
+      );
+
+    case 'tags':
+      return (
+        <div className={styles.fieldWrap}>
+          <span className={styles.fieldLabel}>
+            {label}{required && <span className={styles.required}> *</span>}
+          </span>
+          <div className={styles.tagsInput}>
+            {tags.map((tag, i) => (
+              <span key={i} className={styles.tagChip}>
+                {tag}
+                <button
+                  type="button"
+                  className={styles.tagChipRemove}
+                  onClick={() => setTags((prev) => prev.filter((_, idx) => idx !== i))}
+                >
+                  <span className="material-symbols-outlined">close</span>
+                </button>
+              </span>
+            ))}
+            <input
+              className={styles.tagInputInner}
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && tagInput.trim()) {
+                  e.preventDefault();
+                  setTags((prev) => [...prev, tagInput.trim()]);
+                  setTagInput('');
+                }
+              }}
+              placeholder={tags.length === 0 ? (field.placeholder || 'Type and press Enter...') : ''}
+            />
+          </div>
         </div>
       );
 

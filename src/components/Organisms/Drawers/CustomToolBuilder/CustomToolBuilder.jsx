@@ -16,6 +16,8 @@ export const FIELD_TYPES = [
   { value: 'checkbox', label: 'Checkbox', icon: 'check_box' },
   { value: 'toggle',   label: 'Toggle',   icon: 'toggle_on' },
   { value: 'date',     label: 'Date',     icon: 'calendar_today' },
+  { value: 'variable', label: 'Variable', icon: 'data_object' },
+  { value: 'tags',     label: 'Tags',     icon: 'local_offer' },
 ];
 
 export const OPTION_FIELD_TYPES = new Set(['dropdown', 'radio', 'checkbox']);
@@ -177,14 +179,15 @@ export function FieldCard({ field, index, total, onChange, onDelete, onMoveUp, o
       )}
 
       <div className="ctb__required-row">
-        <FormInput
-          name={`fieldRequired_${field.id}`}
-          type="checkbox"
-          label="Required field"
-          labelInside
-          checked={field.required}
-          onChange={(e) => onChange({ ...field, required: e.target.checked })}
-        />
+        <label className="ctb__required-label">
+          <input
+            type="checkbox"
+            className="ctb__checkbox"
+            checked={field.required}
+            onChange={(e) => onChange({ ...field, required: e.target.checked })}
+          />
+          Required field
+        </label>
       </div>
     </div>
   );
@@ -202,7 +205,7 @@ export function PreviewField({ field }) {
       return (
         <div className="ctb__prev-field">
           <span className="ctb__prev-label">{label}{field.required && <span className="ctb__prev-required"> *</span>}</span>
-          <div className="ctb__prev-input">{field.placeholder || ''}</div>
+          <div className="ctb__prev-input ctb__prev-input--placeholder">{field.placeholder || 'Enter a value...'}</div>
         </div>
       );
     case 'textarea':
@@ -256,6 +259,29 @@ export function PreviewField({ field }) {
           <div className="ctb__prev-toggle">
             <div className="ctb__prev-toggle-track" />
             <span className="ctb__prev-label">{label}</span>
+          </div>
+        </div>
+      );
+    case 'variable':
+      return (
+        <div className="ctb__prev-field">
+          <span className="ctb__prev-label">{label}{field.required && <span className="ctb__prev-required"> *</span>}</span>
+          <div className="ctb__prev-variable">
+            <div className="ctb__prev-variable-chip">
+              <span className="material-symbols-outlined ctb__prev-variable-icon">data_object</span>
+              variable_name
+            </div>
+            <span className="material-symbols-outlined ctb__prev-variable-btn">data_object</span>
+          </div>
+        </div>
+      );
+    case 'tags':
+      return (
+        <div className="ctb__prev-field">
+          <span className="ctb__prev-label">{label}{field.required && <span className="ctb__prev-required"> *</span>}</span>
+          <div className="ctb__prev-tags">
+            <span className="ctb__prev-tag">keyword <span className="ctb__prev-tag-x">×</span></span>
+            <span className="ctb__prev-tags-placeholder">{field.placeholder || 'Add a tag...'}</span>
           </div>
         </div>
       );

@@ -587,9 +587,18 @@
 .ctb__required-row {
   display: flex;
   align-items: center;
+}
+
+.ctb__required-label {
+  display: flex;
+  align-items: center;
   gap: 8px;
+  font-size: 13px;
+  color: #212121;
+  font-family: 'Roboto', sans-serif;
   cursor: pointer;
   user-select: none;
+  line-height: 20px;
 }
 
 .ctb__checkbox {
@@ -664,7 +673,7 @@
 }
 
 .ctb__icon-upload-sym {
-  font-size: 24px !important;
+  font-size: 36px !important;
   color: #888;
 }
 
@@ -677,5 +686,90 @@
 
 .ctb__icon-input {
   display: none;
+}
+
+/* ─── Preview placeholder text style ───────────────────────────────────────── */
+
+.ctb__prev-input--placeholder {
+  color: #aaa;
+}
+
+/* ─── Variable preview ──────────────────────────────────────────────────────── */
+
+.ctb__prev-variable {
+  min-height: 40px;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  background: #fff;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.ctb__prev-variable-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #e8f0fe;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  color: #1976d2;
+  font-family: 'Roboto', sans-serif;
+}
+
+.ctb__prev-variable-icon {
+  font-size: 12px !important;
+}
+
+.ctb__prev-variable-btn {
+  font-size: 18px !important;
+  color: #888;
+  flex-shrink: 0;
+}
+
+/* ─── Tags preview ──────────────────────────────────────────────────────────── */
+
+.ctb__prev-tags {
+  min-height: 40px;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  background: #fff;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.ctb__prev-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #f2f4f7;
+  border: 1px solid #e5e9f0;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  color: #212121;
+  font-family: 'Roboto', sans-serif;
+}
+
+.ctb__prev-tag-x {
+  color: #888;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.ctb__prev-tags-placeholder {
+  font-size: 13px;
+  color: #aaa;
+  font-family: 'Roboto', sans-serif;
 }
 
