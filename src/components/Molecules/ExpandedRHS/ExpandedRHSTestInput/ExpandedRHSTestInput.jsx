@@ -1,104 +1,151 @@
-import React, { useState } from 'react';
-import DataType from '../../DataType/DataType';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import VariableChip from '../../Inputs/VariableChip/VariableChip';
+import styles from './ExpandedRHSTestInput.module.css';
 
-const font = '"Roboto", arial, sans-serif';
+export default function ExpandedRHSTestInput({ fields = [], onChange }) {
+  const [editingIdx, setEditingIdx] = useState(null);
+  const [draft, setDraft] = useState('');
+  const [openMenuIdx, setOpenMenuIdx] = useState(null);
+  const textareaRef = useRef(null);
 
-const colHeaderStyle = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 4,
-  height: 40,
-  padding: '0 16px',
-  background: '#fff',
-  boxSizing: 'border-box',
-  flexShrink: 0,
-};
+  useEffect(() => {
+    if (editingIdx !== null && textareaRef.current) {
+      const el = textareaRef.current;
+      el.focus();
+      el.style.height = 'auto';
+      el.style.height = el.scrollHeight + 'px';
+    }
+  }, [editingIdx]);
 
-const colHeaderLabelStyle = {
-  fontFamily: font,
-  fontSize: 12,
-  fontWeight: 400,
-  lineHeight: '18px',
-  letterSpacing: '-0.24px',
-  color: '#555',
-  whiteSpace: 'nowrap',
-};
+  const startEdit = useCallback((idx) => {
+    setEditingIdx(idx);
+    setDraft(fields[idx]?.value ?? '');
+    setOpenMenuIdx(null);
+  }, [fields]);
 
-const chevronStyle = {
-  fontSize: 16,
-  width: 16,
-  height: 16,
-  lineHeight: 1,
-  overflow: 'hidden',
-  color: '#555',
-  fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20",
-  flexShrink: 0,
-  userSelect: 'none',
-};
+  const commit = useCallback((idx) => {
+    if (editingIdx !== idx) return;
+    onChange?.(fields.map((f, i) => i === idx ? { ...f, value: draft } : f));
+    setEditingIdx(null);
+  }, [editingIdx, draft, fields, onChange]);
 
-export default function ExpandedRHSTestInput({ fields = [], onMenuOpen }) {
-  const [hoveredRow, setHoveredRow] = useState(null);
+  const handleTextareaKey = (e, idx) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); commit(idx); }
+    if (e.key === 'Escape') { e.preventDefault(); setEditingIdx(null); }
+  };
+
+  const handleNameChange = (idx, newName) => {
+    const updated = fields.map((f, i) => {
+      if (i !== idx) return f;
+      const { _isNew, ...rest } = f;
+      return { ...rest, name: newName };
+    });
+    onChange?.(updated);
+  };
+
+  const handleDelete = (idx) => {
+    onChange?.(fields.filter((_, i) => i !== idx));
+    setOpenMenuIdx(null);
+    if (editingIdx === idx) setEditingIdx(null);
+  };
+
+  const handleAdd = () => {
+    onChange?.([...fields, { name: '', value: '', _isNew: true }]);
+  };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', borderRadius: 8, border: '1px solid #e9e9eb', overflow: 'hidden', width: '100%' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', borderBottom: '1px solid #e9e9eb' }}>
-        <div style={{ ...colHeaderStyle, width: 186 }}>
-          <span style={colHeaderLabelStyle}>Input fields</span>
-          <span className="material-symbols-outlined" style={chevronStyle}>expand_more</span>
+    <div className={styles.table}>
+      <div className={styles.headerRow}>
+        <div className={styles.headerFieldCell}>
+          <span className={styles.headerLabel}>Input fields</span>
+          <span className={`material-symbols-outlined ${styles.chevron}`}>expand_more</span>
         </div>
-        <div style={{ ...colHeaderStyle, flex: 1, minWidth: 0, borderLeft: '1px solid #e9e9eb' }}>
-          <span style={colHeaderLabelStyle}>Values</span>
+        <div className={styles.headerValueCell}>
+          <span className={styles.headerLabel}>Values</span>
         </div>
       </div>
 
-      {/* Rows */}
-      {fields.map((field, i) => (
-        <div
-          key={field.name}
-          onMouseEnter={() => setHoveredRow(field.name)}
-          onMouseLeave={() => setHoveredRow(null)}
-          style={{
-            display: 'flex',
-            borderBottom: i < fields.length - 1 ? '1px solid #e9e9eb' : 'none',
-            minHeight: 58,
-          }}
-        >
-          <div style={{ width: 186, flexShrink: 0, display: 'flex', alignItems: 'center', padding: 16, background: '#fff', boxSizing: 'border-box' }}>
-            <DataType type={field.type || 'variable'} label={field.name} />
+      {fields.map((field, idx) => (
+        <div key={idx} className={styles.dataRow}>
+          <div className={styles.fieldCell}>
+            <VariableChip
+              value={field.name}
+              autoFocus={!!field._isNew}
+              onChange={(name) => handleNameChange(idx, name)}
+              onDelete={() => handleDelete(idx)}
+            />
           </div>
 
-          <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', padding: '16px 8px 16px 16px', background: '#fff', borderLeft: '1px solid #e9e9eb', boxSizing: 'border-box', gap: 8 }}>
-            <span style={{
-              flex: 1,
-              minWidth: 0,
-              fontFamily: font,
-              fontSize: 12,
-              fontWeight: 400,
-              lineHeight: 'normal',
-              color: field.value ? '#212121' : '#aaa',
-              fontStyle: field.value ? 'normal' : 'italic',
-              wordBreak: 'break-word',
-            }}>
-              {field.value || 'No value'}
-            </span>
-            <button
-              onClick={() => onMenuOpen?.(field.name)}
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                width: 24, height: 24, flexShrink: 0, background: 'none', border: 'none',
-                padding: 0, cursor: 'pointer', color: '#555', borderRadius: 4,
-                visibility: hoveredRow === field.name ? 'visible' : 'hidden',
-              }}
-              aria-label={`Options for ${field.name}`}
-            >
-              <span className="material-symbols-outlined" style={{ fontSize: 20, width: 20, height: 20, lineHeight: 1, overflow: 'hidden', fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}>
-                more_vert
+          <div
+            className={styles.valueCell}
+            onClick={() => editingIdx !== idx && startEdit(idx)}
+          >
+            {editingIdx === idx ? (
+              <textarea
+                ref={textareaRef}
+                className={styles.valueTextarea}
+                value={draft}
+                placeholder="Enter a value…"
+                onChange={(e) => {
+                  setDraft(e.target.value);
+                  e.target.style.height = 'auto';
+                  e.target.style.height = e.target.scrollHeight + 'px';
+                }}
+                onBlur={() => commit(idx)}
+                onKeyDown={(e) => handleTextareaKey(e, idx)}
+                rows={1}
+              />
+            ) : (
+              <span className={field.value ? styles.valueText : styles.valuePlaceholder}>
+                {field.value || 'Click to add value'}
               </span>
-            </button>
+            )}
+
+            {editingIdx !== idx && (
+              <div className={styles.moreWrap}>
+                <button
+                  type="button"
+                  className={`${styles.moreBtn} ${openMenuIdx === idx ? styles.moreBtnOpen : ''}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setOpenMenuIdx(openMenuIdx === idx ? null : idx);
+                  }}
+                  aria-label="More options"
+                >
+                  <span className={`material-symbols-outlined ${styles.moreBtnIcon}`}>more_vert</span>
+                </button>
+                {openMenuIdx === idx && (
+                  <div className={styles.menuPopup}>
+                    <button
+                      type="button"
+                      className={styles.menuItem}
+                      onClick={(e) => { e.stopPropagation(); startEdit(idx); }}
+                    >
+                      <span className={`material-symbols-outlined ${styles.menuItemIcon}`}>edit</span>
+                      Edit value
+                    </button>
+                    <button
+                      type="button"
+                      className={`${styles.menuItem} ${styles.menuItemDelete}`}
+                      onClick={(e) => { e.stopPropagation(); handleDelete(idx); }}
+                    >
+                      <span className={`material-symbols-outlined ${styles.menuItemIcon}`}>delete</span>
+                      Delete
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       ))}
+
+      <div className={styles.addRow}>
+        <button type="button" className={styles.addBtn} onClick={handleAdd}>
+          <span className={`material-symbols-outlined ${styles.addBtnIcon}`}>add_circle</span>
+          Add
+        </button>
+      </div>
     </div>
   );
 }
