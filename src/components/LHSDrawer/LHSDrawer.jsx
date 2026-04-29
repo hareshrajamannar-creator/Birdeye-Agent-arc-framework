@@ -131,6 +131,18 @@ const TASK_SUB_ITEMS = {
       'Analyze survey results',
     ],
   },
+  'Social-task': {
+    title: 'Social task',
+    items: [
+      'Content settings',
+      'Generate business post themes',
+      'Upcoming holiday events',
+      'Get top performing posts',
+      'Get competitor posts',
+      'Set publishing schedule',
+      'Set approvals',
+    ],
+  },
   'External apps-task': {
     title: 'External app task',
     items: [
@@ -148,6 +160,7 @@ export const TASK_CARDS = [
   { label: 'Contact', icon: 'group', action: 'chevron', subKey: 'Contact' },
   { label: 'Referral', icon: 'redeem', action: 'chevron', subKey: 'Referral' },
   { label: 'Surveys', icon: 'task_alt', action: 'chevron', subKey: 'Surveys-task' },
+  { label: 'Social', icon: 'workspaces', action: 'chevron', subKey: 'Social-task' },
   { label: 'External apps', icon: 'grid_view', action: 'chevron', subKey: 'External apps-task' },
 ];
 
