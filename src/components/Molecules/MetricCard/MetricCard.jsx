@@ -17,12 +17,16 @@ export default function MetricCard({
   const [draftValue, setDraftValue] = useState(value);
   const [draftTitle, setDraftTitle] = useState(title);
   const valueInputRef = useRef(null);
+  const titleInputRef = useRef(null);
 
-  function startEdit() {
+  function startEdit(field = 'value') {
     setDraftValue(value);
     setDraftTitle(title);
     setEditing(true);
-    setTimeout(() => valueInputRef.current?.focus(), 0);
+    setTimeout(() => {
+      if (field === 'title') titleInputRef.current?.focus();
+      else valueInputRef.current?.focus();
+    }, 0);
   }
 
   function commitEdit() {
@@ -38,42 +42,49 @@ export default function MetricCard({
     if (e.key === 'Escape') setEditing(false);
   }
 
+  // Only commit when focus leaves the entire editing container, not between its own inputs
+  function handleContainerBlur(e) {
+    if (e.currentTarget.contains(e.relatedTarget)) return;
+    commitEdit();
+  }
+
   return (
     <div className={styles.card}>
-      {/* Edit hint shown on hover */}
       {!editing && (onValueChange || onTitleChange) && (
-        <div className={styles.editHint} onClick={startEdit} title="Click to edit">
+        <div className={styles.editHint} onClick={() => startEdit('value')} title="Click to edit">
           <span className={`material-symbols-outlined ${styles.editHintIcon}`}>edit</span>
         </div>
       )}
 
       {editing ? (
-        <div className={styles.editingContent}>
+        <div className={styles.editingContent} onBlur={handleContainerBlur}>
           <input
             ref={valueInputRef}
             className={`${styles.editInput} ${styles.editInputValue}`}
             value={draftValue}
             onChange={(e) => setDraftValue(e.target.value)}
-            onBlur={commitEdit}
             onKeyDown={handleKeyDown}
             placeholder="Value"
           />
           <input
+            ref={titleInputRef}
             className={`${styles.editInput} ${styles.editInputTitle}`}
             value={draftTitle}
             onChange={(e) => setDraftTitle(e.target.value)}
-            onBlur={commitEdit}
             onKeyDown={handleKeyDown}
             placeholder="Label"
           />
         </div>
       ) : (
-        <div
-          style={{ display: 'flex', flexDirection: 'column', paddingRight: showConfig ? 44 : 0 }}
-          onDoubleClick={onValueChange || onTitleChange ? startEdit : undefined}
-        >
+        <div style={{ display: 'flex', flexDirection: 'column', paddingRight: showConfig ? 44 : 0 }}>
           <div className={styles.valueRow}>
-            <span className={styles.value}>{value}</span>
+            <span
+              className={styles.value}
+              onClick={onValueChange ? () => startEdit('value') : undefined}
+              style={onValueChange ? { cursor: 'text' } : undefined}
+            >
+              {value}
+            </span>
             {showTrend && trend && (
               <span
                 className={styles.trend}
@@ -85,7 +96,12 @@ export default function MetricCard({
           </div>
 
           <div className={styles.titleRow}>
-            <span className={styles.title}>{title}</span>
+            <span
+              className={`${styles.title}${onTitleChange ? ` ${styles.titleEditable}` : ''}`}
+              onClick={onTitleChange ? () => startEdit('title') : undefined}
+            >
+              {title}
+            </span>
             <span className={`material-symbols-outlined ${styles.infoIcon}`}>info</span>
             {dollarValue && (
               <span style={{
