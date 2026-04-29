@@ -4,6 +4,7 @@ import LHSDrawer from '../LHSDrawer/LHSDrawer';
 import FlowCanvas from '../FlowCanvas/FlowCanvas';
 import RHS from '../Organisms/Panels/RHS/RHS';
 import ScheduleBased from '../Molecules/RHS/Trigger/ScheduleBased/ScheduleBased';
+import ShareModal from '../Organisms/Modals/ShareModal/ShareModal';
 import Button from '@birdeye/elemental/core/atoms/Button/index.js';
 import CustomModal from '@birdeye/elemental/core/atoms/CustomModal/index.js';
 import FormInput from '@birdeye/elemental/core/atoms/FormInput/index.js';
@@ -101,6 +102,7 @@ export default function AgentBuilder({
   initialNodeDetails = null,
   onSaveAgent,
   onClose,
+  viewOnly = false,
 }) {
   const [agentId] = useState(() => propAgentId || crypto.randomUUID());
   const [navId, setNavId] = useState(activeNavId);
@@ -111,6 +113,9 @@ export default function AgentBuilder({
 
   /* ─── Publish modal ─── */
   const [saveModalOpen, setSaveModalOpen] = useState(false);
+
+  /* ─── Share modal ─── */
+  const [shareModalOpen, setShareModalOpen] = useState(false);
 
   /* ─── Header three-dots menu ─── */
   const [headerMenuOpen, setHeaderMenuOpen] = useState(false);
@@ -131,7 +136,7 @@ export default function AgentBuilder({
   /* ─── Auto-save to Firestore (debounced 1.5 s) ─── */
   const saveTimerRef = useRef(null);
   useEffect(() => {
-    if (!agentId || !agentName) return;
+    if (!agentId || !agentName || viewOnly) return;
     clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => {
       saveAgent(agentId, {
@@ -437,6 +442,7 @@ export default function AgentBuilder({
         <RHS
           variant="agentDetails"
           title="Agent details"
+          viewOnly={viewOnly}
           bodyProps={{
             values: startDetails,
             onChange: (field, value) => {
@@ -458,6 +464,7 @@ export default function AgentBuilder({
         <RHS
           variant="branch"
           title="Branch"
+          viewOnly={viewOnly}
           bodyProps={{ initialValues: currentDetails, onFieldChange: activeFieldChange }}
           onClose={handleCloseDrawer}
           onSave={handleCloseDrawer}
@@ -490,6 +497,7 @@ export default function AgentBuilder({
         <RHS
           variant="entityTrigger"
           title="Trigger"
+          viewOnly={viewOnly}
           bodyProps={{ initialValues: currentDetails, onFieldChange: activeFieldChange }}
           onClose={handleCloseDrawer}
           onSave={handleCloseDrawer}
@@ -502,6 +510,7 @@ export default function AgentBuilder({
         <RHS
           variant="controlBranch"
           title="Branch details"
+          viewOnly={viewOnly}
           bodyProps={{ initialValues: currentDetails, onFieldChange: activeFieldChange }}
           onClose={handleCloseDrawer}
           onSave={handleCloseDrawer}
@@ -514,6 +523,7 @@ export default function AgentBuilder({
         <RHS
           variant="delay"
           title="Delay"
+          viewOnly={viewOnly}
           bodyProps={{ initialValues: currentDetails, onFieldChange: activeFieldChange }}
           onClose={handleCloseDrawer}
           onSave={handleCloseDrawer}
@@ -526,6 +536,7 @@ export default function AgentBuilder({
         <RHS
           variant="parallel"
           title="Parallel tasks"
+          viewOnly={viewOnly}
           bodyProps={{ initialValues: currentDetails, onFieldChange: activeFieldChange }}
           onClose={handleCloseDrawer}
           onSave={handleCloseDrawer}
@@ -538,6 +549,7 @@ export default function AgentBuilder({
         <RHS
           variant="loop"
           title="Loop"
+          viewOnly={viewOnly}
           bodyProps={{ initialValues: currentDetails, onFieldChange: activeFieldChange }}
           onClose={handleCloseDrawer}
           onSave={handleCloseDrawer}
@@ -550,6 +562,7 @@ export default function AgentBuilder({
         <RHS
           variant="llmTask"
           title="LLM Task"
+          viewOnly={viewOnly}
           bodyProps={{ initialValues: currentDetails, onFieldChange: activeFieldChange }}
           onClose={handleCloseDrawer}
           onSave={handleCloseDrawer}
@@ -561,6 +574,7 @@ export default function AgentBuilder({
       <RHS
         variant="entityTask"
         title="Task"
+        viewOnly={viewOnly}
         bodyProps={{ initialValues: currentDetails, onFieldChange: activeFieldChange }}
         onClose={handleCloseDrawer}
         onSave={handleCloseDrawer}
@@ -568,8 +582,13 @@ export default function AgentBuilder({
     );
   };
 
-  /* ─── Header actions: Publish + three-dots menu ─── */
-  const headerActions = (
+  /* ─── Header actions: Publish + three-dots menu (or view-only badge) ─── */
+  const headerActions = viewOnly ? (
+    <div className="ab-view-badge">
+      <span className="material-symbols-outlined">visibility</span>
+      View only
+    </div>
+  ) : (
     <div className="ab-header-actions">
       <Button
         theme="primary"
@@ -590,6 +609,14 @@ export default function AgentBuilder({
             <button
               className="ab-header-menu-item"
               type="button"
+              onClick={() => { setHeaderMenuOpen(false); setShareModalOpen(true); }}
+            >
+              <span className="material-symbols-outlined">share</span>
+              Share
+            </button>
+            <button
+              className="ab-header-menu-item"
+              type="button"
               onClick={() => { setHeaderMenuOpen(false); handleExport(); }}
             >
               <span className="material-symbols-outlined">download</span>
@@ -606,34 +633,57 @@ export default function AgentBuilder({
       appTitle={appTitle}
       pageTitle={agentName}
       activeNavId={navId}
-      onNavChange={setNavId}
+      onNavChange={viewOnly ? undefined : setNavId}
       showBack={!!onClose}
       onBack={onClose}
       pageActions={headerActions}
     >
-      <div className="agent-builder">
-        <div className="agent-builder__lhs">
-          <LHSDrawer defaultTab="Create manually" triggerOpen tasksOpen={false} controlsOpen={false} />
-        </div>
-
-        <div className={`agent-builder__canvas${drawerOpen ? ' agent-builder__canvas--with-rhs' : ''}`}>
-          <FlowCanvas
-            nodes={nodes}
-            edges={edges}
-            onNodeClick={handleNodeClick}
-            onDropNode={handleDropNode}
-            onNodesReorder={handleNodesReorder}
-            selectedNodeId={selectedNodeId}
-            orientation="vertical"
-          />
-        </div>
-
-        {drawerOpen && (
-          <div key={selectedNodeId} className="agent-builder__rhs">
-            {renderRHSPanel()}
+      <div className="agent-builder-wrapper">
+        {viewOnly && (
+          <div className="ab-view-banner">
+            <span className="material-symbols-outlined">visibility</span>
+            <span>You&apos;re viewing a shared workflow. Editing is disabled.</span>
+            <a
+              className="ab-view-banner__link"
+              href={`mailto:?subject=Request edit access – ${agentName}`}
+            >
+              Request edit access
+            </a>
           </div>
         )}
+
+        <div className="agent-builder">
+          {!viewOnly && (
+            <div className="agent-builder__lhs">
+              <LHSDrawer defaultTab="Create manually" triggerOpen tasksOpen={false} controlsOpen={false} />
+            </div>
+          )}
+
+          <div className={`agent-builder__canvas${drawerOpen ? ' agent-builder__canvas--with-rhs' : ''}`}>
+            <FlowCanvas
+              nodes={nodes}
+              edges={edges}
+              onNodeClick={handleNodeClick}
+              onDropNode={viewOnly ? undefined : handleDropNode}
+              onNodesReorder={viewOnly ? undefined : handleNodesReorder}
+              selectedNodeId={selectedNodeId}
+              orientation="vertical"
+              viewOnly={viewOnly}
+            />
+          </div>
+
+          {drawerOpen && (
+            <div key={selectedNodeId} className="agent-builder__rhs">
+              {renderRHSPanel()}
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* ─── Share modal ─── */}
+      {shareModalOpen && (
+        <ShareModal agentId={agentId} onClose={() => setShareModalOpen(false)} />
+      )}
 
       {/* ─── Save modal ─── */}
       {saveModalOpen && (

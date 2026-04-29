@@ -3,6 +3,7 @@ import {
   collection,
   doc,
   setDoc,
+  getDoc,
   deleteDoc,
   onSnapshot,
   serverTimestamp,
@@ -16,6 +17,13 @@ export function saveAgent(agentId, snapshot) {
     ...snapshot,
     updatedAt: serverTimestamp(),
   });
+}
+
+// Fetch a single agent by id (one-time read)
+export async function getAgent(agentId) {
+  const snap = await getDoc(doc(db, COLLECTION, agentId));
+  if (!snap.exists()) return null;
+  return { id: snap.id, ...snap.data() };
 }
 
 // Delete an agent by id

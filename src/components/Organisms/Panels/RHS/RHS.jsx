@@ -68,7 +68,7 @@ const VARIANTS = {
   },
 };
 
-export default function RHS({ variant = 'agentDetails', title, bodyProps, onClose, onSave, onPreview, onExpand }) {
+export default function RHS({ variant = 'agentDetails', title, bodyProps, onClose, onSave, onPreview, onExpand, viewOnly = false }) {
   const config = VARIANTS[variant];
   const Body = config.body;
   const [isExpanded, setIsExpanded] = useState(false);
@@ -96,10 +96,10 @@ export default function RHS({ variant = 'agentDetails', title, bodyProps, onClos
       }}>
         <RHSSidePanelHeader
           title={title || 'Title'}
-          onPreview={onPreview}
-          onExpand={handleExpand}
+          onPreview={viewOnly ? undefined : onPreview}
+          onExpand={viewOnly ? undefined : handleExpand}
           onClose={onClose}
-          showActions={config.showActions}
+          showActions={viewOnly ? false : config.showActions}
         />
 
         <div style={{
@@ -107,17 +107,36 @@ export default function RHS({ variant = 'agentDetails', title, bodyProps, onClos
           overflowY: 'auto',
           padding: '16px 15px',
           boxSizing: 'border-box',
+          pointerEvents: viewOnly ? 'none' : undefined,
+          userSelect: viewOnly ? 'text' : undefined,
+          opacity: viewOnly ? 0.85 : 1,
         }}>
           <Body {...(bodyProps || {})} />
         </div>
 
-        <RHSSidePanelFooter
-          onSave={onSave}
-          showPromptStrength={config.showPromptStrength}
-          promptStrength="Weak"
-          promptFillWidth={52}
-          onViewSuggestions={() => {}}
-        />
+        {viewOnly ? (
+          <div style={{
+            padding: '14px 16px',
+            borderTop: '1px solid #e5e9f0',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            background: '#ffffff',
+          }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 16, color: '#8f8f8f' }}>visibility</span>
+            <span style={{ fontSize: 12, color: '#8f8f8f', fontFamily: '"Roboto", arial, sans-serif', letterSpacing: '-0.24px' }}>
+              View only — editing is disabled
+            </span>
+          </div>
+        ) : (
+          <RHSSidePanelFooter
+            onSave={onSave}
+            showPromptStrength={config.showPromptStrength}
+            promptStrength="Weak"
+            promptFillWidth={52}
+            onViewSuggestions={() => {}}
+          />
+        )}
       </div>
 
       {isExpanded && ReactDOM.createPortal(

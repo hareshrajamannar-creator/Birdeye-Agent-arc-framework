@@ -5,7 +5,6 @@ import {
   Position,
   BaseEdge,
   getStraightPath,
-  ReactFlowProvider,
   useReactFlow,
   applyNodeChanges,
 } from '@xyflow/react';
@@ -119,6 +118,7 @@ function EndNodeWrapper({ id, data }) {
 function AddButtonEdge({ id, sourceX, sourceY, targetX, targetY, style, data }) {
   const [isDragOver, setIsDragOver] = useState(false);
   const isDraggingFromLHS = data?.isDraggingFromLHS;
+  const viewOnly = data?.viewOnly;
 
   const [edgePath, labelX, labelY] = getStraightPath({ sourceX, sourceY, targetX, targetY });
 
@@ -154,18 +154,20 @@ function AddButtonEdge({ id, sourceX, sourceY, targetX, targetY, style, data }) 
   return (
     <>
       <BaseEdge id={id} path={edgePath} style={style} />
-      <foreignObject width={56} height={56} x={labelX - 28} y={labelY - 28}>
-        <div
-          className="flow-canvas__edge-add-wrapper"
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-        >
-          <button className={btnClass} type="button">
-            <span className="material-symbols-outlined">add</span>
-          </button>
-        </div>
-      </foreignObject>
+      {!viewOnly && (
+        <foreignObject width={56} height={56} x={labelX - 28} y={labelY - 28}>
+          <div
+            className="flow-canvas__edge-add-wrapper"
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
+            <button className={btnClass} type="button">
+              <span className="material-symbols-outlined">add</span>
+            </button>
+          </div>
+        </foreignObject>
+      )}
     </>
   );
 }
@@ -203,6 +205,7 @@ function FlowCanvasInner({
   onOrientationChange,
   onRun,
   selectedNodeId,
+  viewOnly = false,
 }) {
   const { screenToFlowPosition, zoomTo, fitView, getNodes } = useReactFlow();
   const [zoom, setZoom] = useState(100);
@@ -314,12 +317,13 @@ function FlowCanvasInner({
         data: {
           ...edge.data,
           isDraggingFromLHS,
-          onDropOnEdge: (type, label, description) => {
+          viewOnly,
+          onDropOnEdge: viewOnly ? undefined : (type, label, description) => {
             onDropNodeRef.current?.({ type, label, description, afterNodeId: edge.source });
           },
         },
       })),
-    [edges, isDraggingFromLHS]
+    [edges, isDraggingFromLHS, viewOnly]
   );
 
   const handleViewportChange = useCallback(({ zoom: z }) => {
@@ -329,8 +333,8 @@ function FlowCanvasInner({
   return (
     <div
       className={`flow-canvas${isDraggingFromLHS ? ' flow-canvas--lhs-dragging' : ''}`}
-      onDragOver={handleDragOver}
-      onDrop={handleDrop}
+      onDragOver={viewOnly ? undefined : handleDragOver}
+      onDrop={viewOnly ? undefined : handleDrop}
     >
       <div className="flow-canvas__toolbar-anchor">
         <GraphControls
@@ -351,12 +355,12 @@ function FlowCanvasInner({
         defaultEdgeOptions={defaultEdgeOptions}
         onNodesChange={handleNodesChange}
         onNodeClick={handleNodeClick}
-        onNodeDragStop={handleNodeDragStop}
+        onNodeDragStop={viewOnly ? undefined : handleNodeDragStop}
         onViewportChange={handleViewportChange}
         fitView
         fitViewOptions={{ padding: 0.25 }}
         proOptions={{ hideAttribution: true }}
-        nodesDraggable
+        nodesDraggable={!viewOnly}
         nodesConnectable={false}
         panOnScroll
         zoomOnScroll
@@ -367,8 +371,6 @@ function FlowCanvasInner({
 
 export default function FlowCanvas(props) {
   return (
-    <ReactFlowProvider>
-      <FlowCanvasInner {...props} />
-    </ReactFlowProvider>
+    <FlowCanvasInner {...props} />
   );
 }

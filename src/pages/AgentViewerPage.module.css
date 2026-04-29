@@ -1,0 +1,28 @@
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 100vh;
+  font-size: 15px;
+  color: #555555;
+  font-family: "Roboto", arial, sans-serif;
+}
+
+.loading .material-symbols-outlined {
+  font-size: 24px;
+  color: #8d9dca;
+  animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.notFound {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}

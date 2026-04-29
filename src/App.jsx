@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ReactFlowProvider } from '@xyflow/react';
 import AgentBuilder from './components/AgentBuilder/AgentBuilder';
 import AgentsDashboardTemplate from './components/Templates/AgentsDashboardTemplate/AgentsDashboardTemplate';
+import AgentViewerPage from './pages/AgentViewerPage';
 import { getModuleTemplates } from './components/Modules/agentFrameworkData';
 import { getModuleNav } from './components/Modules/moduleNavigation';
 import { subscribeToAgents, deleteAgent, saveAgent } from './services/agentService';
@@ -158,6 +159,11 @@ function App() {
       status: data.status || 'Draft',
     };
     await saveAgent(agentId, imported);
+  }
+
+  /* ─── View-only shared agent route ─── */
+  if (window.location.pathname.startsWith('/view/')) {
+    return <AgentViewerPage />;
   }
 
   /* ─── Builder view ─── */

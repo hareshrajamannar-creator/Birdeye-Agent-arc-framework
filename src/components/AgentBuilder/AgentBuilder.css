@@ -227,6 +227,61 @@
   border-top: 1px solid #e5e9f0;
 }
 
+/* ─── View-only mode ─── */
+.ab-view-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: #fff8e1;
+  border-bottom: 1px solid #ffe082;
+  flex-shrink: 0;
+  font-family: 'Roboto', sans-serif;
+  font-size: 13px;
+  color: #5d4037;
+  letter-spacing: -0.26px;
+}
+
+.ab-view-banner .material-symbols-outlined {
+  font-size: 16px;
+  color: #f9a825;
+  flex-shrink: 0;
+}
+
+.ab-view-banner__link {
+  margin-left: auto;
+  font-size: 13px;
+  color: #1b72e8;
+  text-decoration: none;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.ab-view-banner__link:hover {
+  text-decoration: underline;
+}
+
+.ab-view-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  background: #f2f4f7;
+  border: 1px solid #d0d5dd;
+  border-radius: 16px;
+  font-family: 'Roboto', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: #555;
+  letter-spacing: -0.24px;
+}
+
+.ab-view-badge .material-symbols-outlined {
+  font-size: 14px;
+  color: #888;
+}
+
 /* ─── Empty state ─── */
 .agent-builder__empty {
   position: absolute;
