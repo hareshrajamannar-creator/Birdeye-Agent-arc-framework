@@ -24,7 +24,7 @@ function buildFlow(nodeList, startData, nodeDetails = {}) {
     position: { x: 0, y },
     data: { title: startData.title, subtitle: startData.subtitle },
   });
-  y += 90;
+  y += 150;
 
   nodeList.forEach((item, i) => {
     const nodeId = item.id;
@@ -50,7 +50,7 @@ function buildFlow(nodeList, startData, nodeDetails = {}) {
         nodes.push({
           id: branch.id,
           type: 'branchPath',
-          position: { x: startX + bi * spacing, y: y + 100 },
+          position: { x: startX + bi * spacing, y: y + 150 },
           data: { label: branch.name, parentId: nodeId, isFallback: !!branch.isFallback },
         });
         edges.push({
@@ -60,10 +60,10 @@ function buildFlow(nodeList, startData, nodeDetails = {}) {
           type: 'branchFan',
         });
       });
-      y += 80;
+      y += 150;
     }
 
-    y += 150;
+    y += 250;
   });
 
   const lastId = nodeList.length > 0 ? nodeList[nodeList.length - 1].id : START_NODE_ID;
