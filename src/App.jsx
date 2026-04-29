@@ -90,7 +90,16 @@ function App() {
   const [editingAgent, setEditingAgent] = useState(null);
   const [builderAgentId, setBuilderAgentId] = useState(null);
   const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [dashboardInitialTab, setDashboardInitialTab] = useState('agents');
   const toastTimerRef = useRef(null);
+
+  function showToast(message) {
+    clearTimeout(toastTimerRef.current);
+    setToastMessage(message);
+    setToastVisible(true);
+    toastTimerRef.current = setTimeout(() => setToastVisible(false), 3000);
+  }
 
   // Subscribe to all agents in real-time from Firestore
   useEffect(() => {
@@ -139,6 +148,7 @@ function App() {
     const nextNav = getModuleNav(moduleId);
     setCurrentModule(moduleId);
     setActiveL2Item(nextNav.defaultItemId);
+    setDashboardInitialTab('agents');
     setBuilderOpen(false);
     setBuilderTemplate(null);
     setEditingAgent(null);
@@ -168,6 +178,8 @@ function App() {
       title: template.title,
       description: template.description,
     });
+    setDashboardInitialTab('library');
+    showToast('Template saved successfully');
   }
 
   function handleCreateTemplate(template) {
@@ -235,9 +247,7 @@ function App() {
     setBuilderTemplate(null);
     setEditingAgent(null);
     if (isPublish) {
-      clearTimeout(toastTimerRef.current);
-      setToastVisible(true);
-      toastTimerRef.current = setTimeout(() => setToastVisible(false), 3000);
+      showToast('Agent published successfully');
     }
   }
 
@@ -269,7 +279,7 @@ function App() {
     ? ReactDOM.createPortal(
         <div className={styles.toast}>
           <span className="material-symbols-outlined">check_circle</span>
-          Agent published successfully
+          {toastMessage}
         </div>,
         document.body
       )
@@ -326,6 +336,7 @@ function App() {
         activeMenuItemId={activeL2Item}
         agents={moduleAgents}
         templates={moduleTemplates}
+        initialActiveTab={dashboardInitialTab}
         showDashboard={showDashboard}
         onCreateAgent={() => handleCreateAgent()}
         onCreateTemplate={handleCreateTemplate}

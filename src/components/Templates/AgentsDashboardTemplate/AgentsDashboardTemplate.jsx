@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import Button from '@birdeye/elemental/core/atoms/Button/index.js';
 import Avatar from '@birdeye/elemental/core/atoms/Avatar/index.js';
@@ -181,6 +181,7 @@ export default function AgentsDashboardTemplate({
   primaryMetricValue = '6h 20m',
   agents,
   templates,
+  initialActiveTab = tabs[0]?.id,
   onCreateAgent,
   onCreateTemplate,
   onDeleteTemplate,
@@ -198,7 +199,7 @@ export default function AgentsDashboardTemplate({
   onNavChange,
   onMenuItemClick,
 }) {
-  const [activeTab, setActiveTab] = useState(tabs[0]?.id);
+  const [activeTab, setActiveTab] = useState(initialActiveTab || tabs[0]?.id);
   const [libraryView, setLibraryView] = useState('grid');
 
   // Lifted metrics state — survives tab switches
@@ -208,6 +209,10 @@ export default function AgentsDashboardTemplate({
   const agentList = agents ?? [];
   const isEmpty = agentList.length === 0;
   const emptyCopy = EMPTY_STATE_COPY[pageTitle] ?? DEFAULT_EMPTY;
+
+  useEffect(() => {
+    setActiveTab(initialActiveTab || tabs[0]?.id);
+  }, [initialActiveTab, tabs]);
 
   return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: font, color: '#212121', overflow: 'hidden' }}>
@@ -375,6 +380,7 @@ AgentsDashboardTemplate.propTypes = {
   primaryMetricValue: PropTypes.string,
   agents: PropTypes.array,
   templates: PropTypes.array,
+  initialActiveTab: PropTypes.string,
   onCreateAgent: PropTypes.func,
   onCreateTemplate: PropTypes.func,
   onDeleteTemplate: PropTypes.func,
