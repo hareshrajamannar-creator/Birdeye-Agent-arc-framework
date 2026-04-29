@@ -289,14 +289,17 @@ function App() {
             agentId={builderAgentId}
             moduleContext={currentModule}
             sectionContext={editingAgent?.sectionContext || activeL2Item}
+            templateId={!editingAgent ? builderTemplate?.id : undefined}
+            templateSource={!editingAgent ? builderTemplate?.source : undefined}
             initialStatus={editingAgent?.status || 'Draft'}
             appTitle={moduleNav.title}
             pageTitle={editingAgent?.name || builderTemplate?.title || 'Untitled agent'}
             activeNavId={currentModule}
             initialDescription={editingAgent?.description || builderTemplate?.description || ''}
-            initialNodes={editingAgent?.nodes || null}
-            initialNodeDetails={editingAgent?.nodeDetails || null}
+            initialNodes={editingAgent?.nodes || builderTemplate?.nodes || null}
+            initialNodeDetails={editingAgent?.nodeDetails || builderTemplate?.nodeDetails || null}
             onSaveAgent={handleSaveAgent}
+            onSaveTemplate={handleSaveTemplate}
             onClose={() => {
               setBuilderOpen(false);
               setBuilderTemplate(null);

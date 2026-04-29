@@ -95,11 +95,14 @@ export default function AgentBuilder({
   activeNavId = 'reviews',
   moduleContext = 'agents',
   sectionContext = '',
+  templateId,
+  templateSource,
   initialStatus = 'Draft',
   initialDescription = '',
   initialNodes = null,
   initialNodeDetails = null,
   onSaveAgent,
+  onSaveTemplate,
   onClose,
   viewOnly = false,
 }) {
@@ -146,47 +149,100 @@ export default function AgentBuilder({
   }, [headerMenuOpen]);
   /* ─── Agent name is derived from nodeDetails (single source of truth) ─── */
   const agentName = nodeDetails[START_NODE_ID]?.agentName || (typeof pageTitle === 'string' ? pageTitle : '') || '';
-  const [agentDesc, setAgentDesc] = useState(initialDescription || '');
+  const [agentDesc] = useState(initialDescription || '');
+  const isTemplateMode = !!templateId && initialStatus !== 'Running';
 
   /* ─── Always-fresh ref so publish never reads stale closure values ─── */
   const latestRef = useRef({});
-  latestRef.current = { agentId, agentName, agentDesc, moduleContext, sectionContext, agentStatus, nodeList, nodeDetails };
+  useEffect(() => {
+    latestRef.current = { agentId, agentName, agentDesc, moduleContext, sectionContext, agentStatus, nodeList, nodeDetails, templateId, templateSource };
+  }, [agentId, agentName, agentDesc, moduleContext, sectionContext, agentStatus, nodeList, nodeDetails, templateId, templateSource]);
 
   /* ─── Auto-save to Firestore (debounced 1.5 s) ─── */
   const saveTimerRef = useRef(null);
   useEffect(() => {
     clearTimeout(saveTimerRef.current);
-    if (!agentId || !agentName || viewOnly) return;
+    if (!agentId || !agentName || viewOnly || isTemplateMode) return;
     saveTimerRef.current = setTimeout(() => {
       const { agentId: id, agentName: name, agentDesc: desc, moduleContext: mod, sectionContext: sec, agentStatus: status, nodeList: nodes, nodeDetails: details } = latestRef.current;
       saveAgent(id, { id, name, description: desc, status, moduleContext: mod, sectionContext: sec, nodes, nodeDetails: details });
     }, 1500);
     return () => clearTimeout(saveTimerRef.current);
-  }, [agentName, nodeList, nodeDetails, agentId, moduleContext, sectionContext, agentStatus]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [agentName, nodeList, nodeDetails, agentId, moduleContext, sectionContext, agentStatus, isTemplateMode]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handlePublish = useCallback(async () => {
-    clearTimeout(saveTimerRef.current);
-    const { agentId: id, agentName: name, agentDesc: desc, moduleContext: mod, sectionContext: sec, nodeList: nodes, nodeDetails: details } = latestRef.current;
+  const buildTemplatePayload = useCallback(() => {
+    const { agentName: name, agentDesc: desc, moduleContext: mod, sectionContext: sec, nodeList: nodes, nodeDetails: details, templateSource: source } = latestRef.current;
     const finalName = (name || details?.[START_NODE_ID]?.agentName || '').trim();
-    if (!finalName) return;
-    const payload = {
-      id,
-      name: finalName,
-      description: (desc || '').trim(),
-      status: 'Running',
+    if (!finalName) return null;
+    return {
+      id: templateId,
+      title: finalName,
+      description: (desc || initialDescription || '').trim(),
       moduleContext: mod,
       sectionContext: sec,
+      source: source || 'custom',
       nodes,
       nodeDetails: details,
     };
+  }, [initialDescription, templateId]);
+
+  const buildAgentPayload = useCallback((status = 'Running') => {
+    const { agentId: id, agentName: name, agentDesc: desc, moduleContext: mod, sectionContext: sec, nodeList: nodes, nodeDetails: details } = latestRef.current;
+    const finalName = (name || details?.[START_NODE_ID]?.agentName || '').trim();
+    if (!finalName) return null;
+    return {
+      id,
+      name: finalName,
+      description: (desc || '').trim(),
+      status,
+      moduleContext: mod,
+      sectionContext: sec,
+      templateId,
+      nodes,
+      nodeDetails: details,
+    };
+  }, [templateId]);
+
+  const handleSaveTemplate = useCallback(async () => {
+    clearTimeout(saveTimerRef.current);
+    const payload = buildTemplatePayload();
+    if (!payload) return;
     try {
-      await saveAgent(id, payload);
+      await onSaveTemplate?.(payload);
+      onClose?.();
+    } catch (e) {
+      console.error('Template save failed', e);
+    }
+  }, [buildTemplatePayload, onClose, onSaveTemplate]);
+
+  const handlePublish = useCallback(async () => {
+    clearTimeout(saveTimerRef.current);
+    const payload = buildAgentPayload('Running');
+    if (!payload) return;
+    try {
+      await saveAgent(payload.id, payload);
       setAgentStatus('Running');
     } catch (e) {
       console.error('Publish failed', e);
     }
     onSaveAgent?.(true, payload);
-  }, [onSaveAgent]);
+  }, [buildAgentPayload, onSaveAgent]);
+
+  const handleSaveAndPublish = useCallback(async () => {
+    clearTimeout(saveTimerRef.current);
+    const templatePayload = buildTemplatePayload();
+    const agentPayload = buildAgentPayload('Running');
+    if (!templatePayload || !agentPayload) return;
+    try {
+      await onSaveTemplate?.(templatePayload);
+      await saveAgent(agentPayload.id, agentPayload);
+      setAgentStatus('Running');
+    } catch (e) {
+      console.error('Save and publish failed', e);
+      return;
+    }
+    onSaveAgent?.(true, agentPayload);
+  }, [buildAgentPayload, buildTemplatePayload, onSaveAgent, onSaveTemplate]);
 
   /* ─── Download handler ─── */
   const handleExport = useCallback(() => {
@@ -612,8 +668,8 @@ export default function AgentBuilder({
     <div className="ab-header-actions">
       <Button
         theme="primary"
-        label="Publish"
-        onClick={handlePublish}
+        label={isTemplateMode ? 'Save template' : 'Publish'}
+        onClick={isTemplateMode ? handleSaveTemplate : handlePublish}
       />
       <div className="ab-header-more" ref={headerMenuRef}>
         <button
@@ -626,6 +682,16 @@ export default function AgentBuilder({
         </button>
         {headerMenuOpen && (
           <div className="ab-header-menu">
+            {isTemplateMode && (
+              <button
+                className="ab-header-menu-item"
+                type="button"
+                onClick={() => { setHeaderMenuOpen(false); handleSaveAndPublish(); }}
+              >
+                <span className="material-symbols-outlined">rocket_launch</span>
+                Save and publish
+              </button>
+            )}
             <button
               className="ab-header-menu-item"
               type="button"
