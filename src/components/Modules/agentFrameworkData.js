@@ -337,6 +337,7 @@ export const MODULE_ORDER = [
 ];
 
 export function getModuleTemplates(moduleId) {
+  if (moduleId !== 'reviews') return [];
   return MODULE_DEFINITIONS[moduleId]?.agents || [];
 }
 
