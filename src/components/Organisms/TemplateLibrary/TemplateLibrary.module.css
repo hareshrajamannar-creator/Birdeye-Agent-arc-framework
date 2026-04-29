@@ -77,25 +77,32 @@
   gap: 8px;
 }
 
-.iconButton {
+.editButton {
   display: inline-flex;
   width: 32px;
   height: 32px;
   align-items: center;
   justify-content: center;
-  border: 1px solid #e5e9f0;
-  border-radius: 4px;
-  background: #fff;
+  border: 0;
+  background: transparent;
   color: #555;
   cursor: pointer;
+  opacity: 0;
+  padding: 0;
+  transition: color 0.15s ease, opacity 0.15s ease;
 }
 
-.iconButton:hover {
-  background: #f2f4f7;
+.card:hover .editButton,
+.row:hover .editButton,
+.editButton:focus-visible {
+  opacity: 1;
+}
+
+.editButton:hover {
   color: #212121;
 }
 
-.iconButton .material-symbols-outlined {
+.editButton .material-symbols-outlined {
   font-size: 18px;
   line-height: 1;
 }

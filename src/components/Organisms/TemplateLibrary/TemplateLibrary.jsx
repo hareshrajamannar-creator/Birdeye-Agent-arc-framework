@@ -83,7 +83,7 @@ function TemplateGridCard({ template, onEdit, onSave, onUse }) {
       </div>
       <div className={styles.cardActions}>
         <Button type="primary" size="small" label="Use agent" onClick={() => onUse?.(template.id)} />
-        <button className={styles.iconButton} type="button" title="Edit template" onClick={() => { onEdit?.(template); setEditing(true); }}>
+        <button className={styles.editButton} type="button" title="Edit template" onClick={() => { onEdit?.(template); setEditing(true); }}>
           <span className="material-symbols-outlined">edit</span>
         </button>
       </div>
@@ -134,7 +134,7 @@ function TemplateListView({ templates, onCreateTemplate, onSaveTemplate, onUseTe
           </div>
           <div className={styles.rowActions}>
             <Button type="primary" size="small" label="Use agent" onClick={() => onUseTemplate?.(template.id)} />
-            <button className={styles.iconButton} type="button" title="Edit template" onClick={() => onSaveTemplate?.({ ...template, editRequested: true })}>
+            <button className={styles.editButton} type="button" title="Edit template" onClick={() => onSaveTemplate?.({ ...template, editRequested: true })}>
               <span className="material-symbols-outlined">edit</span>
             </button>
           </div>

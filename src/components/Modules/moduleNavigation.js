@@ -58,6 +58,10 @@ const expandedSections = (sections) => sections.map(({ label, children = [] }) =
   })),
 }));
 
+const firstAgentItemId = (menuItems = []) => (
+  menuItems.find((item) => item.label === 'Agents')?.children?.[0]?.id
+);
+
 export const MODULE_NAV = {
   overview: {
     title: 'Overview',
@@ -336,5 +340,9 @@ export const MODULE_NAV = {
 };
 
 export function getModuleNav(moduleId) {
-  return MODULE_NAV[moduleId] || MODULE_NAV.overview;
+  const moduleNav = MODULE_NAV[moduleId] || MODULE_NAV.overview;
+  return {
+    ...moduleNav,
+    defaultItemId: firstAgentItemId(moduleNav.menuItems) || moduleNav.defaultItemId,
+  };
 }
