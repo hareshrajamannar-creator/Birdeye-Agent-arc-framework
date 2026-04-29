@@ -7,6 +7,7 @@ import {
   getStraightPath,
   ReactFlowProvider,
   useReactFlow,
+  applyNodeChanges,
 } from '@xyflow/react';
 import GraphControls from '../Modules/FlowCanvas/GraphControls/GraphControls';
 import '@xyflow/react/dist/style.css';
@@ -222,6 +223,24 @@ function FlowCanvasInner({
     [nodes, selectedNodeId]
   );
 
+  // Local node state so React Flow can own positions during canvas drag
+  const [localNodes, setLocalNodes] = useState(() => styledNodes);
+  const isDraggingRef = useRef(false);
+
+  // Sync parent → local whenever nodes change and no drag is in progress
+  useEffect(() => {
+    if (!isDraggingRef.current) {
+      setLocalNodes(styledNodes);
+    }
+  }, [styledNodes]);
+
+  // Let React Flow mutate node positions during drag
+  const handleNodesChange = useCallback((changes) => {
+    const posChange = changes.find((c) => c.type === 'position');
+    if (posChange) isDraggingRef.current = posChange.dragging === true;
+    setLocalNodes((nds) => applyNodeChanges(changes, nds));
+  }, []);
+
   // Fit view whenever a node is added or removed
   const prevNodeCountRef = useRef(nodes.length);
   useEffect(() => {
@@ -257,12 +276,13 @@ function FlowCanvasInner({
     [onNodeClick]
   );
 
-  // On drag-stop, sort all canvas nodes by Y and call reorder
+  // On drag-stop: clear drag flag, sort canvas nodes by Y, call reorder
   const handleNodeDragStop = useCallback(() => {
+    isDraggingRef.current = false;
     if (!onNodesReorderRef.current) return;
     const allNodes = getNodes();
     const draggable = allNodes
-      .filter((n) => n.type !== 'start' && n.type !== 'end' && n.type !== 'branchPath')
+      .filter((n) => DRAGGABLE_TYPES.has(n.type))
       .sort((a, b) => a.position.y - b.position.y);
     onNodesReorderRef.current(draggable.map((n) => n.id));
   }, [getNodes]);
@@ -324,11 +344,12 @@ function FlowCanvasInner({
       </div>
 
       <ReactFlow
-        nodes={styledNodes}
+        nodes={localNodes}
         edges={styledEdges}
         nodeTypes={NODE_TYPES}
         edgeTypes={EDGE_TYPES}
         defaultEdgeOptions={defaultEdgeOptions}
+        onNodesChange={handleNodesChange}
         onNodeClick={handleNodeClick}
         onNodeDragStop={handleNodeDragStop}
         onViewportChange={handleViewportChange}

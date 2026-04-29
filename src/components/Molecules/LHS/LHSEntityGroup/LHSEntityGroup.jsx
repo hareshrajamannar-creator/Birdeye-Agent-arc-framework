@@ -12,7 +12,7 @@ export default function LHSEntityGroup({ title, items = [], nodeType, parentLabe
     e.dataTransfer.setData('application/reactflow-type', nodeType);
     e.dataTransfer.setData('application/reactflow-label', parentLabel);
     e.dataTransfer.setData('application/reactflow-description', item);
-    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.effectAllowed = 'copy';
   };
 
   const startEdit = (idx) => {

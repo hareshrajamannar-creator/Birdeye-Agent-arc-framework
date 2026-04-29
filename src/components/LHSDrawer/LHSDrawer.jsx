@@ -168,7 +168,7 @@ export function CardRow({ label, icon, action, isActive, onClick, onHover, cardR
     e.dataTransfer.setData('application/reactflow-type', nodeType);
     e.dataTransfer.setData('application/reactflow-label', label);
     e.dataTransfer.setData('application/reactflow-description', label);
-    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.effectAllowed = 'copy';
   };
 
   return (
