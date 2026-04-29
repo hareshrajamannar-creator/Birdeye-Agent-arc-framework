@@ -47,6 +47,10 @@ export default function AgentsDashboardTemplate({
   const [activeTab, setActiveTab] = useState(tabs[0]?.id);
   const [libraryView, setLibraryView] = useState('grid');
 
+  // Lifted metrics state — survives tab switches
+  const [savedMetrics, setSavedMetrics] = useState(metrics);
+  const [savedPrimaryValue, setSavedPrimaryValue] = useState(primaryMetricValue);
+
   return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: font, color: '#212121', overflow: 'hidden' }}>
 
@@ -158,12 +162,14 @@ export default function AgentsDashboardTemplate({
             <>
               <div style={{ padding: '20px 24px 0' }}>
                 <MetricsGroup
-                  primaryValue={primaryMetricValue}
+                  primaryValue={savedPrimaryValue}
                   primaryType="time"
                   showTrend
                   primaryTrend="+1.3%"
                   primaryTrendPositive
-                  metrics={metrics}
+                  metrics={savedMetrics}
+                  onMetricsChange={setSavedMetrics}
+                  onPrimaryValueChange={setSavedPrimaryValue}
                 />
               </div>
               <div style={{ padding: '20px 24px 24px' }}>

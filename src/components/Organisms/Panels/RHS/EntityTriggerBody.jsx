@@ -60,23 +60,35 @@ export default function EntityTriggerBody({ initialValues = {}, onFieldChange })
   };
 
   function handleConditionChange(id, field, value) {
-    setConditions((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, [`${field}Value`]: value } : c))
-    );
+    setConditions((prev) => {
+      const next = prev.map((c) => (c.id === id ? { ...c, [`${field}Value`]: value } : c));
+      onFieldChange?.('conditions', next);
+      return next;
+    });
   }
 
   function handleRemoveCondition(id) {
-    setConditions((prev) => prev.filter((c) => c.id !== id));
+    setConditions((prev) => {
+      const next = prev.filter((c) => c.id !== id);
+      onFieldChange?.('conditions', next);
+      return next;
+    });
   }
 
   function handleAddCondition() {
-    setConditions((prev) => [...prev, makeCondition(Date.now())]);
+    setConditions((prev) => {
+      const next = [...prev, makeCondition(Date.now())];
+      onFieldChange?.('conditions', next);
+      return next;
+    });
   }
 
   function handleOptionsChange(key, opts) {
-    const next = { ...conditionOptions, [key]: opts };
-    setConditionOptions(next);
-    onFieldChange?.('conditionOptions', next);
+    setConditionOptions((prev) => {
+      const next = { ...prev, [key]: opts };
+      onFieldChange?.('conditionOptions', next);
+      return next;
+    });
   }
 
   return (
@@ -102,7 +114,7 @@ export default function EntityTriggerBody({ initialValues = {}, onFieldChange })
         conditions={conditions}
         logic={logic}
         onConditionChange={handleConditionChange}
-        onLogicChange={setLogic}
+        onLogicChange={(val) => { setLogic(val); onFieldChange?.('logic', val); }}
         onAddCondition={handleAddCondition}
         onRemoveCondition={handleRemoveCondition}
         onAdvancedFilters={() => {}}

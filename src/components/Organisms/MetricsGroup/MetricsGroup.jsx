@@ -8,39 +8,29 @@ const PRIMARY_OPTIONS = {
 };
 
 export default function MetricsGroup({
-  primaryValue: initialPrimaryValue,
+  primaryValue,
   primaryType = 'time',
   primaryTrend,
   primaryTrendPositive = true,
   showTrend = false,
-  metrics: initialMetrics = [],
+  metrics = [],
+  onMetricsChange,
+  onPrimaryValueChange,
 }) {
   const [type, setType] = useState(primaryType);
   const [modalOpen, setModalOpen] = useState(false);
   const [timeValue, setTimeValue] = useState(5);
   const [wage, setWage] = useState(36);
   const [currency, setCurrency] = useState('USD');
-
-  // Editable state for all metrics
-  const [primaryValue, setPrimaryValue] = useState(initialPrimaryValue);
-  const [primaryTitle, setPrimaryTitle] = useState(PRIMARY_OPTIONS[primaryType].title);
-  const [metrics, setMetrics] = useState(initialMetrics);
+  const [primaryTitle, setPrimaryTitle] = useState(PRIMARY_OPTIONS[primaryType]?.title ?? 'Time saved');
 
   const handleSave = ({ mode, timeValue: tv, wage: w, currency: c }) => {
     setType(mode);
     setTimeValue(tv);
     setWage(w);
     setCurrency(c);
-    setPrimaryTitle(PRIMARY_OPTIONS[mode]?.title || primaryTitle);
+    setPrimaryTitle(PRIMARY_OPTIONS[mode]?.title ?? primaryTitle);
   };
-
-  function updateMetricValue(index, newValue) {
-    setMetrics((prev) => prev.map((m, i) => i === index ? { ...m, value: newValue } : m));
-  }
-
-  function updateMetricTitle(index, newTitle) {
-    setMetrics((prev) => prev.map((m, i) => i === index ? { ...m, title: newTitle } : m));
-  }
 
   const additional = metrics.slice(0, 4);
 
@@ -51,8 +41,14 @@ export default function MetricsGroup({
           <div key={i} style={{ flex: '1 0 0', minWidth: 0 }}>
             <MetricCard
               {...metric}
-              onValueChange={(v) => updateMetricValue(i, v)}
-              onTitleChange={(t) => updateMetricTitle(i, t)}
+              onValueChange={(v) => {
+                const next = metrics.map((m, j) => (j === i ? { ...m, value: v } : m));
+                onMetricsChange?.(next);
+              }}
+              onTitleChange={(t) => {
+                const next = metrics.map((m, j) => (j === i ? { ...m, title: t } : m));
+                onMetricsChange?.(next);
+              }}
             />
           </div>
         ))}
@@ -66,7 +62,7 @@ export default function MetricsGroup({
             trendPositive={primaryTrendPositive}
             showConfig
             onConfig={() => setModalOpen(true)}
-            onValueChange={setPrimaryValue}
+            onValueChange={onPrimaryValueChange}
             onTitleChange={setPrimaryTitle}
           />
         </div>

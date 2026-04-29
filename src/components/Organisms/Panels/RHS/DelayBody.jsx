@@ -22,7 +22,7 @@ function SectionLabel({ label, required }) {
   );
 }
 
-export default function DelayBody({ initialValues = {} }) {
+export default function DelayBody({ initialValues = {}, onFieldChange }) {
   const [name, setName] = useState(initialValues.name ?? '');
   const [duration, setDuration] = useState(initialValues.duration ?? '');
   const [unit, setUnit] = useState(initialValues.unit ?? '');
@@ -35,7 +35,7 @@ export default function DelayBody({ initialValues = {} }) {
         label="Name"
         placeholder="Enter name"
         value={name}
-        onChange={(e) => setName(e.target.value)}
+        onChange={(e) => { setName(e.target.value); onFieldChange?.('name', e.target.value); }}
         required
       />
 
@@ -49,7 +49,7 @@ export default function DelayBody({ initialValues = {} }) {
               label="Amount"
               placeholder="Enter value"
               value={duration}
-              onChange={(e) => setDuration(e.target.value)}
+              onChange={(e) => { setDuration(e.target.value); onFieldChange?.('duration', e.target.value); }}
               min={1}
             />
           </div>
@@ -59,7 +59,7 @@ export default function DelayBody({ initialValues = {} }) {
               name="unit"
               selected={unit}
               options={UNIT_OPTIONS}
-              onChange={(opt) => setUnit(opt.value)}
+              onChange={(opt) => { setUnit(opt.value); onFieldChange?.('unit', opt.value); }}
               placeholder="Select"
             />
           </div>

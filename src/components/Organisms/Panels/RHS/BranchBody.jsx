@@ -41,21 +41,35 @@ export default function BranchBody({ initialValues = {}, onFieldChange }) {
   );
 
   function handleConditionChange(id, field, value) {
-    setConditions((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, [`${field}Value`]: value } : c))
-    );
+    setConditions((prev) => {
+      const next = prev.map((c) => (c.id === id ? { ...c, [`${field}Value`]: value } : c));
+      onFieldChange?.('conditions', next);
+      return next;
+    });
   }
 
   function handleRemoveCondition(id) {
-    setConditions((prev) => prev.filter((c) => c.id !== id));
+    setConditions((prev) => {
+      const next = prev.filter((c) => c.id !== id);
+      onFieldChange?.('conditions', next);
+      return next;
+    });
   }
 
   function handleAddCondition() {
-    setConditions((prev) => [...prev, makeCondition(prev.length + 1)]);
+    setConditions((prev) => {
+      const next = [...prev, makeCondition(prev.length + 1)];
+      onFieldChange?.('conditions', next);
+      return next;
+    });
   }
 
   function handleOptionsChange(key, opts) {
-    setConditionOptions((prev) => ({ ...prev, [key]: opts }));
+    setConditionOptions((prev) => {
+      const next = { ...prev, [key]: opts };
+      onFieldChange?.('conditionOptions', next);
+      return next;
+    });
   }
 
   return (
@@ -74,14 +88,14 @@ export default function BranchBody({ initialValues = {}, onFieldChange }) {
         label="Description"
         placeholder="Enter description"
         value={description}
-        onChange={(e) => setDescription(e.target.value)}
+        onChange={(e) => { setDescription(e.target.value); onFieldChange?.('description', e.target.value); }}
         noFloatingLabel
       />
       <Conditions
         conditions={conditions}
         logic={logic}
         onConditionChange={handleConditionChange}
-        onLogicChange={setLogic}
+        onLogicChange={(val) => { setLogic(val); onFieldChange?.('logic', val); }}
         onAddCondition={handleAddCondition}
         onRemoveCondition={handleRemoveCondition}
         onAdvancedFilters={() => {}}

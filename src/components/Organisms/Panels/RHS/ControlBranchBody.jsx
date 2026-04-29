@@ -66,7 +66,7 @@ function PercentageBranchItem({ index, name, percentage, onChange }) {
   );
 }
 
-export default function ControlBranchBody({ initialValues = {} }) {
+export default function ControlBranchBody({ initialValues = {}, onFieldChange }) {
   const [basedOn, setBasedOn] = useState(initialValues.basedOn ?? 'conditions');
   const [fieldName, setFieldName] = useState(initialValues.fieldName ?? '');
   const [branches, setBranches] = useState(() => {
@@ -76,12 +76,20 @@ export default function ControlBranchBody({ initialValues = {} }) {
   const [nextId, setNextId] = useState((initialValues.branches?.length ?? 0) + 1);
 
   function addBranch() {
-    setBranches((prev) => [...prev, { id: nextId, name: `Branch ${nextId}`, percentage: 0 }]);
+    setBranches((prev) => {
+      const next = [...prev, { id: nextId, name: `Branch ${nextId}`, percentage: 0 }];
+      onFieldChange?.('branches', next);
+      return next;
+    });
     setNextId((n) => n + 1);
   }
 
   function updatePercentage(index, value) {
-    setBranches((prev) => prev.map((b, i) => i === index ? { ...b, percentage: value } : b));
+    setBranches((prev) => {
+      const next = prev.map((b, i) => i === index ? { ...b, percentage: value } : b);
+      onFieldChange?.('branches', next);
+      return next;
+    });
   }
 
   const totalPercentage = branches.reduce((sum, b) => sum + (b.percentage || 0), 0);
@@ -94,7 +102,7 @@ export default function ControlBranchBody({ initialValues = {} }) {
           name="basedOn"
           selected={basedOn}
           options={BASED_ON_OPTIONS}
-          onChange={(opt) => setBasedOn(opt.value)}
+          onChange={(opt) => { setBasedOn(opt.value); onFieldChange?.('basedOn', opt.value); }}
           placeholder="Select"
         />
       </div>
@@ -107,7 +115,7 @@ export default function ControlBranchBody({ initialValues = {} }) {
             type="text"
             label="Field name"
             value={fieldName}
-            onChange={(e) => setFieldName(e.target.value)}
+            onChange={(e) => { setFieldName(e.target.value); onFieldChange?.('fieldName', e.target.value); }}
           />
           <span style={{ fontSize: 11, lineHeight: '16px', color: '#8f8f8f', fontFamily: font }}>
             Select the field whose value determines the branch

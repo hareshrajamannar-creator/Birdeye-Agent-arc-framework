@@ -607,7 +607,7 @@ export default function AgentBuilder({
         </div>
 
         {drawerOpen && (
-          <div className="agent-builder__rhs">
+          <div key={selectedNodeId} className="agent-builder__rhs">
             {renderRHSPanel()}
           </div>
         )}

@@ -26,7 +26,7 @@ function SectionLabel({ label, showInfo }) {
   );
 }
 
-export default function LoopBody({ initialValues = {} }) {
+export default function LoopBody({ initialValues = {}, onFieldChange }) {
   const [name, setName] = useState(initialValues.name ?? '');
   const [description, setDescription] = useState(initialValues.description ?? '');
   const [loopMode, setLoopMode] = useState(initialValues.loopMode ?? 'manual');
@@ -40,7 +40,7 @@ export default function LoopBody({ initialValues = {} }) {
         label="Name"
         placeholder="Enter name"
         value={name}
-        onChange={(e) => setName(e.target.value)}
+        onChange={(e) => { setName(e.target.value); onFieldChange?.('name', e.target.value); }}
         required
       />
       <TextArea
@@ -48,7 +48,7 @@ export default function LoopBody({ initialValues = {} }) {
         label="Description"
         placeholder="Enter description"
         value={description}
-        onChange={(e) => setDescription(e.target.value)}
+        onChange={(e) => { setDescription(e.target.value); onFieldChange?.('description', e.target.value); }}
         noFloatingLabel
       />
 
@@ -57,8 +57,8 @@ export default function LoopBody({ initialValues = {} }) {
           How should this loop run?
         </span>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <FormInput type="radio" name="loopMode" value="manual" label="Manual" checked={loopMode === 'manual'} onChange={() => setLoopMode('manual')} labelInside />
-          <FormInput type="radio" name="loopMode" value="variable" label="Set from variable" checked={loopMode === 'variable'} onChange={() => setLoopMode('variable')} labelInside />
+          <FormInput type="radio" name="loopMode" value="manual" label="Manual" checked={loopMode === 'manual'} onChange={() => { setLoopMode('manual'); onFieldChange?.('loopMode', 'manual'); }} labelInside />
+          <FormInput type="radio" name="loopMode" value="variable" label="Set from variable" checked={loopMode === 'variable'} onChange={() => { setLoopMode('variable'); onFieldChange?.('loopMode', 'variable'); }} labelInside />
         </div>
       </div>
 
@@ -68,7 +68,7 @@ export default function LoopBody({ initialValues = {} }) {
           name="loopOver"
           selected={loopOver}
           options={LOOP_OVER_OPTIONS}
-          onChange={(opt) => setLoopOver(opt.value)}
+          onChange={(opt) => { setLoopOver(opt.value); onFieldChange?.('loopOver', opt.value); }}
           placeholder="Select"
         />
         <span style={helpTextStyle}>Select the variable to iterate over</span>
