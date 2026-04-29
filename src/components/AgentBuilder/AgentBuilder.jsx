@@ -108,7 +108,24 @@ export default function AgentBuilder({
   const [nodeList, setNodeList] = useState(() => initialNodes || []);
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [nodeDetails, setNodeDetails] = useState(() => initialNodeDetails || {});
+  const [nodeDetails, setNodeDetails] = useState(() => {
+    const base = initialNodeDetails || {};
+    const startNode = base[START_NODE_ID];
+    const pageTitleStr = (typeof pageTitle === 'string' ? pageTitle : '') || '';
+    if (!startNode || !startNode.agentName) {
+      return {
+        ...base,
+        [START_NODE_ID]: {
+          goals: '',
+          outcomes: '',
+          locations: [],
+          ...(startNode || {}),
+          agentName: startNode?.agentName || pageTitleStr,
+        },
+      };
+    }
+    return base;
+  });
   const [agentStatus, setAgentStatus] = useState(initialStatus || 'Draft');
 
   /* ─── Share modal ─── */
@@ -127,8 +144,9 @@ export default function AgentBuilder({
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [headerMenuOpen]);
-  const [agentName, setAgentName] = useState(pageTitle || '');
-  const [agentDesc, setAgentDesc] = useState(initialDescription);
+  /* ─── Agent name is derived from nodeDetails (single source of truth) ─── */
+  const agentName = nodeDetails[START_NODE_ID]?.agentName || (typeof pageTitle === 'string' ? pageTitle : '') || '';
+  const [agentDesc, setAgentDesc] = useState(initialDescription || '');
 
   /* ─── Always-fresh ref so publish never reads stale closure values ─── */
   const latestRef = useRef({});
@@ -137,8 +155,8 @@ export default function AgentBuilder({
   /* ─── Auto-save to Firestore (debounced 1.5 s) ─── */
   const saveTimerRef = useRef(null);
   useEffect(() => {
-    if (!agentId || !agentName || viewOnly) return;
     clearTimeout(saveTimerRef.current);
+    if (!agentId || !agentName || viewOnly) return;
     saveTimerRef.current = setTimeout(() => {
       const { agentId: id, agentName: name, agentDesc: desc, moduleContext: mod, sectionContext: sec, agentStatus: status, nodeList: nodes, nodeDetails: details } = latestRef.current;
       saveAgent(id, { id, name, description: desc, status, moduleContext: mod, sectionContext: sec, nodes, nodeDetails: details });
@@ -147,15 +165,15 @@ export default function AgentBuilder({
   }, [agentName, nodeList, nodeDetails, agentId, moduleContext, sectionContext, agentStatus]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handlePublish = useCallback(async () => {
-    // Cancel any pending auto-save so it can't race against this publish
     clearTimeout(saveTimerRef.current);
     const { agentId: id, agentName: name, agentDesc: desc, moduleContext: mod, sectionContext: sec, nodeList: nodes, nodeDetails: details } = latestRef.current;
-    if (!name.trim()) return;
+    const finalName = (name || details?.[START_NODE_ID]?.agentName || '').trim();
+    if (!finalName) return;
     try {
       await saveAgent(id, {
         id,
-        name: name.trim(),
-        description: desc.trim(),
+        name: finalName,
+        description: (desc || '').trim(),
         status: 'Running',
         moduleContext: mod,
         sectionContext: sec,
@@ -452,7 +470,6 @@ export default function AgentBuilder({
                 ...prev,
                 [START_NODE_ID]: { ...(prev[START_NODE_ID] || startDetails), [field]: value },
               }));
-              if (field === 'agentName') setAgentName(value);
             },
           }}
           onClose={handleCloseDrawer}
@@ -637,7 +654,6 @@ export default function AgentBuilder({
       placeholder="Untitled agent"
       onChange={(e) => {
         const val = e.target.value;
-        setAgentName(val);
         setNodeDetails((prev) => ({
           ...prev,
           [START_NODE_ID]: { ...(prev[START_NODE_ID] || {}), agentName: val },
