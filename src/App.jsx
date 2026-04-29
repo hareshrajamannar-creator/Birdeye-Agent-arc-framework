@@ -199,6 +199,7 @@ function App() {
             agentId={builderAgentId}
             moduleContext={currentModule}
             sectionContext={editingAgent?.sectionContext || activeL2Item}
+            initialStatus={editingAgent?.status || 'Draft'}
             appTitle={moduleNav.title}
             pageTitle={editingAgent?.name || builderTemplate?.title || 'Untitled agent'}
             activeNavId={currentModule}

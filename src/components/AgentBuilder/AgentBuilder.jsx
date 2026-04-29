@@ -95,6 +95,7 @@ export default function AgentBuilder({
   activeNavId = 'reviews',
   moduleContext = 'agents',
   sectionContext = '',
+  initialStatus = 'Draft',
   initialDescription = '',
   initialNodes = null,
   initialNodeDetails = null,
@@ -108,7 +109,7 @@ export default function AgentBuilder({
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [nodeDetails, setNodeDetails] = useState(() => initialNodeDetails || {});
-
+  const [agentStatus, setAgentStatus] = useState(initialStatus || 'Draft');
 
   /* ─── Share modal ─── */
   const [shareModalOpen, setShareModalOpen] = useState(false);
@@ -129,44 +130,44 @@ export default function AgentBuilder({
   const [agentName, setAgentName] = useState(pageTitle || '');
   const [agentDesc, setAgentDesc] = useState(initialDescription);
 
+  /* ─── Always-fresh ref so publish never reads stale closure values ─── */
+  const latestRef = useRef({});
+  latestRef.current = { agentId, agentName, agentDesc, moduleContext, sectionContext, agentStatus, nodeList, nodeDetails };
+
   /* ─── Auto-save to Firestore (debounced 1.5 s) ─── */
   const saveTimerRef = useRef(null);
   useEffect(() => {
     if (!agentId || !agentName || viewOnly) return;
     clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => {
-      saveAgent(agentId, {
-        id: agentId,
-        name: agentName,
-        description: agentDesc,
-        status: 'Draft',
-        moduleContext,
-        sectionContext,
-        nodes: nodeList,
-        nodeDetails,
-      });
+      const { agentId: id, agentName: name, agentDesc: desc, moduleContext: mod, sectionContext: sec, agentStatus: status, nodeList: nodes, nodeDetails: details } = latestRef.current;
+      saveAgent(id, { id, name, description: desc, status, moduleContext: mod, sectionContext: sec, nodes, nodeDetails: details });
     }, 1500);
     return () => clearTimeout(saveTimerRef.current);
-  }, [agentName, nodeList, nodeDetails, agentId, moduleContext, sectionContext]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [agentName, nodeList, nodeDetails, agentId, moduleContext, sectionContext, agentStatus]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handlePublish = useCallback(async () => {
-    if (!agentName.trim()) return;
+    // Cancel any pending auto-save so it can't race against this publish
+    clearTimeout(saveTimerRef.current);
+    const { agentId: id, agentName: name, agentDesc: desc, moduleContext: mod, sectionContext: sec, nodeList: nodes, nodeDetails: details } = latestRef.current;
+    if (!name.trim()) return;
     try {
-      await saveAgent(agentId, {
-        id: agentId,
-        name: agentName.trim(),
-        description: agentDesc.trim(),
+      await saveAgent(id, {
+        id,
+        name: name.trim(),
+        description: desc.trim(),
         status: 'Running',
-        moduleContext,
-        sectionContext,
-        nodes: nodeList,
-        nodeDetails,
+        moduleContext: mod,
+        sectionContext: sec,
+        nodes,
+        nodeDetails: details,
       });
+      setAgentStatus('Running');
     } catch (e) {
       console.error('Publish failed', e);
     }
     onSaveAgent?.(true);
-  }, [agentId, agentName, agentDesc, moduleContext, sectionContext, nodeList, nodeDetails, onSaveAgent]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [onSaveAgent]);
 
   /* ─── Download handler ─── */
   const handleExport = useCallback(() => {
