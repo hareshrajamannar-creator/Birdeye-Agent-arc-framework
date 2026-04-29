@@ -57,7 +57,7 @@ function TemplateForm({ initialTemplate = emptyDraft, onCancel, onSave }) {
   );
 }
 
-function TemplateGridCard({ template, onEdit, onSave, onUse }) {
+function TemplateGridCard({ template, onDelete, onEdit, onSave, onUse }) {
   const [editing, setEditing] = useState(false);
 
   if (editing) {
@@ -85,6 +85,9 @@ function TemplateGridCard({ template, onEdit, onSave, onUse }) {
         <Button type="primary" size="small" label="Use agent" onClick={() => onUse?.(template.id)} />
         <button className={styles.editButton} type="button" title="Edit template" onClick={() => { onEdit?.(template); setEditing(true); }}>
           <span className="material-symbols-outlined">edit</span>
+        </button>
+        <button className={`${styles.editButton} ${styles.deleteButton}`} type="button" title="Delete template" onClick={() => onDelete?.(template.id)}>
+          <span className="material-symbols-outlined">delete</span>
         </button>
       </div>
     </div>
@@ -116,7 +119,7 @@ function AddTemplateCard({ onSave }) {
   );
 }
 
-function TemplateListView({ templates, onCreateTemplate, onSaveTemplate, onUseTemplate }) {
+function TemplateListView({ templates, onCreateTemplate, onDeleteTemplate, onSaveTemplate, onUseTemplate }) {
   return (
     <div className={styles.list}>
       <div className={styles.listHeader}>
@@ -137,6 +140,9 @@ function TemplateListView({ templates, onCreateTemplate, onSaveTemplate, onUseTe
             <button className={styles.editButton} type="button" title="Edit template" onClick={() => onSaveTemplate?.({ ...template, editRequested: true })}>
               <span className="material-symbols-outlined">edit</span>
             </button>
+            <button className={`${styles.editButton} ${styles.deleteButton}`} type="button" title="Delete template" onClick={() => onDeleteTemplate?.(template.id)}>
+              <span className="material-symbols-outlined">delete</span>
+            </button>
           </div>
         </div>
       ))}
@@ -153,6 +159,7 @@ export default function TemplateLibrary({
   variant = 'grid',
   initialCount = 3,
   onCreateTemplate,
+  onDeleteTemplate,
   onSaveTemplate,
   onUseTemplate,
   onSeeMore,
@@ -181,6 +188,7 @@ export default function TemplateLibrary({
       <TemplateListView
         templates={templates}
         onCreateTemplate={onCreateTemplate}
+        onDeleteTemplate={onDeleteTemplate}
         onSaveTemplate={setListEditTemplate}
         onUseTemplate={onUseTemplate}
       />
@@ -194,6 +202,7 @@ export default function TemplateLibrary({
           <TemplateGridCard
             key={template.id}
             template={template}
+            onDelete={onDeleteTemplate}
             onSave={onSaveTemplate}
             onUse={onUseTemplate}
           />
@@ -218,6 +227,7 @@ TemplateForm.propTypes = {
 
 TemplateGridCard.propTypes = {
   template: PropTypes.object.isRequired,
+  onDelete: PropTypes.func,
   onEdit: PropTypes.func,
   onSave: PropTypes.func,
   onUse: PropTypes.func,
@@ -230,6 +240,7 @@ AddTemplateCard.propTypes = {
 TemplateListView.propTypes = {
   templates: PropTypes.array,
   onCreateTemplate: PropTypes.func,
+  onDeleteTemplate: PropTypes.func,
   onSaveTemplate: PropTypes.func,
   onUseTemplate: PropTypes.func,
 };
@@ -239,6 +250,7 @@ TemplateLibrary.propTypes = {
   variant: PropTypes.string,
   initialCount: PropTypes.number,
   onCreateTemplate: PropTypes.func,
+  onDeleteTemplate: PropTypes.func,
   onSaveTemplate: PropTypes.func,
   onUseTemplate: PropTypes.func,
   onSeeMore: PropTypes.func,

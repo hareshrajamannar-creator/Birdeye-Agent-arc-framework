@@ -7,7 +7,7 @@ import AgentViewerPage from './pages/AgentViewerPage';
 import { getModuleTemplates } from './components/Modules/agentFrameworkData';
 import { getModuleNav } from './components/Modules/moduleNavigation';
 import { subscribeToAgents, deleteAgent, saveAgent } from './services/agentService';
-import { saveTemplate, subscribeToTemplates } from './services/templateService';
+import { deleteTemplate, saveTemplate, subscribeToTemplates } from './services/templateService';
 import styles from './App.module.css';
 import '@xyflow/react/dist/style.css';
 
@@ -68,10 +68,11 @@ function mergeTemplates(defaultTemplates, savedTemplates, moduleId, sectionId) {
   const savedById = new Map(moduleSaved.map((template) => [template.id, template]));
   const defaults = defaultTemplates.map((template) => {
     const saved = savedById.get(template.id);
+    if (saved?.deleted) return null;
     return withTemplateContext(saved ? { ...template, ...saved } : template, moduleId, sectionId);
-  });
+  }).filter(Boolean);
   const custom = moduleSaved
-    .filter((template) => !defaultTemplates.some((item) => item.id === template.id))
+    .filter((template) => !template.deleted && !defaultTemplates.some((item) => item.id === template.id))
     .map((template) => withTemplateContext(template, moduleId, sectionId));
 
   return [...defaults, ...custom];
@@ -177,6 +178,19 @@ function App() {
       sectionContext: activeL2Item,
       source: 'custom',
     });
+  }
+
+  function handleDeleteTemplate(templateId) {
+    const template = moduleTemplates.find((item) => item.id === templateId);
+    if (template?.source === 'default') {
+      return saveTemplate(templateId, {
+        ...template,
+        deleted: true,
+        moduleContext: template.moduleContext || currentModule,
+        sectionContext: template.sectionContext || activeL2Item,
+      });
+    }
+    return deleteTemplate(templateId);
   }
 
   function handleL2ItemClick(itemId) {
@@ -312,6 +326,7 @@ function App() {
         showDashboard={showDashboard}
         onCreateAgent={() => handleCreateAgent()}
         onCreateTemplate={handleCreateTemplate}
+        onDeleteTemplate={handleDeleteTemplate}
         onSaveTemplate={handleSaveTemplate}
         onUseTemplate={handleUseTemplate}
         onNavChange={handleModuleChange}

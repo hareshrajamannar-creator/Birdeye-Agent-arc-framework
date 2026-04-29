@@ -1,6 +1,7 @@
 import { db } from '../firebase';
 import {
   collection,
+  deleteDoc,
   doc,
   onSnapshot,
   serverTimestamp,
@@ -14,6 +15,10 @@ export function saveTemplate(templateId, template) {
     ...template,
     updatedAt: serverTimestamp(),
   }, { merge: true });
+}
+
+export function deleteTemplate(templateId) {
+  return deleteDoc(doc(db, COLLECTION, templateId));
 }
 
 export function subscribeToTemplates(onTemplates) {

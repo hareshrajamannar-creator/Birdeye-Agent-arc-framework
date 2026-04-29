@@ -183,6 +183,7 @@ export default function AgentsDashboardTemplate({
   templates,
   onCreateAgent,
   onCreateTemplate,
+  onDeleteTemplate,
   onSaveTemplate,
   onUseTemplate,
   onOpenAgent,
@@ -355,6 +356,7 @@ export default function AgentsDashboardTemplate({
                 templates={templates}
                 variant={libraryView === 'table' ? 'list' : 'grid'}
                 onCreateTemplate={onCreateTemplate}
+                onDeleteTemplate={onDeleteTemplate}
                 onSaveTemplate={onSaveTemplate}
                 onUseTemplate={onUseTemplate}
               />
@@ -375,6 +377,7 @@ AgentsDashboardTemplate.propTypes = {
   templates: PropTypes.array,
   onCreateAgent: PropTypes.func,
   onCreateTemplate: PropTypes.func,
+  onDeleteTemplate: PropTypes.func,
   onSaveTemplate: PropTypes.func,
   onUseTemplate: PropTypes.func,
   onOpenAgent: PropTypes.func,

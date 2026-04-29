@@ -102,6 +102,10 @@
   color: #212121;
 }
 
+.deleteButton:hover {
+  color: #b42318;
+}
+
 .editButton .material-symbols-outlined {
   font-size: 18px;
   line-height: 1;
