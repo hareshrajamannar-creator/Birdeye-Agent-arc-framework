@@ -706,11 +706,7 @@ export default function AgentBuilder({
           variant="branch"
           title="Branch"
           viewOnly={viewOnly}
-          bodyProps={{
-            initialValues: currentDetails,
-            onFieldChange: activeFieldChange,
-            onDeleteBranch: currentDetails.isFallback ? undefined : () => handleDeleteBranchPath(selectedNodeId),
-          }}
+          bodyProps={{ initialValues: currentDetails, onFieldChange: activeFieldChange }}
           onClose={handleCloseDrawer}
           onSave={handleCloseDrawer}
         />
@@ -765,7 +761,11 @@ export default function AgentBuilder({
           variant="controlBranch"
           title="Branch details"
           viewOnly={viewOnly}
-          bodyProps={{ initialValues: { ...currentDetails, branchNodeId: selectedNodeId }, onFieldChange: activeFieldChange }}
+          bodyProps={{
+            initialValues: { ...currentDetails, branchNodeId: selectedNodeId },
+            onFieldChange: activeFieldChange,
+            onDeleteBranch: (branchId) => handleDeleteBranchPath(branchId),
+          }}
           onClose={handleCloseDrawer}
           onSave={handleCloseDrawer}
         />

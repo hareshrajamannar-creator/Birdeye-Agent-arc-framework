@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import SingleSelect from '@birdeye/elemental/core/atoms/SingleSelect/index.js';
 import FormInput from '@birdeye/elemental/core/atoms/FormInput/index.js';
+import styles from './ControlBranchBody.module.css';
 
 const font = '"Roboto", arial, sans-serif';
 
@@ -21,25 +22,33 @@ function SectionLabel({ label, required }) {
   );
 }
 
-function BranchItem({ index, name, draggable, onDragStart, onDragOver, onDrop }) {
+function BranchItem({ index, name, isFallback, draggable, onDragStart, onDragOver, onDrop, onDelete }) {
   return (
     <div
+      className={styles.branchItem}
       draggable={draggable}
       onDragStart={onDragStart}
       onDragOver={onDragOver}
       onDrop={onDrop}
-      style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '8px 12px', border: '1px solid #e5e9f0', borderRadius: 4,
-        background: '#fff', gap: 8, cursor: draggable ? 'grab' : 'default',
-      }}
+      style={{ cursor: draggable ? 'grab' : 'default' }}
     >
-      <span style={{ fontSize: 14, lineHeight: '20px', color: '#212121', fontFamily: font, letterSpacing: '-0.28px' }}>
+      <span style={{ fontSize: 14, lineHeight: '20px', color: '#212121', fontFamily: font, letterSpacing: '-0.28px', flex: 1 }}>
         {index + 1}. {name}
       </span>
-      <span className="material-symbols-outlined" style={{ fontSize: 20, color: '#8f8f8f', flexShrink: 0 }}>
-        drag_indicator
-      </span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+        {!isFallback && (
+          <button
+            className={styles.deleteBtn}
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onDelete?.(); }}
+          >
+            <span className="material-symbols-outlined">delete</span>
+          </button>
+        )}
+        <span className="material-symbols-outlined" style={{ fontSize: 20, color: '#8f8f8f', flexShrink: 0 }}>
+          drag_indicator
+        </span>
+      </div>
     </div>
   );
 }
@@ -72,7 +81,7 @@ function PercentageBranchItem({ index, name, percentage, onChange }) {
   );
 }
 
-export default function ControlBranchBody({ initialValues = {}, onFieldChange }) {
+export default function ControlBranchBody({ initialValues = {}, onFieldChange, onDeleteBranch }) {
   const [basedOn, setBasedOn] = useState(initialValues.basedOn ?? 'conditions');
   const [fieldName, setFieldName] = useState(initialValues.fieldName ?? '');
   const [branches, setBranches] = useState(() => {
@@ -80,6 +89,11 @@ export default function ControlBranchBody({ initialValues = {}, onFieldChange })
     return initial.map((b) => ({ ...b, percentage: b.percentage ?? 0 }));
   });
   const [dragIndex, setDragIndex] = useState(null);
+
+  function deleteBranch(branchId) {
+    setBranches((prev) => prev.filter((b) => b.id !== branchId));
+    onDeleteBranch?.(branchId);
+  }
 
   function addBranch() {
     setBranches((prev) => {
@@ -170,10 +184,12 @@ export default function ControlBranchBody({ initialValues = {}, onFieldChange })
                 key={b.id}
                 index={i}
                 name={b.name}
+                isFallback={!!b.isFallback}
                 draggable={!b.isFallback}
                 onDragStart={() => setDragIndex(i)}
                 onDragOver={(event) => event.preventDefault()}
                 onDrop={() => reorderBranch(i)}
+                onDelete={() => deleteBranch(b.id)}
               />
             )
           )}

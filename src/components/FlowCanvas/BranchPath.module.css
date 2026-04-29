@@ -90,15 +90,15 @@
   cursor: pointer;
   font-size: 13px;
   font-family: 'Roboto', sans-serif;
-  color: #de1b0c;
+  color: #212121;
   text-align: left;
 }
 
 .chipDropdownItem:hover {
-  background: #fff0f0;
+  background: #f5f5f5;
 }
 
 .chipDropdownItem :global(.material-symbols-outlined) {
   font-size: 16px;
-  color: #de1b0c;
+  color: #616161;
 }
