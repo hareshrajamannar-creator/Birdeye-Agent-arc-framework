@@ -37,6 +37,18 @@ body {
   margin: 0;
 }
 
+/* ─── SingleSelect dropdown: remove blank header space ─── */
+/* The elemental trigger button becomes position:absolute with padding:19px when open,
+   creating a large blank area. Hide it and bring the popup up to replace it. */
+.el-ss-default-filter.el-ss-dropdown-open {
+  display: none !important;
+}
+
+.el-single-select .el-ss-filter-dropdown {
+  top: 0 !important;
+  border-radius: 6px !important;
+}
+
 #root {
   width: 100%;
   min-height: 100vh;
