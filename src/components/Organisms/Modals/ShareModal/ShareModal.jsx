@@ -49,6 +49,15 @@ export default function ShareModal({ agentId, onClose }) {
               </span>
               {copied ? 'Copied!' : 'Copy link'}
             </button>
+            <a
+              className={styles.openBtn}
+              href={shareUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Open link in new tab"
+            >
+              <span className="material-symbols-outlined">open_in_new</span>
+            </a>
           </div>
         </div>
 

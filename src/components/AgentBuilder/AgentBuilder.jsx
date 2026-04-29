@@ -6,9 +6,6 @@ import RHS from '../Organisms/Panels/RHS/RHS';
 import ScheduleBased from '../Molecules/RHS/Trigger/ScheduleBased/ScheduleBased';
 import ShareModal from '../Organisms/Modals/ShareModal/ShareModal';
 import Button from '@birdeye/elemental/core/atoms/Button/index.js';
-import CustomModal from '@birdeye/elemental/core/atoms/CustomModal/index.js';
-import FormInput from '@birdeye/elemental/core/atoms/FormInput/index.js';
-import TextArea from '@birdeye/elemental/core/atoms/TextArea/index.js';
 import { saveAgent } from '../../services/agentService';
 import './AgentBuilder.css';
 
@@ -111,8 +108,9 @@ export default function AgentBuilder({
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [nodeDetails, setNodeDetails] = useState(() => initialNodeDetails || {});
 
-  /* ─── Publish modal ─── */
-  const [saveModalOpen, setSaveModalOpen] = useState(false);
+  /* ─── Publish toast ─── */
+  const [toastVisible, setToastVisible] = useState(false);
+  const toastTimerRef = useRef(null);
 
   /* ─── Share modal ─── */
   const [shareModalOpen, setShareModalOpen] = useState(false);
@@ -152,20 +150,22 @@ export default function AgentBuilder({
     return () => clearTimeout(saveTimerRef.current);
   }, [agentName, nodeList, nodeDetails, agentId, moduleContext]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleSaveConfirm = useCallback(async () => {
+  const handlePublish = useCallback(async () => {
     if (!agentName.trim()) return;
     await saveAgent(agentId, {
       id: agentId,
       name: agentName.trim(),
       description: agentDesc.trim(),
-      status: 'Draft',
+      status: 'Running',
       moduleContext,
       nodes: nodeList,
       nodeDetails,
     });
-    setSaveModalOpen(false);
+    clearTimeout(toastTimerRef.current);
+    setToastVisible(true);
+    toastTimerRef.current = setTimeout(() => setToastVisible(false), 3000);
     onSaveAgent?.();
-  }, [agentId, agentName, agentDesc, moduleContext, nodeList, nodeDetails, onSaveAgent]);
+  }, [agentId, agentName, agentDesc, moduleContext, nodeList, nodeDetails, onSaveAgent]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ─── Download handler ─── */
   const handleExport = useCallback(() => {
@@ -593,7 +593,7 @@ export default function AgentBuilder({
       <Button
         theme="primary"
         label="Publish"
-        onClick={() => setSaveModalOpen(true)}
+        onClick={handlePublish}
       />
       <div className="ab-header-more" ref={headerMenuRef}>
         <button
@@ -685,39 +685,12 @@ export default function AgentBuilder({
         <ShareModal agentId={agentId} onClose={() => setShareModalOpen(false)} />
       )}
 
-      {/* ─── Save modal ─── */}
-      {saveModalOpen && (
-        <CustomModal
-          title="Publish agent"
-          needPrimaryBtn
-          primaryBtnLabel="Publish"
-          primaryBtnDisabled={!agentName.trim()}
-          needSecondaryBtn
-          secondaryBtnLabel="Cancel"
-          onHideModal={() => setSaveModalOpen(false)}
-          onHandleChangeModal={handleSaveConfirm}
-        >
-          <div className="agent-builder__save-form">
-            <div className="agent-builder__save-field">
-              <FormInput
-                name="save-agent-name"
-                type="text"
-                label="Agent name"
-                value={agentName}
-                onChange={(e, val) => setAgentName(val ?? e.target.value)}
-              />
-            </div>
-            <div className="agent-builder__save-field">
-              <TextArea
-                name="save-agent-desc"
-                label="Description (optional)"
-                value={agentDesc}
-                onChange={(e, val) => setAgentDesc(val ?? e.target.value)}
-                rows={3}
-              />
-            </div>
-          </div>
-        </CustomModal>
+      {/* ─── Publish toast ─── */}
+      {toastVisible && (
+        <div className="ab-toast">
+          <span className="material-symbols-outlined">check_circle</span>
+          Agent published successfully
+        </div>
       )}
     </AppShell>
   );
