@@ -184,7 +184,7 @@ export default function AgentBuilder({
         if (n.id !== nodeId) return n;
         const updates = {};
         if (field === 'triggerName' || field === 'taskName') updates.title = value;
-        if (field === 'description') updates.subtitle = `${n.data.subtype || n.data.title}: ${value}`;
+        if (field === 'description') updates.subtitle = value;
         return { ...n, data: { ...n.data, ...updates } };
       })
     );
@@ -293,7 +293,7 @@ export default function AgentBuilder({
         subtype: label,
         stepNumber: null,
         description,
-        subtitle: flowType === 'branch' ? 'Build condition-specific flows' : `${label}: ${description}`,
+        subtitle: flowType === 'branch' ? 'Build condition-specific flows' : (description || ''),
         hasAiIcon,
         hasToggle: true,
         toggleEnabled: true,
