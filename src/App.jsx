@@ -72,8 +72,17 @@ function App() {
   const moduleNav = getModuleNav(currentModule);
   const moduleTemplates = useMemo(() => getModuleTemplates(currentModule), [currentModule]);
   const moduleAgents = useMemo(
-    () => agents.filter((a) => a.moduleContext === currentModule).map(toDashboardAgent),
-    [agents, currentModule]
+    () =>
+      agents
+        .filter((a) => {
+          if (a.moduleContext !== currentModule) return false;
+          if (activeL2Item === 'view-all-agents') return true;
+          // agents without a sectionContext are legacy — show them in all sections
+          if (!a.sectionContext) return true;
+          return a.sectionContext === activeL2Item;
+        })
+        .map(toDashboardAgent),
+    [agents, currentModule, activeL2Item]
   );
 
   const dashboardAgents = moduleAgents;
@@ -173,6 +182,7 @@ function App() {
         <AgentBuilder
           agentId={builderAgentId}
           moduleContext={currentModule}
+          sectionContext={editingAgent?.sectionContext || activeL2Item}
           appTitle={moduleNav.title}
           pageTitle={editingAgent?.name || builderTemplate?.title || 'Untitled agent'}
           activeNavId={currentModule}

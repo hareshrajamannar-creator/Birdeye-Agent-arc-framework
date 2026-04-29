@@ -94,6 +94,7 @@ export default function AgentBuilder({
   pageTitle = 'Review response agent 1',
   activeNavId = 'reviews',
   moduleContext = 'agents',
+  sectionContext = '',
   initialDescription = '',
   initialNodes = null,
   initialNodeDetails = null,
@@ -143,12 +144,13 @@ export default function AgentBuilder({
         description: agentDesc,
         status: 'Draft',
         moduleContext,
+        sectionContext,
         nodes: nodeList,
         nodeDetails,
       });
     }, 1500);
     return () => clearTimeout(saveTimerRef.current);
-  }, [agentName, nodeList, nodeDetails, agentId, moduleContext]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [agentName, nodeList, nodeDetails, agentId, moduleContext, sectionContext]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handlePublish = useCallback(async () => {
     if (!agentName.trim()) return;
@@ -158,6 +160,7 @@ export default function AgentBuilder({
       description: agentDesc.trim(),
       status: 'Running',
       moduleContext,
+      sectionContext,
       nodes: nodeList,
       nodeDetails,
     });
