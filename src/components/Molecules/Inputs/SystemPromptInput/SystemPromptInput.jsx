@@ -54,27 +54,23 @@ export default function SystemPromptInput({ value, onChange, required }) {
           data-placeholder="Enter prompt"
         />
         <div className={styles.toolbar}>
-          <div className={styles.toolbarLeft}>
-            <button
-              type="button"
-              className={styles.toolbarBtn}
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={handleInsertChip}
-              title="Insert variable"
-            >
-              <VariableIcon />
-            </button>
-          </div>
-          <div className={styles.toolbarRight}>
-            <button
-              type="button"
-              className={styles.toolbarBtn}
-              onMouseDown={(e) => e.preventDefault()}
-              title="Expand"
-            >
-              <ExpandIcon />
-            </button>
-          </div>
+          <button
+            type="button"
+            className={styles.toolbarBtn}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={handleInsertChip}
+            title="Insert variable"
+          >
+            <VariableIcon />
+          </button>
+          <button
+            type="button"
+            className={styles.toolbarBtn}
+            onMouseDown={(e) => e.preventDefault()}
+            title="Expand"
+          >
+            <ExpandIcon />
+          </button>
         </div>
       </div>
     </div>
