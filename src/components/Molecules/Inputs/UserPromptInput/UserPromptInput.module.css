@@ -74,6 +74,7 @@
   border-top: 1px solid transparent;
   flex-shrink: 0;
   gap: 4px;
+  position: relative;
 }
 
 
@@ -92,4 +93,63 @@
 
 .toolbarBtn:hover {
   background: #f2f4f7;
+}
+
+.toolbarBtnActive { background: #e8f0fe; }
+
+.typePicker {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 8px;
+  background: #fff;
+  border: 1px solid #e5e9f0;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  min-width: 172px;
+  z-index: 50;
+  overflow: hidden;
+}
+
+.typePickerItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: 'Roboto', sans-serif;
+  transition: background 0.1s;
+}
+
+.typePickerItem:hover { background: #f4f6f7; }
+
+.typePickerSwatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.tpSwatchVariable   { background: #ecf5fd; }
+.tpSwatchAttachment { background: #e8f5e9; }
+.tpSwatchLink       { background: #fce4ec; }
+.tpSwatchAddress    { background: #e8eaf6; }
+.tpSwatchProduct    { background: #fff8e1; }
+
+.tpIconAttachment { font-size: 14px; color: #2e7d32; }
+.tpIconLink       { font-size: 14px; color: #c2185b; }
+.tpIconAddress    { font-size: 14px; color: #3949ab; }
+.tpIconProduct    { font-size: 14px; color: #f57f17; }
+
+.typePickerLabel {
+  font-size: 13px;
+  color: #212121;
+  line-height: 18px;
+  font-family: 'Roboto', sans-serif;
 }

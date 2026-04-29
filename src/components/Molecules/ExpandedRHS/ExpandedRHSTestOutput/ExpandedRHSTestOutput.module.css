@@ -92,6 +92,14 @@
   position: relative;
 }
 
+.valueCellContent {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .valueText {
   font-size: 12px;
   font-weight: 400;
@@ -130,6 +138,63 @@
   min-height: 18px;
 }
 
+/* ─── Image grid ─── */
+.imageGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.imageThumbnailWrap {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  border-radius: 4px;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1px solid #e9e9eb;
+}
+
+.imageThumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.imageRemoveBtn {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 18px;
+  height: 18px;
+  background: rgba(0, 0, 0, 0.55);
+  border: none;
+  border-radius: 50%;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.imageThumbnailWrap:hover .imageRemoveBtn {
+  opacity: 1;
+}
+
+.imageRemoveBtn .material-symbols-outlined {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.fileInput {
+  display: none;
+}
+
+/* ─── More vert menu ─── */
 .moreWrap {
   position: absolute;
   top: 50%;
@@ -221,7 +286,7 @@
   font-variation-settings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20";
 }
 
-/* New-row chip */
+/* ─── New-row chip ─── */
 .newChip {
   display: inline-flex;
   align-items: stretch;
@@ -263,6 +328,23 @@
   color: #bbb;
 }
 
+/* ─── New chip type variants ─── */
+.newChipAttachment { border-color: #c8e6c9; }
+.newChipLink       { border-color: #f48fb1; }
+.newChipAddress    { border-color: #9fa8da; }
+.newChipProduct    { border-color: #ffe082; }
+
+.newChipSwatchAttachment { background: #e8f5e9; border-right-color: #c8e6c9; }
+.newChipSwatchLink       { background: #fce4ec; border-right-color: #f48fb1; }
+.newChipSwatchAddress    { background: #e8eaf6; border-right-color: #9fa8da; }
+.newChipSwatchProduct    { background: #fff8e1; border-right-color: #ffe082; }
+
+.newSwatchIconAttachment { font-size: 13px; color: #2e7d32; }
+.newSwatchIconLink       { font-size: 13px; color: #c2185b; }
+.newSwatchIconAddress    { font-size: 13px; color: #3949ab; }
+.newSwatchIconProduct    { font-size: 13px; color: #f57f17; }
+
+/* ─── Add row ─── */
 .addRow {
   display: flex;
   align-items: center;
@@ -270,6 +352,14 @@
   background: #fff;
   border-top: 1px solid #e9e9eb;
   box-sizing: border-box;
+}
+
+/* ─── Add button wrapper + type picker ─── */
+.addBtnWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
 }
 
 .addBtn {
@@ -298,4 +388,57 @@
   line-height: 1;
   overflow: hidden;
   font-variation-settings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20";
+}
+
+.typePicker {
+  background: #fff;
+  border: 1px solid #e5e9f0;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  min-width: 172px;
+  overflow: hidden;
+}
+
+.typePickerItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: 'Roboto', sans-serif;
+  transition: background 0.1s;
+}
+
+.typePickerItem:hover { background: #f4f6f7; }
+
+.typePickerSwatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.tpSwatchVariable   { background: #ecf5fd; }
+.tpSwatchAttachment { background: #e8f5e9; }
+.tpSwatchLink       { background: #fce4ec; }
+.tpSwatchAddress    { background: #e8eaf6; }
+.tpSwatchProduct    { background: #fff8e1; }
+
+.tpIconAttachment { font-size: 14px; color: #2e7d32; }
+.tpIconLink       { font-size: 14px; color: #c2185b; }
+.tpIconAddress    { font-size: 14px; color: #3949ab; }
+.tpIconProduct    { font-size: 14px; color: #f57f17; }
+
+.typePickerLabel {
+  font-size: 13px;
+  color: #212121;
+  line-height: 18px;
+  font-family: 'Roboto', sans-serif;
 }

@@ -7,7 +7,9 @@ import styles from './ExpandedRHSTest.module.css';
 
 function normalizeFields(raw) {
   return (raw ?? []).map((f) =>
-    typeof f === 'string' ? { name: f, value: '' } : { name: f.name ?? '', value: f.value ?? '' }
+    typeof f === 'string'
+      ? { name: f, value: '', type: 'variable', images: [] }
+      : { name: f.name ?? '', value: f.value ?? '', type: f.type ?? 'variable', images: f.images ?? [] }
   );
 }
 

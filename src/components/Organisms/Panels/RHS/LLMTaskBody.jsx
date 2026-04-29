@@ -134,7 +134,10 @@ export default function LLMTaskBody({ initialValues = {}, onFieldChange }) {
   const [inputFields, setInputFields] = useState(normalizeChips(initialValues.inputFields));
   const [addingInput, setAddingInput] = useState(false);
 
-  const [outputFields, setOutputFields] = useState(initialValues.outputFields ?? []);
+  const [outputFields, setOutputFields] = useState(() => {
+    const raw = initialValues.outputFields ?? [];
+    return raw.map((item) => typeof item === 'string' ? { value: item, type: 'variable' } : item);
+  });
 
   const emit = (field, val) => onFieldChange?.(field, val);
 

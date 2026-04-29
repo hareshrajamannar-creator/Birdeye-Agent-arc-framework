@@ -1,15 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import VariableChip from '../../Inputs/VariableChip/VariableChip';
+import VariableChip, { CHIP_TYPES, DataTypeIcon } from '../../Inputs/VariableChip/VariableChip';
 import styles from './ExpandedRHSTestInput.module.css';
 
-function DataTypeIcon() {
-  return (
-    <svg width="16" height="15" viewBox="5 5.5 16 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M7.24889 13.2505C7.46549 13.4287 7.64002 13.6525 7.76 13.906C8.06667 14.5385 8.06667 15.3116 8.06667 16.0616C8.06667 17.6148 8.13056 18.3616 9.6 18.3616C9.73556 18.3616 9.86556 18.4155 9.96141 18.5113C10.0573 18.6072 10.1111 18.7372 10.1111 18.8727C10.1111 19.0083 10.0573 19.1383 9.96141 19.2342C9.86556 19.33 9.73556 19.3839 9.6 19.3839C8.48322 19.3839 7.72678 18.9916 7.35111 18.2172C7.04444 17.5847 7.04444 16.8117 7.04444 16.0616C7.04444 14.5085 6.98056 13.7616 5.51111 13.7616C5.37556 13.7616 5.24555 13.7078 5.1497 13.6119C5.05385 13.5161 5 13.3861 5 13.2505C5 13.115 5.05385 12.985 5.1497 12.8891C5.24555 12.7933 5.37556 12.7394 5.51111 12.7394C6.98056 12.7394 7.04444 11.9925 7.04444 10.4394C7.04444 9.69063 7.04444 8.9163 7.35111 8.2838C7.72806 7.50947 8.4845 7.11719 9.60128 7.11719C9.73683 7.11719 9.86684 7.17104 9.96269 7.26689C10.0585 7.36274 10.1124 7.49274 10.1124 7.6283C10.1124 7.76385 10.0585 7.89386 9.96269 7.98971C9.86684 8.08556 9.73683 8.13941 9.60128 8.13941C8.13183 8.13941 8.06794 8.88627 8.06794 10.4394C8.06794 11.1882 8.06794 11.9625 7.76128 12.595C7.64093 12.8486 7.46595 13.0725 7.24889 13.2505ZM20.8235 12.7394C19.3541 12.7394 19.2902 11.9925 19.2902 10.4394C19.2902 9.69063 19.2902 8.9163 18.9835 8.2838C18.6078 7.50947 17.8514 7.11719 16.7346 7.11719C16.5991 7.11719 16.4691 7.17104 16.3732 7.26689C16.2773 7.36274 16.2235 7.49274 16.2235 7.6283C16.2235 7.76385 16.2773 7.89386 16.3732 7.98971C16.4691 8.08556 16.5991 8.13941 16.7346 8.13941C18.2041 8.13941 18.2679 8.88627 18.2679 10.4394C18.2679 11.1882 18.2679 11.9625 18.5746 12.595C18.6946 12.8485 18.8691 13.0724 19.0857 13.2505C18.8691 13.4287 18.6946 13.6525 18.5746 13.906C18.2679 14.5385 18.2679 15.3116 18.2679 16.0616C18.2679 17.6148 18.2041 18.3616 16.7346 18.3616C16.5991 18.3616 16.4691 18.4155 16.3732 18.5113C16.2773 18.6072 16.2235 18.7372 16.2235 18.8727C16.2235 19.0083 16.2773 19.1383 16.3732 19.2342C16.4691 19.33 16.5991 19.3839 16.7346 19.3839C17.8514 19.3839 18.6078 18.9916 18.9835 18.2172C19.2902 17.5847 19.2902 16.8117 19.2902 16.0616C19.2902 14.5085 19.3541 13.7616 20.8235 13.7616C20.9591 13.7616 21.0891 13.7078 21.1849 13.6119C21.2808 13.5161 21.3346 13.3861 21.3346 13.2505C21.3346 13.115 21.2808 12.985 21.1849 12.8891C21.0891 12.7933 20.9591 12.7394 20.8235 12.7394Z" fill="#1976D2" />
-      <path d="M14.4142 12.0861L13 13.5003L11.5858 14.9145M11.5858 12.0861L14.4142 14.9145" stroke="#1976D2" strokeLinecap="round" />
-    </svg>
-  );
-}
+const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export default function ExpandedRHSTestInput({ fields = [], onChange }) {
   const [editingValueIdx, setEditingValueIdx] = useState(null);
@@ -18,14 +11,17 @@ export default function ExpandedRHSTestInput({ fields = [], onChange }) {
 
   const [addingNew, setAddingNew] = useState(false);
   const [newNameDraft, setNewNameDraft] = useState('');
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerFor, setPickerFor] = useState(null);
+  const [pendingType, setPendingType] = useState('variable');
+
   const newNameRef = useRef(null);
   const valueTextareaRef = useRef(null);
+  const pickerRef = useRef(null);
   const commitGuardRef = useRef(false);
 
   useEffect(() => {
-    if (addingNew && newNameRef.current) {
-      newNameRef.current.focus();
-    }
+    if (addingNew && newNameRef.current) newNameRef.current.focus();
   }, [addingNew]);
 
   useEffect(() => {
@@ -37,16 +33,39 @@ export default function ExpandedRHSTestInput({ fields = [], onChange }) {
     }
   }, [editingValueIdx]);
 
+  useEffect(() => {
+    if (!pickerOpen) return;
+    const handler = (e) => {
+      if (pickerRef.current && !pickerRef.current.contains(e.target)) setPickerOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [pickerOpen]);
+
+  const openForAdd = () => { setPickerFor('add'); setPickerOpen(true); };
+  const openForChip = (i) => { setPickerFor(i); setPickerOpen(true); };
+
+  const selectType = (type) => {
+    setPickerOpen(false);
+    if (pickerFor === 'add') {
+      setPendingType(type);
+      commitGuardRef.current = false;
+      setAddingNew(true);
+      setNewNameDraft('');
+    } else if (typeof pickerFor === 'number') {
+      onChange?.(fields.map((f, i) => i === pickerFor ? { ...f, type } : f));
+    }
+    setPickerFor(null);
+  };
+
   const commitNew = useCallback(() => {
     if (commitGuardRef.current) return;
     commitGuardRef.current = true;
     const name = newNameDraft.trim();
-    if (name) {
-      onChange?.([...fields, { name, value: '' }]);
-    }
+    if (name) onChange?.([...fields, { name, value: '', type: pendingType }]);
     setAddingNew(false);
     setNewNameDraft('');
-  }, [newNameDraft, fields, onChange]);
+  }, [newNameDraft, fields, onChange, pendingType]);
 
   const cancelNew = () => {
     commitGuardRef.current = true;
@@ -66,9 +85,7 @@ export default function ExpandedRHSTestInput({ fields = [], onChange }) {
     setEditingValueIdx(null);
   }, [editingValueIdx, valueDraft, fields, onChange]);
 
-  const handleNameChange = (idx, newName) => {
-    onChange?.(fields.map((f, i) => i === idx ? { ...f, name: newName } : f));
-  };
+  const handleNameChange = (idx, newName) => onChange?.(fields.map((f, i) => i === idx ? { ...f, name: newName } : f));
 
   const handleDelete = (idx) => {
     onChange?.(fields.filter((_, i) => i !== idx));
@@ -93,12 +110,13 @@ export default function ExpandedRHSTestInput({ fields = [], onChange }) {
           <div className={styles.fieldCell}>
             <VariableChip
               value={field.name}
+              type={field.type || 'variable'}
               onChange={(name) => handleNameChange(idx, name)}
               onDelete={() => handleDelete(idx)}
+              onSwatchClick={() => openForChip(idx)}
               fullWidth
             />
           </div>
-
           <div
             className={styles.valueCell}
             onClick={() => editingValueIdx !== idx && startEditValue(idx)}
@@ -126,36 +144,23 @@ export default function ExpandedRHSTestInput({ fields = [], onChange }) {
                 {field.value || 'Click to add value'}
               </span>
             )}
-
             {editingValueIdx !== idx && (
               <div className={styles.moreWrap}>
                 <button
                   type="button"
                   className={`${styles.moreBtn} ${openMenuIdx === idx ? styles.moreBtnOpen : ''}`}
                   onMouseDown={(e) => e.preventDefault()}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setOpenMenuIdx(openMenuIdx === idx ? null : idx);
-                  }}
-                  aria-label="More options"
+                  onClick={(e) => { e.stopPropagation(); setOpenMenuIdx(openMenuIdx === idx ? null : idx); }}
                 >
                   <span className={`material-symbols-outlined ${styles.moreBtnIcon}`}>more_vert</span>
                 </button>
                 {openMenuIdx === idx && (
                   <div className={styles.menuPopup}>
-                    <button
-                      type="button"
-                      className={styles.menuItem}
-                      onClick={(e) => { e.stopPropagation(); startEditValue(idx); }}
-                    >
+                    <button type="button" className={styles.menuItem} onClick={(e) => { e.stopPropagation(); startEditValue(idx); }}>
                       <span className={`material-symbols-outlined ${styles.menuItemIcon}`}>edit</span>
                       Edit value
                     </button>
-                    <button
-                      type="button"
-                      className={`${styles.menuItem} ${styles.menuItemDelete}`}
-                      onClick={(e) => { e.stopPropagation(); handleDelete(idx); }}
-                    >
+                    <button type="button" className={`${styles.menuItem} ${styles.menuItemDelete}`} onClick={(e) => { e.stopPropagation(); handleDelete(idx); }}>
                       <span className={`material-symbols-outlined ${styles.menuItemIcon}`}>delete</span>
                       Delete
                     </button>
@@ -167,13 +172,15 @@ export default function ExpandedRHSTestInput({ fields = [], onChange }) {
         </div>
       ))}
 
-      {/* New row — appears when Add is clicked, persists until user commits or cancels */}
       {addingNew && (
         <div className={styles.dataRow}>
           <div className={styles.fieldCell}>
-            <span className={styles.newChip}>
-              <span className={styles.newChipSwatch}>
-                <DataTypeIcon />
+            <span className={`${styles.newChip} ${styles[`newChip${cap(pendingType)}`] || ''}`}>
+              <span className={`${styles.newChipSwatch} ${styles[`newChipSwatch${cap(pendingType)}`] || ''}`}>
+                {pendingType === 'variable' || !CHIP_TYPES.find((ct) => ct.type === pendingType)?.icon
+                  ? <DataTypeIcon />
+                  : <span className={`material-symbols-outlined ${styles[`newSwatchIcon${cap(pendingType)}`] || ''}`}>{CHIP_TYPES.find((ct) => ct.type === pendingType)?.icon}</span>
+                }
               </span>
               <input
                 ref={newNameRef}
@@ -196,15 +203,32 @@ export default function ExpandedRHSTestInput({ fields = [], onChange }) {
       )}
 
       <div className={styles.addRow}>
-        <button
-          type="button"
-          className={styles.addBtn}
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => { commitGuardRef.current = false; setAddingNew(true); setNewNameDraft(''); }}
-        >
-          <span className={`material-symbols-outlined ${styles.addBtnIcon}`}>add_circle</span>
-          Add
-        </button>
+        <div className={styles.addBtnWrap} ref={pickerRef}>
+          <button
+            type="button"
+            className={styles.addBtn}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={openForAdd}
+          >
+            <span className={`material-symbols-outlined ${styles.addBtnIcon}`}>add_circle</span>
+            Add
+          </button>
+          {pickerOpen && (
+            <div className={styles.typePicker}>
+              {CHIP_TYPES.map((ct) => (
+                <button key={ct.type} className={styles.typePickerItem} type="button" onClick={() => selectType(ct.type)}>
+                  <span className={`${styles.typePickerSwatch} ${styles[`tpSwatch${cap(ct.type)}`] || ''}`}>
+                    {ct.icon
+                      ? <span className={`material-symbols-outlined ${styles[`tpIcon${cap(ct.type)}`] || ''}`}>{ct.icon}</span>
+                      : <DataTypeIcon />
+                    }
+                  </span>
+                  <span className={styles.typePickerLabel}>{ct.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

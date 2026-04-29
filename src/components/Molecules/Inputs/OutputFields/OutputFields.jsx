@@ -1,7 +1,16 @@
-import React, { useState } from 'react';
-import VariableChip from '../VariableChip/VariableChip';
+import React, { useState, useRef, useEffect } from 'react';
+import VariableChip, { CHIP_TYPES, DataTypeIcon } from '../VariableChip/VariableChip';
 import AiWandIcon from '../../../Organisms/Panels/RHS/icons/ai_text_grammar_wand.svg';
 import styles from './OutputFields.module.css';
+
+const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
+const normalizeFields = (arr) => {
+  if (!Array.isArray(arr)) return [];
+  return arr.map((item) =>
+    typeof item === 'string' ? { value: item, type: 'variable' } : item
+  );
+};
 
 const MOCK_GENERATED_FIELDS = [
   'sentiment_score',
@@ -16,8 +25,38 @@ function Spinner() {
 }
 
 export default function OutputFields({ fields = [], onFieldsChange, showInfo }) {
+  const normalizedFields = normalizeFields(fields);
   const [generateState, setGenerateState] = useState('idle');
   const [addingNew, setAddingNew] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerFor, setPickerFor] = useState(null);
+  const [pendingType, setPendingType] = useState('variable');
+  const pickerRef = useRef(null);
+
+  useEffect(() => {
+    if (!pickerOpen) return;
+    const handler = (e) => {
+      if (pickerRef.current && !pickerRef.current.contains(e.target)) {
+        setPickerOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [pickerOpen]);
+
+  const openForAdd = () => { setPickerFor('add'); setPickerOpen(true); };
+  const openForChip = (i) => { setPickerFor(i); setPickerOpen(true); };
+
+  const selectType = (type) => {
+    setPickerOpen(false);
+    if (pickerFor === 'add') {
+      setPendingType(type);
+      setAddingNew(true);
+    } else if (typeof pickerFor === 'number') {
+      onFieldsChange?.(normalizedFields.map((f, idx) => idx === pickerFor ? { ...f, type } : f));
+    }
+    setPickerFor(null);
+  };
 
   const handleGenerate = () => {
     setGenerateState('generating');
@@ -25,7 +64,7 @@ export default function OutputFields({ fields = [], onFieldsChange, showInfo }) 
   };
 
   const handleAcceptGenerated = () => {
-    onFieldsChange?.([...fields, ...MOCK_GENERATED_FIELDS]);
+    onFieldsChange?.([...normalizedFields, ...MOCK_GENERATED_FIELDS.map((v) => ({ value: v, type: 'variable' }))]);
     setGenerateState('idle');
   };
 
@@ -36,11 +75,14 @@ export default function OutputFields({ fields = [], onFieldsChange, showInfo }) 
 
   const handleClose = () => setGenerateState('idle');
 
-  const onChipChange = (i, v) => onFieldsChange?.(fields.map((f, idx) => (idx === i ? v : f)));
-  const onChipDelete = (i) => onFieldsChange?.(fields.filter((_, idx) => idx !== i));
-  const onCommitAdd = (v) => { onFieldsChange?.([...fields, v]); setAddingNew(false); };
+  const onChipChange = (i, v) => onFieldsChange?.(normalizedFields.map((f, idx) => idx === i ? { ...f, value: v } : f));
+  const onChipDelete = (i) => onFieldsChange?.(normalizedFields.filter((_, idx) => idx !== i));
+  const onCommitAdd = (v) => {
+    onFieldsChange?.([...normalizedFields, { value: v, type: pendingType }]);
+    setAddingNew(false);
+  };
 
-  const hasChips = fields.length > 0 || addingNew;
+  const hasChips = normalizedFields.length > 0 || addingNew;
 
   return (
     <div className={styles.wrap}>
@@ -52,17 +94,20 @@ export default function OutputFields({ fields = [], onFieldsChange, showInfo }) 
       <div className={styles.chipContainer}>
         {hasChips && (
           <div className={styles.chipWrap}>
-            {fields.map((f, i) => (
+            {normalizedFields.map((f, i) => (
               <VariableChip
-                key={`${f}-${i}`}
-                value={f}
+                key={i}
+                value={f.value}
+                type={f.type}
                 onChange={(v) => onChipChange(i, v)}
                 onDelete={() => onChipDelete(i)}
+                onSwatchClick={() => openForChip(i)}
               />
             ))}
             {addingNew && (
               <VariableChip
                 value=""
+                type={pendingType}
                 autoFocus
                 onChange={onCommitAdd}
                 onDelete={() => setAddingNew(false)}
@@ -70,10 +115,32 @@ export default function OutputFields({ fields = [], onFieldsChange, showInfo }) 
             )}
           </div>
         )}
-        <button className={styles.addBtn} type="button" onClick={() => setAddingNew(true)}>
-          <span className="material-symbols-outlined">add_circle</span>
-          <span className={styles.addBtnLabel}>Add</span>
-        </button>
+        <div className={styles.addRow} ref={pickerRef}>
+          <button className={styles.addBtn} type="button" onClick={openForAdd}>
+            <span className="material-symbols-outlined">add_circle</span>
+            <span className={styles.addBtnLabel}>Add</span>
+          </button>
+          {pickerOpen && (
+            <div className={styles.typePicker}>
+              {CHIP_TYPES.map((ct) => (
+                <button
+                  key={ct.type}
+                  className={styles.typePickerItem}
+                  type="button"
+                  onClick={() => selectType(ct.type)}
+                >
+                  <span className={`${styles.typePickerSwatch} ${styles[`tpSwatch${cap(ct.type)}`] || ''}`}>
+                    {ct.icon
+                      ? <span className={`material-symbols-outlined ${styles[`tpIcon${cap(ct.type)}`] || ''}`}>{ct.icon}</span>
+                      : <DataTypeIcon />
+                    }
+                  </span>
+                  <span className={styles.typePickerLabel}>{ct.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {generateState === 'idle' && (

@@ -12,6 +12,14 @@ const CLOSE_ICON_SVG = `<svg width="16" height="16" viewBox="158 5 16 16" fill="
   <path d="M166 13.6188L163.151 16.4675C163.059 16.5598 162.959 16.6042 162.853 16.6008C162.747 16.5974 162.645 16.5474 162.549 16.4508C162.452 16.3542 162.404 16.251 162.404 16.1412C162.404 16.0314 162.452 15.9282 162.549 15.8316L165.381 12.9995L162.532 10.1508C162.44 10.0585 162.395 9.95637 162.399 9.8444C162.402 9.73245 162.452 9.62818 162.549 9.5316C162.645 9.43501 162.748 9.38672 162.858 9.38672C162.968 9.38672 163.071 9.43501 163.168 9.5316L166 12.3803L168.849 9.5316C168.941 9.43929 169.043 9.39207 169.155 9.38994C169.267 9.38779 169.371 9.43501 169.468 9.5316C169.564 9.62818 169.613 9.73138 169.613 9.8412C169.613 9.95102 169.564 10.0542 169.468 10.1508L166.619 12.9995L169.468 15.8483C169.56 15.9406 169.607 16.0399 169.609 16.1463C169.612 16.2527 169.564 16.3542 169.468 16.4508C169.371 16.5474 169.268 16.5957 169.158 16.5957C169.048 16.5957 168.945 16.5474 168.849 16.4508L166 13.6188Z" fill="#303030"/>
 </svg>`;
 
+const CHIP_TYPE_MAP = {
+  variable:   { chipMod: '',                       swatchMod: '',                           iconHtml: null },
+  attachment: { chipMod: 'prompt-chip--attachment', swatchMod: 'prompt-chip-swatch--attachment', iconHtml: '<span class="material-symbols-outlined prompt-chip-mat-icon">attach_file</span>' },
+  link:       { chipMod: 'prompt-chip--link',       swatchMod: 'prompt-chip-swatch--link',       iconHtml: '<span class="material-symbols-outlined prompt-chip-mat-icon">link</span>' },
+  address:    { chipMod: 'prompt-chip--address',    swatchMod: 'prompt-chip-swatch--address',    iconHtml: '<span class="material-symbols-outlined prompt-chip-mat-icon">home</span>' },
+  product:    { chipMod: 'prompt-chip--product',    swatchMod: 'prompt-chip-swatch--product',    iconHtml: '<span class="material-symbols-outlined prompt-chip-mat-icon">deployed_code</span>' },
+};
+
 export function serializeFrom(el) {
   if (!el) return '';
   let text = '';
@@ -29,13 +37,15 @@ export function serializeFrom(el) {
   return text;
 }
 
-function buildViewChipContents(chip, name, onDelete) {
+function buildViewChipContents(chip, name, onDelete, type = 'variable') {
+  const cfg = CHIP_TYPE_MAP[type] || CHIP_TYPE_MAP.variable;
   chip.innerHTML = '';
   chip.dataset.chip = name;
+  chip.className = ['prompt-chip', cfg.chipMod].filter(Boolean).join(' ');
 
   const swatch = document.createElement('span');
-  swatch.className = 'prompt-chip-swatch';
-  swatch.innerHTML = DATA_TYPE_ICON_SVG;
+  swatch.className = ['prompt-chip-swatch', cfg.swatchMod].filter(Boolean).join(' ');
+  swatch.innerHTML = cfg.iconHtml ?? DATA_TYPE_ICON_SVG;
   chip.appendChild(swatch);
 
   const label = document.createElement('span');
@@ -78,14 +88,16 @@ export function deserializeInto(el, value, onDelete) {
   });
 }
 
-export function insertChipAt(el, range, onFinalize) {
+export function insertChipAt(el, range, onFinalize, type = 'variable') {
+  const cfg = CHIP_TYPE_MAP[type] || CHIP_TYPE_MAP.variable;
+
   const chip = document.createElement('span');
   chip.contentEditable = 'false';
-  chip.className = 'prompt-chip prompt-chip--editing';
+  chip.className = ['prompt-chip', 'prompt-chip--editing', cfg.chipMod].filter(Boolean).join(' ');
 
   const swatch = document.createElement('span');
-  swatch.className = 'prompt-chip-swatch';
-  swatch.innerHTML = DATA_TYPE_ICON_SVG;
+  swatch.className = ['prompt-chip-swatch', cfg.swatchMod].filter(Boolean).join(' ');
+  swatch.innerHTML = cfg.iconHtml ?? DATA_TYPE_ICON_SVG;
   chip.appendChild(swatch);
 
   const input = document.createElement('input');
@@ -95,11 +107,10 @@ export function insertChipAt(el, range, onFinalize) {
 
   const finalize = () => {
     const name = input.value.trim();
-    chip.className = 'prompt-chip';
     if (!name) {
       chip.remove();
     } else {
-      buildViewChipContents(chip, name, onFinalize);
+      buildViewChipContents(chip, name, onFinalize, type);
     }
     onFinalize();
   };
