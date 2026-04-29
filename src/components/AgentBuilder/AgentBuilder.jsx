@@ -154,21 +154,24 @@ export default function AgentBuilder({
 
   const handlePublish = useCallback(async () => {
     if (!agentName.trim()) return;
-    await saveAgent(agentId, {
-      id: agentId,
-      name: agentName.trim(),
-      description: agentDesc.trim(),
-      status: 'Running',
-      moduleContext,
-      sectionContext,
-      nodes: nodeList,
-      nodeDetails,
-    });
+    try {
+      await saveAgent(agentId, {
+        id: agentId,
+        name: agentName.trim(),
+        description: agentDesc.trim(),
+        status: 'Running',
+        moduleContext,
+        sectionContext,
+        nodes: nodeList,
+        nodeDetails,
+      });
+    } catch (e) {
+      console.error('Publish failed', e);
+    }
     clearTimeout(toastTimerRef.current);
     setToastVisible(true);
     toastTimerRef.current = setTimeout(() => setToastVisible(false), 3000);
-    onSaveAgent?.();
-  }, [agentId, agentName, agentDesc, moduleContext, nodeList, nodeDetails, onSaveAgent]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [agentId, agentName, agentDesc, moduleContext, sectionContext, nodeList, nodeDetails]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ─── Download handler ─── */
   const handleExport = useCallback(() => {
