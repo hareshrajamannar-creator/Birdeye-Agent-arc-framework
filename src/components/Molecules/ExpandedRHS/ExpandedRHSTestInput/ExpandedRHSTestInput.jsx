@@ -16,11 +16,11 @@ export default function ExpandedRHSTestInput({ fields = [], onChange }) {
   const [valueDraft, setValueDraft] = useState('');
   const [openMenuIdx, setOpenMenuIdx] = useState(null);
 
-  // New-row state: managed separately so it never auto-deletes
   const [addingNew, setAddingNew] = useState(false);
   const [newNameDraft, setNewNameDraft] = useState('');
   const newNameRef = useRef(null);
   const valueTextareaRef = useRef(null);
+  const commitGuardRef = useRef(false);
 
   useEffect(() => {
     if (addingNew && newNameRef.current) {
@@ -38,6 +38,8 @@ export default function ExpandedRHSTestInput({ fields = [], onChange }) {
   }, [editingValueIdx]);
 
   const commitNew = useCallback(() => {
+    if (commitGuardRef.current) return;
+    commitGuardRef.current = true;
     const name = newNameDraft.trim();
     if (name) {
       onChange?.([...fields, { name, value: '' }]);
@@ -47,6 +49,7 @@ export default function ExpandedRHSTestInput({ fields = [], onChange }) {
   }, [newNameDraft, fields, onChange]);
 
   const cancelNew = () => {
+    commitGuardRef.current = true;
     setAddingNew(false);
     setNewNameDraft('');
   };
@@ -197,7 +200,7 @@ export default function ExpandedRHSTestInput({ fields = [], onChange }) {
           type="button"
           className={styles.addBtn}
           onMouseDown={(e) => e.preventDefault()}
-          onClick={() => { setAddingNew(true); setNewNameDraft(''); }}
+          onClick={() => { commitGuardRef.current = false; setAddingNew(true); setNewNameDraft(''); }}
         >
           <span className={`material-symbols-outlined ${styles.addBtnIcon}`}>add_circle</span>
           Add

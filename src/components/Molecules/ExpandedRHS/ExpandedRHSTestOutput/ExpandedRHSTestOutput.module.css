@@ -14,7 +14,7 @@
 }
 
 .headerFieldCell {
-  width: 186px;
+  width: 236px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -33,7 +33,7 @@
   height: 40px;
   padding: 0 16px;
   background: #fff;
-  border-left: 1px solid #e9e9eb;
+  border-left: 1px solid transparent;
   box-sizing: border-box;
 }
 
@@ -61,7 +61,7 @@
 
 .dataRow {
   display: flex;
-  border-bottom: 1px solid #e9e9eb;
+  border-bottom: 1px solid transparent;
   min-height: 58px;
 }
 
@@ -70,7 +70,7 @@
 }
 
 .fieldCell {
-  width: 186px;
+  width: 236px;
   flex-shrink: 0;
   display: flex;
   align-items: flex-start;
@@ -86,7 +86,7 @@
   align-items: flex-start;
   padding: 14px 40px 14px 16px;
   background: #fff;
-  border-left: 1px solid #e9e9eb;
+  border-left: 1px solid transparent;
   box-sizing: border-box;
   cursor: text;
   position: relative;

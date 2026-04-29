@@ -1,3 +1,4 @@
+/* FROZEN — do not modify. Module content renders in the MODULE SLOT below. */
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 

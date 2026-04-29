@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Button from '@birdeye/elemental/core/atoms/Button/index.js';
 import ExpandedRHSTestInput from '../../../Molecules/ExpandedRHS/ExpandedRHSTestInput/ExpandedRHSTestInput';
 import ExpandedRHSTestOutput from '../../../Molecules/ExpandedRHS/ExpandedRHSTestOutput/ExpandedRHSTestOutput';
@@ -9,6 +9,10 @@ function normalizeFields(raw) {
   return (raw ?? []).map((f) =>
     typeof f === 'string' ? { name: f, value: '' } : { name: f.name ?? '', value: f.value ?? '' }
   );
+}
+
+function fieldsKey(raw) {
+  return (raw ?? []).map((f) => (typeof f === 'string' ? f : (f.name ?? ''))).join('\x00');
 }
 
 export default function ExpandedRHSTest({
@@ -22,11 +26,20 @@ export default function ExpandedRHSTest({
   const [localOutputFields, setLocalOutputFields] = useState(() => normalizeFields(outputFields));
   const [feedback, setFeedback] = useState('');
 
+  const inputKeyRef = useRef(fieldsKey(inputFields));
+  const outputKeyRef = useRef(fieldsKey(outputFields));
+
   useEffect(() => {
+    const key = fieldsKey(inputFields);
+    if (key === inputKeyRef.current) return;
+    inputKeyRef.current = key;
     setLocalInputFields(normalizeFields(inputFields));
   }, [inputFields]);
 
   useEffect(() => {
+    const key = fieldsKey(outputFields);
+    if (key === outputKeyRef.current) return;
+    outputKeyRef.current = key;
     setLocalOutputFields(normalizeFields(outputFields));
   }, [outputFields]);
 

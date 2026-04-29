@@ -23,6 +23,17 @@
   align-items: flex-start;
 }
 
+.chipFullWidth .chipSwatch {
+  height: auto;
+  align-self: stretch;
+  min-height: 24px;
+}
+
+.chipFullWidth .deleteBtn {
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
 .chipEditing {
   border-color: #1976d2;
 }

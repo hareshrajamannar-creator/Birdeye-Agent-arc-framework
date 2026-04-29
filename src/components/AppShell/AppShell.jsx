@@ -1,3 +1,4 @@
+/* FROZEN — do not modify. Module content renders in the MODULE SLOT below. */
 import React from 'react';
 import PropTypes from 'prop-types';
 import Button from '@birdeye/elemental/core/atoms/Button/index.js';
@@ -35,6 +36,7 @@ function AppShell({
   showBack = true,
   pageActions,
   avatarSrc,
+  currentModule,
   children,
 }) {
   return (
@@ -128,7 +130,10 @@ function AppShell({
         </div>
 
         {/* Content */}
-        <main className="app-shell__content">{children}</main>
+        <main className="app-shell__content">
+          {/* MODULE SLOT — all feature content renders here */}
+          {children}
+        </main>
       </div>
     </div>
   );
@@ -152,6 +157,7 @@ AppShell.propTypes = {
   showBack: PropTypes.bool,
   pageActions: PropTypes.node,
   avatarSrc: PropTypes.string,
+  currentModule: PropTypes.string,
   children: PropTypes.node,
 };
 

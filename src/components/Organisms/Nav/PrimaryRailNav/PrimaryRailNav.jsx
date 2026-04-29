@@ -1,3 +1,4 @@
+/* FROZEN — do not modify. Module content renders in the MODULE SLOT below. */
 import React from 'react';
 import PropTypes from 'prop-types';
 import Tooltip from '@birdeye/elemental/core/atoms/Tooltip/index.js';
