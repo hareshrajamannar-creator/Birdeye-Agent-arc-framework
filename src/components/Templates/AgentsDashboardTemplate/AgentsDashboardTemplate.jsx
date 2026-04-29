@@ -32,15 +32,17 @@ export default function AgentsDashboardTemplate({
   agents,
   onCreateAgent,
   onUseTemplate,
-  onAgentClick,
+  onOpenAgent,
   avatarSrc,
   activeNavId = 'reviews',
-  activeMenuItemId = 'review-response',
+  activeMenuItemId = 'review-response-agents',
   navTitle = 'ReviewsAI',
+  ctaLabel = 'Send a review request',
+  menuItems,
+  onNavChange,
+  onMenuItemClick,
 }) {
   const [activeTab, setActiveTab] = useState(tabs[0]?.id);
-  const [currentNavId, setCurrentNavId] = useState(activeNavId);
-  const [currentMenuItemId, setCurrentMenuItemId] = useState(activeMenuItemId);
   const [libraryView, setLibraryView] = useState('grid');
 
   return (
@@ -48,15 +50,17 @@ export default function AgentsDashboardTemplate({
 
       {/* Primary Rail Nav */}
       <PrimaryRailNav
-        activeNavId={currentNavId}
-        onNavChange={setCurrentNavId}
+        activeNavId={activeNavId}
+        onNavChange={onNavChange}
       />
 
       {/* Secondary Rail Nav */}
       <SecondaryRailNav
         title={navTitle}
-        activeItemId={currentMenuItemId}
-        onItemClick={setCurrentMenuItemId}
+        ctaLabel={ctaLabel}
+        menuItems={menuItems}
+        activeItemId={activeMenuItemId}
+        onItemClick={onMenuItemClick}
       />
 
       {/* Main column */}
@@ -161,7 +165,7 @@ export default function AgentsDashboardTemplate({
                 />
               </div>
               <div style={{ padding: '20px 24px 24px' }}>
-                <AgentsTable agents={agents} onRowClick={onAgentClick} />
+                <AgentsTable agents={agents} onRowClick={(agent) => onOpenAgent?.(agent.id)} />
               </div>
             </>
           )}
@@ -185,9 +189,13 @@ AgentsDashboardTemplate.propTypes = {
   agents: PropTypes.array,
   onCreateAgent: PropTypes.func,
   onUseTemplate: PropTypes.func,
-  onAgentClick: PropTypes.func,
+  onOpenAgent: PropTypes.func,
   avatarSrc: PropTypes.string,
   activeNavId: PropTypes.string,
   activeMenuItemId: PropTypes.string,
   navTitle: PropTypes.string,
+  ctaLabel: PropTypes.string,
+  menuItems: PropTypes.array,
+  onNavChange: PropTypes.func,
+  onMenuItemClick: PropTypes.func,
 };

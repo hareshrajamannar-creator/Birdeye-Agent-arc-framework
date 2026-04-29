@@ -2,3 +2,16 @@
 .agents-table thead th {
   text-align: left !important;
 }
+
+.agents-table tbody tr {
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.agents-table tbody tr:hover {
+  background-color: #f5f8ff !important;
+}
+
+.agents-table tbody tr:hover td:first-child {
+  color: #1976d2 !important;
+}
