@@ -46,6 +46,16 @@ const standardSections = (agentLabels) => [
   },
 ];
 
+const expandedSections = (sections) => sections.map(({ label, children = [] }) => ({
+  id: label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+  label,
+  defaultExpanded: true,
+  children: children.map((child) => ({
+    id: child.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+    label: child,
+  })),
+}));
+
 export const MODULE_NAV = {
   overview: {
     title: 'Overview',
@@ -62,14 +72,35 @@ export const MODULE_NAV = {
   listings: {
     title: 'Listings AI',
     ctaLabel: 'Create agent',
-    defaultItemId: 'view-all-agents',
-    menuItems: standardSections(['Listings scan agents', 'Holiday hours agents']),
+    defaultItemId: 'recommendations',
+    menuItems: expandedSections([
+      {
+        label: 'Actions',
+        children: ['Recommendations', 'Suppress duplicates', 'Google suggestions'],
+      },
+      {
+        label: 'Ranking reports',
+        children: ['Keywords', 'Citations', 'Rankings'],
+      },
+    ]),
   },
   reviews: {
     title: 'Reviews AI',
-    ctaLabel: 'Create agent',
-    defaultItemId: 'review-response-agents',
-    menuItems: standardSections(['Review response agents', 'Review generation agents', 'Negative review escalation agents']),
+    ctaLabel: 'Send a review request',
+    defaultItemId: 'view-all-reviews',
+    menuItems: expandedSections([
+      {
+        label: 'Actions',
+        children: [
+          'View all reviews',
+          'Respond to reviews',
+          'Approve replies',
+          'Fix rejected replies',
+          'View scheduled replies',
+          'Fix failed replies',
+        ],
+      },
+    ]),
   },
   referrals: {
     title: 'Referrals AI',
@@ -91,9 +122,23 @@ export const MODULE_NAV = {
   },
   social: {
     title: 'Social AI',
-    ctaLabel: 'Create agent',
-    defaultItemId: 'social-publishing-agents',
-    menuItems: standardSections(['Social publishing agents', 'Social engagement agents']),
+    ctaLabel: 'Create post',
+    defaultItemId: 'view-calendar',
+    menuItems: expandedSections([
+      {
+        label: 'Publish',
+        children: [
+          'View calendar',
+          'View drafts',
+          'Approve posts',
+          'Fix failed posts',
+          'Fix rejected posts',
+        ],
+      },
+      {
+        label: 'Engage',
+      },
+    ]),
   },
   surveys: {
     title: 'Surveys AI',
@@ -103,9 +148,21 @@ export const MODULE_NAV = {
   },
   ticketing: {
     title: 'Ticketing AI',
-    ctaLabel: 'Create agent',
-    defaultItemId: 'view-all-agents',
-    menuItems: standardSections(['Ticket priority agents', 'SLA rescue agents']),
+    ctaLabel: 'Create ticket',
+    defaultItemId: 'my-tickets',
+    menuItems: expandedSections([
+      {
+        label: 'Actions',
+        children: ['My tickets', 'View all tickets'],
+      },
+      {
+        label: 'Reports',
+        children: ['Resolution time', 'Volume'],
+      },
+      {
+        label: 'Agents',
+      },
+    ]),
   },
   contacts: {
     title: 'Contacts AI',
