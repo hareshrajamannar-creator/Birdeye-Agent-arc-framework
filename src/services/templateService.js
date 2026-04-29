@@ -9,6 +9,19 @@ import {
 } from 'firebase/firestore';
 
 const COLLECTION = 'agentTemplates';
+const RESERVED_FIELD_PREFIX = 'reservedField_';
+
+function encodeFieldKey(key) {
+  if (/^__.*__$/.test(key)) return `${RESERVED_FIELD_PREFIX}${key.slice(2, -2)}`;
+  return key;
+}
+
+function decodeFieldKey(key) {
+  if (key.startsWith(RESERVED_FIELD_PREFIX)) {
+    return `__${key.slice(RESERVED_FIELD_PREFIX.length)}__`;
+  }
+  return key;
+}
 
 function isPlainObject(value) {
   return Object.prototype.toString.call(value) === '[object Object]';
@@ -25,8 +38,19 @@ function sanitizeForFirestore(value) {
   if (value && isPlainObject(value)) {
     return Object.fromEntries(
       Object.entries(value)
-        .map(([key, nestedValue]) => [key, sanitizeForFirestore(nestedValue)])
+        .map(([key, nestedValue]) => [encodeFieldKey(key), sanitizeForFirestore(nestedValue)])
         .filter(([, nestedValue]) => nestedValue !== undefined)
+    );
+  }
+  return value;
+}
+
+function restoreFromFirestore(value) {
+  if (Array.isArray(value)) return value.map(restoreFromFirestore);
+  if (value && isPlainObject(value)) {
+    return Object.fromEntries(
+      Object.entries(value)
+        .map(([key, nestedValue]) => [decodeFieldKey(key), restoreFromFirestore(nestedValue)])
     );
   }
   return value;
@@ -45,7 +69,7 @@ export function deleteTemplate(templateId) {
 
 export function subscribeToTemplates(onTemplates) {
   return onSnapshot(collection(db, COLLECTION), (snapshot) => {
-    const templates = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+    const templates = snapshot.docs.map((d) => restoreFromFirestore({ id: d.id, ...d.data() }));
     onTemplates(templates);
   });
 }
