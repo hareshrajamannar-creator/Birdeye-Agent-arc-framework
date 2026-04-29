@@ -269,13 +269,14 @@ function FlowCanvasInner({
 
   const handleDragOver = useCallback((event) => {
     event.preventDefault();
-    event.dataTransfer.dropEffect = 'move';
+    event.dataTransfer.dropEffect = 'copy';
   }, []);
 
-  // Canvas-wide drop — fires when not caught by an edge foreignObject
+  // Canvas-wide drop — skip if landed inside a foreignObject (edge + buttons handle their own drops)
   const handleDrop = useCallback(
     (event) => {
       event.preventDefault();
+      if (event.target.closest('foreignObject')) return;
       const type = event.dataTransfer.getData('application/reactflow-type');
       const label = event.dataTransfer.getData('application/reactflow-label');
       const description = event.dataTransfer.getData('application/reactflow-description');
@@ -306,7 +307,11 @@ function FlowCanvasInner({
   }, []);
 
   return (
-    <div className={`flow-canvas${isDraggingFromLHS ? ' flow-canvas--lhs-dragging' : ''}`}>
+    <div
+      className={`flow-canvas${isDraggingFromLHS ? ' flow-canvas--lhs-dragging' : ''}`}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+    >
       <div className="flow-canvas__toolbar-anchor">
         <GraphControls
           orientation={orientation}
@@ -326,8 +331,6 @@ function FlowCanvasInner({
         defaultEdgeOptions={defaultEdgeOptions}
         onNodeClick={handleNodeClick}
         onNodeDragStop={handleNodeDragStop}
-        onDragOver={handleDragOver}
-        onDrop={handleDrop}
         onViewportChange={handleViewportChange}
         fitView
         fitViewOptions={{ padding: 0.25 }}
