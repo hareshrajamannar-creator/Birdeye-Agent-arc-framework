@@ -35,7 +35,7 @@
 }
 
 .chipEditing {
-  border-color: #1976d2;
+  border-color: #1976d2 !important;
 }
 
 /* Left swatch: #ecf5fd bg, right-divider */
@@ -98,4 +98,35 @@
 
 .chipInput::placeholder {
   color: #bbb;
+}
+
+/* ─── Per-type chip border colors ─── */
+
+.chipAttachment { border-color: #c8e6c9; }
+.chipLink       { border-color: #f48fb1; }
+.chipAddress    { border-color: #9fa8da; }
+.chipProduct    { border-color: #ffe082; }
+
+/* ─── Per-type swatch backgrounds + right border ─── */
+
+.swatchAttachment { background: #e8f5e9; border-right-color: #c8e6c9; }
+.swatchLink       { background: #fce4ec; border-right-color: #f48fb1; }
+.swatchAddress    { background: #e8eaf6; border-right-color: #9fa8da; }
+.swatchProduct    { background: #fff8e1; border-right-color: #ffe082; }
+
+/* ─── Per-type icon colors ─── */
+
+.iconAttachment { font-size: 13px; color: #2e7d32; }
+.iconLink       { font-size: 13px; color: #c2185b; }
+.iconAddress    { font-size: 13px; color: #3949ab; }
+.iconProduct    { font-size: 13px; color: #f57f17; }
+
+/* ─── Swatch acts as type-change trigger ─── */
+
+.swatchClickable {
+  cursor: pointer;
+}
+
+.swatchClickable:hover {
+  filter: brightness(0.95);
 }

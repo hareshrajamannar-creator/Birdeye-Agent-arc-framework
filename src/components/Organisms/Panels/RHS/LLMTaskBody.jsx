@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import FormInput from '@birdeye/elemental/core/atoms/FormInput/index.js';
 import TextArea from '@birdeye/elemental/core/atoms/TextArea/index.js';
 import SingleSelect from '@birdeye/elemental/core/atoms/SingleSelect/index.js';
 import SystemPromptInput from '../../../Molecules/Inputs/SystemPromptInput/SystemPromptInput';
 import UserPromptInput from '../../../Molecules/Inputs/UserPromptInput/UserPromptInput';
 import OutputFields from '../../../Molecules/Inputs/OutputFields/OutputFields';
-import VariableChip from '../../../Molecules/Inputs/VariableChip/VariableChip';
+import VariableChip, { CHIP_TYPES, DataTypeIcon } from '../../../Molecules/Inputs/VariableChip/VariableChip';
 import styles from './LLMTaskBody.module.css';
 
 const LLM_MODEL_OPTIONS = [
@@ -14,34 +14,109 @@ const LLM_MODEL_OPTIONS = [
   { value: 'Advanced', label: 'Advanced' },
 ];
 
-function ChipContainer({ chips, onChipChange, onChipDelete, addingNew, onStartAdd, onCancelAdd, onCommitAdd }) {
+const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
+const normalizeChips = (arr) => {
+  if (!Array.isArray(arr)) return [];
+  return arr.map((item) =>
+    typeof item === 'string' ? { value: item, type: 'variable' } : item
+  );
+};
+
+function ChipContainer({ chips, onChipChange, onChipDelete, addingNew, onStartAdd, onCancelAdd, onCommitAdd, onChangeChipType }) {
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerFor, setPickerFor] = useState(null);
+  const [pendingType, setPendingType] = useState('variable');
+  const pickerRef = useRef(null);
+
+  useEffect(() => {
+    if (!pickerOpen) return;
+    const handler = (e) => {
+      if (pickerRef.current && !pickerRef.current.contains(e.target)) {
+        setPickerOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [pickerOpen]);
+
+  const openForAdd = () => {
+    setPickerFor('add');
+    setPickerOpen(true);
+  };
+
+  const openForChip = (i) => {
+    setPickerFor(i);
+    setPickerOpen(true);
+  };
+
+  const selectType = (type) => {
+    setPickerOpen(false);
+    if (pickerFor === 'add') {
+      setPendingType(type);
+      onStartAdd();
+    } else if (typeof pickerFor === 'number') {
+      onChangeChipType(pickerFor, type);
+    }
+    setPickerFor(null);
+  };
+
   const hasChips = chips.length > 0 || addingNew;
+
   return (
     <div className={styles.chipContainer}>
       {hasChips && (
         <div className={styles.chipWrap}>
           {chips.map((chip, i) => (
             <VariableChip
-              key={`${chip}-${i}`}
-              value={chip}
+              key={i}
+              value={chip.value}
+              type={chip.type}
               onChange={(v) => onChipChange(i, v)}
               onDelete={() => onChipDelete(i)}
+              onSwatchClick={() => openForChip(i)}
             />
           ))}
           {addingNew && (
             <VariableChip
               value=""
+              type={pendingType}
               autoFocus
-              onChange={(v) => onCommitAdd(v)}
+              onChange={(v) => onCommitAdd(v, pendingType)}
               onDelete={onCancelAdd}
             />
           )}
         </div>
       )}
-      <button className={styles.addBtn} type="button" onClick={onStartAdd}>
-        <span className="material-symbols-outlined">add_circle</span>
-        <span className={styles.addBtnLabel}>Add</span>
-      </button>
+      <div className={styles.addRow} ref={pickerRef}>
+        <button className={styles.addBtn} type="button" onClick={openForAdd}>
+          <span className="material-symbols-outlined">add_circle</span>
+          <span className={styles.addBtnLabel}>Add</span>
+        </button>
+        {pickerOpen && (
+          <div className={styles.typePicker}>
+            {CHIP_TYPES.map((ct) => (
+              <button
+                key={ct.type}
+                className={styles.typePickerItem}
+                type="button"
+                onClick={() => selectType(ct.type)}
+              >
+                <span className={`${styles.typePickerSwatch} ${styles[`tpSwatch${cap(ct.type)}`] || ''}`}>
+                  {ct.icon ? (
+                    <span className={`material-symbols-outlined ${styles[`tpIcon${cap(ct.type)}`] || ''}`}>
+                      {ct.icon}
+                    </span>
+                  ) : (
+                    <DataTypeIcon />
+                  )}
+                </span>
+                <span className={styles.typePickerLabel}>{ct.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -53,10 +128,10 @@ export default function LLMTaskBody({ initialValues = {}, onFieldChange }) {
   const [systemPrompt, setSystemPrompt] = useState(initialValues.systemPrompt ?? '');
   const [userPrompt, setUserPrompt] = useState(initialValues.userPrompt ?? '');
 
-  const [contextFields, setContextFields] = useState(initialValues.contextFields ?? []);
+  const [contextFields, setContextFields] = useState(normalizeChips(initialValues.contextFields));
   const [addingContext, setAddingContext] = useState(false);
 
-  const [inputFields, setInputFields] = useState(initialValues.inputFields ?? []);
+  const [inputFields, setInputFields] = useState(normalizeChips(initialValues.inputFields));
   const [addingInput, setAddingInput] = useState(false);
 
   const [outputFields, setOutputFields] = useState(initialValues.outputFields ?? []);
@@ -109,12 +184,13 @@ export default function LLMTaskBody({ initialValues = {}, onFieldChange }) {
         </div>
         <ChipContainer
           chips={contextFields}
-          onChipChange={(i, v) => updateContextFields(contextFields.map((c, idx) => (idx === i ? v : c)))}
+          onChipChange={(i, v) => updateContextFields(contextFields.map((c, idx) => idx === i ? { ...c, value: v } : c))}
           onChipDelete={(i) => updateContextFields(contextFields.filter((_, idx) => idx !== i))}
           addingNew={addingContext}
           onStartAdd={() => setAddingContext(true)}
           onCancelAdd={() => setAddingContext(false)}
-          onCommitAdd={(v) => { updateContextFields([...contextFields, v]); setAddingContext(false); }}
+          onCommitAdd={(v, t) => { updateContextFields([...contextFields, { value: v, type: t || 'variable' }]); setAddingContext(false); }}
+          onChangeChipType={(i, type) => updateContextFields(contextFields.map((c, idx) => idx === i ? { ...c, type } : c))}
         />
       </div>
 
@@ -125,12 +201,13 @@ export default function LLMTaskBody({ initialValues = {}, onFieldChange }) {
         </div>
         <ChipContainer
           chips={inputFields}
-          onChipChange={(i, v) => updateInputFields(inputFields.map((c, idx) => (idx === i ? v : c)))}
+          onChipChange={(i, v) => updateInputFields(inputFields.map((c, idx) => idx === i ? { ...c, value: v } : c))}
           onChipDelete={(i) => updateInputFields(inputFields.filter((_, idx) => idx !== i))}
           addingNew={addingInput}
           onStartAdd={() => setAddingInput(true)}
           onCancelAdd={() => setAddingInput(false)}
-          onCommitAdd={(v) => { updateInputFields([...inputFields, v]); setAddingInput(false); }}
+          onCommitAdd={(v, t) => { updateInputFields([...inputFields, { value: v, type: t || 'variable' }]); setAddingInput(false); }}
+          onChangeChipType={(i, type) => updateInputFields(inputFields.map((c, idx) => idx === i ? { ...c, type } : c))}
         />
       </div>
 
