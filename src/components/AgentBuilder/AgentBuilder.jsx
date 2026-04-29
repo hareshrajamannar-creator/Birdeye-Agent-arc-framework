@@ -115,14 +115,20 @@ function buildFlow(nodeList, startData, nodeDetails = {}) {
       id: nodeId,
       type: item.flowType,
       position: { x: 0, y },
-      data: item.data?.subtype === 'Schedule-based'
+      data: item.flowType === 'branch'
         ? {
             ...item.data,
-            headerLabel: 'Schedule-based trigger',
-            title: nodeDetails[nodeId]?.triggerName ?? item.data.title,
-            subtitle: nodeDetails[nodeId]?.description ?? item.data.subtitle,
+            title: 'Based on conditions',
+            subtitle: 'Build condition-specific flows',
           }
-        : { ...item.data },
+        : item.data?.subtype === 'Schedule-based'
+          ? {
+              ...item.data,
+              headerLabel: 'Schedule-based trigger',
+              title: nodeDetails[nodeId]?.triggerName ?? item.data.title,
+              subtitle: nodeDetails[nodeId]?.description ?? item.data.subtitle,
+            }
+          : { ...item.data },
     });
     edges.push({
       id: `e-${prevId}-${nodeId}`,
@@ -527,13 +533,36 @@ export default function AgentBuilder({
     });
   }, []);
 
+  const handleDeleteBranchPath = useCallback((branchPathId) => {
+    setNodeDetails((prev) => {
+      const copy = { ...prev };
+      const parentId = copy[branchPathId]?.parentId;
+      if (parentId) {
+        copy[parentId] = {
+          ...copy[parentId],
+          branches: (copy[parentId]?.branches || []).filter((b) => b.id !== branchPathId),
+        };
+      }
+      const childNodes = copy[branchPathId]?.nodes || [];
+      childNodes.forEach((node) => { delete copy[node.id]; });
+      delete copy[branchPathId];
+      return copy;
+    });
+    if (selectedNodeId === branchPathId) {
+      setSelectedNodeId(null);
+      setDrawerOpen(false);
+    }
+  }, [selectedNodeId]);
+
   const startAgentName = nodeDetails[START_NODE_ID]?.agentName || pageTitle;
   const startData = { title: startAgentName, subtitle: 'All locations' };
   const { nodes: rawNodes, edges } = buildFlow(nodeList, startData, nodeDetails);
 
   const nodes = rawNodes.map((n) => {
     if (n.id === START_NODE_ID || n.id === END_NODE_ID) return n;
-    if (n.type === 'branchPath') return n;
+    if (n.type === 'branchPath') {
+      return { ...n, data: { ...n.data, onDelete: () => handleDeleteBranchPath(n.id) } };
+    }
     if (n.type === 'branchEnd') return n;
     const extra = { onDelete: () => handleDeleteNode(n.id) };
     if (n.type === 'branch') extra.onAddBranch = () => handleAddBranchPath(n.id);
@@ -676,7 +705,11 @@ export default function AgentBuilder({
           variant="branch"
           title="Branch"
           viewOnly={viewOnly}
-          bodyProps={{ initialValues: currentDetails, onFieldChange: activeFieldChange }}
+          bodyProps={{
+            initialValues: currentDetails,
+            onFieldChange: activeFieldChange,
+            onDeleteBranch: currentDetails.isFallback ? undefined : () => handleDeleteBranchPath(selectedNodeId),
+          }}
           onClose={handleCloseDrawer}
           onSave={handleCloseDrawer}
         />

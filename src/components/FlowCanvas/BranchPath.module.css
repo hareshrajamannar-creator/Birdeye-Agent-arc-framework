@@ -57,4 +57,48 @@
   overflow: hidden;
   color: #8f8f8f;
   flex-shrink: 0;
+  cursor: pointer;
+}
+
+.chipMenuWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.chipDropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: -8px;
+  background: #ffffff;
+  border: 1px solid #e5e9f0;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  z-index: 200;
+  min-width: 150px;
+  overflow: hidden;
+}
+
+.chipDropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  width: 100%;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: 'Roboto', sans-serif;
+  color: #de1b0c;
+  text-align: left;
+}
+
+.chipDropdownItem:hover {
+  background: #fff0f0;
+}
+
+.chipDropdownItem :global(.material-symbols-outlined) {
+  font-size: 16px;
+  color: #de1b0c;
 }

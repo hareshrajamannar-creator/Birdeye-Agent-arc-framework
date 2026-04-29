@@ -121,6 +121,20 @@ function LoopNodeWrapper(props) {
 
 function BranchPathNodeWrapper({ id, data }) {
   const isSelected = id === data.selectedNodeId;
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [menuOpen]);
+
   const chipClass = [
     branchStyles.chip,
     data.isFallback ? branchStyles.chipFallback : '',
@@ -135,7 +149,27 @@ function BranchPathNodeWrapper({ id, data }) {
         {!data.isFallback && (
           <span className={`material-symbols-outlined ${branchStyles.chipIcon}`}>info</span>
         )}
-        <span className={`material-symbols-outlined ${branchStyles.chipMenu}`}>more_vert</span>
+        <div className={branchStyles.chipMenuWrapper} ref={menuRef}>
+          <span
+            className={`material-symbols-outlined ${branchStyles.chipMenu}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!data.isFallback) setMenuOpen((m) => !m);
+            }}
+          >more_vert</span>
+          {menuOpen && !data.isFallback && (
+            <div className={branchStyles.chipDropdown}>
+              <button
+                className={branchStyles.chipDropdownItem}
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setMenuOpen(false); data.onDelete?.(); }}
+              >
+                <span className="material-symbols-outlined">delete</span>
+                Delete branch
+              </button>
+            </div>
+          )}
+        </div>
       </div>
       <Handle type="source" position={Position.Bottom} />
     </div>
@@ -419,6 +453,7 @@ function FlowCanvasInner({
         onViewportChange={handleViewportChange}
         fitView
         fitViewOptions={{ padding: 0.25, maxZoom: 1.1 }}
+        nodeOrigin={[0.5, 0]}
         proOptions={{ hideAttribution: true }}
         nodesDraggable={!viewOnly}
         nodesConnectable={false}

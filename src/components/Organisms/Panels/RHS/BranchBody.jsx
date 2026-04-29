@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import FormInput from '@birdeye/elemental/core/atoms/FormInput/index.js';
 import TextArea from '@birdeye/elemental/core/atoms/TextArea/index.js';
 import Conditions from '../../../Molecules/Conditions/Conditions';
+import styles from './BranchBody.module.css';
 
 const DEFAULT_CONDITION_OPTIONS = {
   field: [
@@ -29,7 +30,7 @@ const DEFAULT_CONDITION_OPTIONS = {
 
 const makeCondition = (id) => ({ id, fieldValue: '', operatorValue: '', valueValue: '' });
 
-export default function BranchBody({ initialValues = {}, onFieldChange }) {
+export default function BranchBody({ initialValues = {}, onFieldChange, onDeleteBranch }) {
   const [branchName, setBranchName] = useState(initialValues.branchName ?? '');
   const [description, setDescription] = useState(initialValues.description ?? '');
   const [conditions, setConditions] = useState(
@@ -74,6 +75,14 @@ export default function BranchBody({ initialValues = {}, onFieldChange }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {onDeleteBranch && (
+        <div className={styles.deleteRow}>
+          <button className={styles.deleteBtn} type="button" onClick={onDeleteBranch}>
+            <span className="material-symbols-outlined">delete</span>
+            Delete branch
+          </button>
+        </div>
+      )}
       <FormInput
         name="branchName"
         type="text"
