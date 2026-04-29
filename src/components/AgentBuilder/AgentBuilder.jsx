@@ -12,6 +12,89 @@ import './AgentBuilder.css';
 const START_NODE_ID = '__start__';
 const END_NODE_ID = '__end__';
 
+function makeNodeDetails(type, label) {
+  if (type === 'trigger' && label === 'Schedule-based') {
+    return {
+      triggerName: '',
+      description: '',
+      frequency: 'Daily',
+      day: '7 days',
+      time: '9:00 AM',
+    };
+  }
+  if (type === 'trigger') {
+    return {
+      triggerName: '',
+      description: '',
+      conditions: [
+        { field: '', operator: '', value: '' },
+        { field: '', operator: '', value: '' },
+        { field: '', operator: '', value: '' },
+      ],
+    };
+  }
+  if (type === 'branch') return { basedOn: 'conditions', branches: [] };
+  if (type === 'delay') return { name: '', duration: '', unit: '' };
+  if (type === 'parallel') return { nodeName: '', description: '', branches: [{ name: '' }, { name: '' }] };
+  if (type === 'loop') return { name: '', description: '', loopMode: 'manual', loopOver: null };
+  if (label === 'Custom') {
+    return {
+      taskName: '',
+      description: '',
+      llmModel: 'Fast',
+      systemPrompt: '',
+      userPrompt: '',
+    };
+  }
+  return {
+    taskName: '',
+    description: '',
+  };
+}
+
+function makeNodeConfig(id, type, label, description) {
+  let flowType = 'task';
+  let hasAiIcon = false;
+  let titlePlaceholder = 'Enter name';
+  let descriptionPlaceholder = 'Enter description';
+
+  if (type === 'trigger') {
+    flowType = 'trigger';
+    titlePlaceholder = 'Enter trigger name';
+  } else if (type === 'branch') {
+    flowType = 'branch';
+    titlePlaceholder = 'Enter branch name';
+  } else if (type === 'delay') {
+    flowType = 'delay';
+  } else if (type === 'parallel') {
+    flowType = 'parallel';
+  } else if (type === 'loop') {
+    flowType = 'loop';
+  } else if (type === 'task') {
+    flowType = 'task';
+    hasAiIcon = label === 'Custom';
+    titlePlaceholder = 'Enter task name';
+  }
+
+  return {
+    id,
+    flowType,
+    data: {
+      title: '',
+      headerLabel: type === 'trigger' && label === 'Schedule-based' ? 'Schedule-based trigger' : undefined,
+      subtype: label,
+      stepNumber: null,
+      description,
+      subtitle: '',
+      titlePlaceholder,
+      descriptionPlaceholder,
+      hasAiIcon,
+      hasToggle: true,
+      toggleEnabled: true,
+    },
+  };
+}
+
 function buildFlow(nodeList, startData, nodeDetails = {}) {
   let y = 0;
   const nodes = [];
@@ -52,11 +135,17 @@ function buildFlow(nodeList, startData, nodeDetails = {}) {
       const branches = nodeDetails[nodeId]?.branches || [];
       const spacing = 280;
       const startX = -((branches.length - 1) * spacing) / 2;
+      const branchChipY = y + 150;
+      const branchNodeStartY = y + 260;
+      let maxBranchNodes = 0;
       branches.forEach((branch, bi) => {
+        const branchX = startX + bi * spacing;
+        const branchNodes = nodeDetails[branch.id]?.nodes || [];
+        maxBranchNodes = Math.max(maxBranchNodes, branchNodes.length);
         nodes.push({
           id: branch.id,
           type: 'branchPath',
-          position: { x: startX + bi * spacing, y: y + 150 },
+          position: { x: branchX, y: branchChipY },
           data: { label: branch.name, parentId: nodeId, isFallback: !!branch.isFallback },
         });
         edges.push({
@@ -65,26 +154,67 @@ function buildFlow(nodeList, startData, nodeDetails = {}) {
           target: branch.id,
           type: 'branchFan',
         });
+
+        let previousId = branch.id;
+        branchNodes.forEach((childNode, childIndex) => {
+          nodes.push({
+            id: childNode.id,
+            type: childNode.flowType,
+            position: { x: branchX, y: branchNodeStartY + childIndex * 250 },
+            data: { ...childNode.data, stepNumber: childNode.data?.stepNumber ?? null },
+          });
+          edges.push({
+            id: `e-${previousId}-${childNode.id}`,
+            source: previousId,
+            target: childNode.id,
+            type: 'addButton',
+            data: {
+              branchPathId: branch.id,
+              afterNodeId: previousId === branch.id ? null : previousId,
+            },
+          });
+          previousId = childNode.id;
+        });
+
+        const branchEndId = `${branch.id}-end`;
+        nodes.push({
+          id: branchEndId,
+          type: 'branchEnd',
+          position: { x: branchX, y: branchNodeStartY + branchNodes.length * 250 },
+          data: { parentId: branch.id },
+        });
+        edges.push({
+          id: `e-${previousId}-${branchEndId}`,
+          source: previousId,
+          target: branchEndId,
+          type: 'addButton',
+          data: {
+            branchPathId: branch.id,
+            afterNodeId: previousId === branch.id ? null : previousId,
+          },
+        });
       });
-      y += 150;
+      y += 150 + (maxBranchNodes + 1) * 250;
     }
 
     y += 250;
   });
 
   const lastId = nodeList.length > 0 ? nodeList[nodeList.length - 1].id : START_NODE_ID;
-  nodes.push({
-    id: END_NODE_ID,
-    type: 'end',
-    position: { x: 0, y },
-    data: {},
-  });
-  edges.push({
-    id: `e-${lastId}-${END_NODE_ID}`,
-    source: lastId,
-    target: END_NODE_ID,
-    type: 'addButton',
-  });
+  if (!nodeList.length || nodeList[nodeList.length - 1].flowType !== 'branch') {
+    nodes.push({
+      id: END_NODE_ID,
+      type: 'end',
+      position: { x: 0, y },
+      data: {},
+    });
+    edges.push({
+      id: `e-${lastId}-${END_NODE_ID}`,
+      source: lastId,
+      target: END_NODE_ID,
+      type: 'addButton',
+    });
+  }
 
   return { nodes, edges };
 }
@@ -287,6 +417,44 @@ export default function AgentBuilder({
           ),
         };
       }
+      if (field === 'branches') {
+        value.forEach((branch) => {
+          if (!updated[branch.id]) {
+            updated[branch.id] = {
+              branchName: branch.name,
+              description: '',
+              conditions: [],
+              parentId: nodeId,
+              isBranchPath: true,
+              isFallback: !!branch.isFallback,
+              nodes: [],
+            };
+          } else {
+            updated[branch.id] = {
+              ...updated[branch.id],
+              branchName: branch.name,
+              parentId: nodeId,
+              isBranchPath: true,
+              isFallback: !!branch.isFallback,
+            };
+          }
+        });
+      }
+      Object.entries(updated).forEach(([key, details]) => {
+        if (!details?.nodes) return;
+        updated[key] = {
+          ...details,
+          nodes: details.nodes.map((node) => {
+            if (node.id !== nodeId) return node;
+            const nodeUpdates = {};
+            if (['triggerName', 'taskName', 'name', 'nodeName', 'branchName'].includes(field)) {
+              nodeUpdates.title = value;
+            }
+            if (field === 'description') nodeUpdates.subtitle = value;
+            return { ...node, data: { ...node.data, ...nodeUpdates } };
+          }),
+        };
+      });
       return updated;
     });
     // Mirror name/description changes into the canvas node body
@@ -315,6 +483,11 @@ export default function AgentBuilder({
     });
     setNodeDetails((prev) => {
       const copy = { ...prev };
+      Object.values(copy).forEach((details) => {
+        if (details?.nodes) {
+          details.nodes = details.nodes.filter((node) => node.id !== nodeId);
+        }
+      });
       Object.keys(copy).forEach((key) => {
         if (key === nodeId || copy[key]?.parentId === nodeId) {
           delete copy[key];
@@ -361,12 +534,15 @@ export default function AgentBuilder({
   const nodes = rawNodes.map((n) => {
     if (n.id === START_NODE_ID || n.id === END_NODE_ID) return n;
     if (n.type === 'branchPath') return n;
+    if (n.type === 'branchEnd') return n;
     const extra = { onDelete: () => handleDeleteNode(n.id) };
     if (n.type === 'branch') extra.onAddBranch = () => handleAddBranchPath(n.id);
     return { ...n, data: { ...n.data, ...extra } };
   });
 
-  const selectedNode = nodeList.find((n) => n.id === selectedNodeId);
+  const branchChildNodes = Object.values(nodeDetails).flatMap((details) => details?.nodes || []);
+  const selectedNode = nodeList.find((n) => n.id === selectedNodeId) ||
+    branchChildNodes.find((n) => n.id === selectedNodeId);
 
   const handleNodesReorder = useCallback((newIdOrder) => {
     setNodeList((prev) => {
@@ -376,52 +552,33 @@ export default function AgentBuilder({
     });
   }, []);
 
-  const handleDropNode = useCallback(({ type, label, description, afterNodeId }) => {
+  const handleDropNode = useCallback(({ type, label, description, afterNodeId, branchPathId }) => {
     const id = nextId();
+    const newNode = makeNodeConfig(id, type, label, description);
+    const details = makeNodeDetails(type, label);
 
-    let flowType = 'task';
-    let hasAiIcon = false;
-    let titlePlaceholder = 'Enter name';
-    let descriptionPlaceholder = 'Enter description';
-
-    if (type === 'trigger' && label === 'Schedule-based') {
-      flowType = 'trigger';
-      titlePlaceholder = 'Enter trigger name';
-    } else if (type === 'trigger') {
-      flowType = 'trigger';
-      titlePlaceholder = 'Enter trigger name';
-    } else if (type === 'branch') {
-      flowType = 'branch';
-      titlePlaceholder = 'Enter branch name';
-    } else if (type === 'delay') {
-      flowType = 'delay';
-    } else if (type === 'parallel') {
-      flowType = 'parallel';
-    } else if (type === 'loop') {
-      flowType = 'loop';
-    } else if (type === 'task') {
-      flowType = 'task';
-      hasAiIcon = label === 'Custom';
-      titlePlaceholder = 'Enter task name';
+    if (branchPathId) {
+      setNodeDetails((prev) => {
+        const branchPath = prev[branchPathId] || {};
+        const existingNodes = branchPath.nodes || [];
+        const index = afterNodeId ? existingNodes.findIndex((node) => node.id === afterNodeId) : -1;
+        const nextNodes = index !== -1
+          ? [...existingNodes.slice(0, index + 1), newNode, ...existingNodes.slice(index + 1)]
+          : [newNode, ...existingNodes];
+        return {
+          ...prev,
+          [branchPathId]: {
+            ...branchPath,
+            nodes: nextNodes.map((node, i) => ({
+              ...node,
+              data: { ...node.data, stepNumber: i + 1 },
+            })),
+          },
+          [id]: details,
+        };
+      });
+      return;
     }
-
-    const newNode = {
-      id,
-      flowType,
-      data: {
-        title: '',
-        headerLabel: type === 'trigger' && label === 'Schedule-based' ? 'Schedule-based trigger' : undefined,
-        subtype: label,
-        stepNumber: null,
-        description,
-        subtitle: '',
-        titlePlaceholder,
-        descriptionPlaceholder,
-        hasAiIcon,
-        hasToggle: true,
-        toggleEnabled: true,
-      },
-    };
 
     setNodeList((prev) => {
       let updated;
@@ -436,62 +593,24 @@ export default function AgentBuilder({
       return updated.map((n, i) => ({ ...n, data: { ...n.data, stepNumber: i + 1 } }));
     });
 
-    let details = {};
     let extraDetails = {};
 
-    if (type === 'trigger' && label === 'Schedule-based') {
-      details = {
-        triggerName: '',
-        description: '',
-        frequency: 'Daily',
-        day: '7 days',
-        time: '9:00 AM',
-      };
-    } else if (type === 'trigger') {
-      details = {
-        triggerName: '',
-        description: '',
-        conditions: [
-          { field: '', operator: '', value: '' },
-          { field: '', operator: '', value: '' },
-          { field: '', operator: '', value: '' },
-        ],
-      };
-    } else if (type === 'branch') {
+    if (type === 'branch') {
       const path1Id = `${id}-path-1`;
       const path2Id = `${id}-path-2`;
       const fallbackId = `${id}-path-fallback`;
-      details = {
+      Object.assign(details, {
         basedOn: 'conditions',
         branches: [
           { id: path1Id, name: 'Branch 1' },
           { id: path2Id, name: 'Branch 2' },
           { id: fallbackId, name: 'No conditions met', isFallback: true },
         ],
-      };
+      });
       extraDetails = {
-        [path1Id]: { branchName: 'Branch 1', description: '', conditions: [], parentId: id, isBranchPath: true },
-        [path2Id]: { branchName: 'Branch 2', description: '', conditions: [], parentId: id, isBranchPath: true },
-        [fallbackId]: { branchName: 'No conditions met', description: '', conditions: [], parentId: id, isBranchPath: true, isFallback: true },
-      };
-    } else if (type === 'delay') {
-      details = { name: '', duration: '', unit: '' };
-    } else if (type === 'parallel') {
-      details = { nodeName: '', description: '', branches: [{ name: '' }, { name: '' }] };
-    } else if (type === 'loop') {
-      details = { name: '', description: '', loopMode: 'manual', loopOver: null };
-    } else if (label === 'Custom') {
-      details = {
-        taskName: '',
-        description: '',
-        llmModel: 'Fast',
-        systemPrompt: '',
-        userPrompt: '',
-      };
-    } else {
-      details = {
-        taskName: '',
-        description: '',
+        [path1Id]: { branchName: 'Branch 1', description: '', conditions: [], parentId: id, isBranchPath: true, nodes: [] },
+        [path2Id]: { branchName: 'Branch 2', description: '', conditions: [], parentId: id, isBranchPath: true, nodes: [] },
+        [fallbackId]: { branchName: 'No conditions met', description: '', conditions: [], parentId: id, isBranchPath: true, isFallback: true, nodes: [] },
       };
     }
 
@@ -503,7 +622,7 @@ export default function AgentBuilder({
   }, []);
 
   const handleNodeClick = useCallback((node) => {
-    if (node.type === 'end') return;
+    if (node.type === 'end' || node.type === 'branchEnd') return;
     setSelectedNodeId(node.id);
     setDrawerOpen(true);
   }, []);
@@ -612,7 +731,7 @@ export default function AgentBuilder({
           variant="controlBranch"
           title="Branch details"
           viewOnly={viewOnly}
-          bodyProps={{ initialValues: currentDetails, onFieldChange: activeFieldChange }}
+          bodyProps={{ initialValues: { ...currentDetails, branchNodeId: selectedNodeId }, onFieldChange: activeFieldChange }}
           onClose={handleCloseDrawer}
           onSave={handleCloseDrawer}
         />

@@ -152,6 +152,17 @@ function EndNodeWrapper({ id, data }) {
   );
 }
 
+function BranchEndNodeWrapper() {
+  return (
+    <div className="flow-canvas__branch-end-wrapper">
+      <Handle type="target" position={Position.Top} />
+      <div className="flow-canvas__branch-end">
+        End
+      </div>
+    </div>
+  );
+}
+
 /* ─── Custom Edge: main connector with + button ─── */
 function AddButtonEdge({ id, sourceX, sourceY, targetX, targetY, style, data }) {
   const [isDragOver, setIsDragOver] = useState(false);
@@ -227,6 +238,7 @@ const NODE_TYPES = {
   parallel: ParallelNodeWrapper,
   loop: LoopNodeWrapper,
   branchPath: BranchPathNodeWrapper,
+  branchEnd: BranchEndNodeWrapper,
   end: EndNodeWrapper,
 };
 
@@ -361,7 +373,13 @@ function FlowCanvasInner({
           isDraggingFromLHS,
           viewOnly,
           onDropOnEdge: viewOnly ? undefined : (type, label, description) => {
-            onDropNodeRef.current?.({ type, label, description, afterNodeId: edge.source });
+            onDropNodeRef.current?.({
+              type,
+              label,
+              description,
+              afterNodeId: edge.data?.afterNodeId ?? edge.source,
+              branchPathId: edge.data?.branchPathId,
+            });
           },
         },
       })),

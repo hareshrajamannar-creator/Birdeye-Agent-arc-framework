@@ -10,7 +10,7 @@
 .chip {
   min-width: 120px;
   height: 32px;
-  border-radius: 20px;
+  border-radius: 4px;
   border: 1px solid #c5d0e6;
   background: #ffffff;
   display: flex;

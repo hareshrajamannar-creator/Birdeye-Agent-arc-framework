@@ -21,13 +21,19 @@ function SectionLabel({ label, required }) {
   );
 }
 
-function BranchItem({ index, name }) {
+function BranchItem({ index, name, draggable, onDragStart, onDragOver, onDrop }) {
   return (
-    <div style={{
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '8px 12px', border: '1px solid #e5e9f0', borderRadius: 4,
-      background: '#fff', gap: 8,
-    }}>
+    <div
+      draggable={draggable}
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '8px 12px', border: '1px solid #e5e9f0', borderRadius: 4,
+        background: '#fff', gap: 8, cursor: draggable ? 'grab' : 'default',
+      }}
+    >
       <span style={{ fontSize: 14, lineHeight: '20px', color: '#212121', fontFamily: font, letterSpacing: '-0.28px' }}>
         {index + 1}. {name}
       </span>
@@ -73,15 +79,35 @@ export default function ControlBranchBody({ initialValues = {}, onFieldChange })
     const initial = initialValues.branches ?? [];
     return initial.map((b) => ({ ...b, percentage: b.percentage ?? 0 }));
   });
-  const [nextId, setNextId] = useState((initialValues.branches?.length ?? 0) + 1);
+  const [dragIndex, setDragIndex] = useState(null);
 
   function addBranch() {
     setBranches((prev) => {
-      const next = [...prev, { id: nextId, name: `Branch ${nextId}`, percentage: 0 }];
+      const nonFallback = prev.filter((branch) => !branch.isFallback);
+      const fallback = prev.filter((branch) => branch.isFallback);
+      const branchNumber = nonFallback.length + 1;
+      const idBase = initialValues.branchNodeId || 'branch';
+      const next = [
+        ...nonFallback,
+        { id: `${idBase}-path-${Date.now()}`, name: `Branch ${branchNumber}`, percentage: 0 },
+        ...fallback,
+      ];
       onFieldChange?.('branches', next);
       return next;
     });
-    setNextId((n) => n + 1);
+  }
+
+  function reorderBranch(overIndex) {
+    if (dragIndex === null || dragIndex === overIndex) return;
+    setBranches((prev) => {
+      if (prev[dragIndex]?.isFallback || prev[overIndex]?.isFallback) return prev;
+      const next = [...prev];
+      const [moved] = next.splice(dragIndex, 1);
+      next.splice(overIndex, 0, moved);
+      onFieldChange?.('branches', next);
+      return next;
+    });
+    setDragIndex(null);
   }
 
   function updatePercentage(index, value) {
@@ -140,7 +166,15 @@ export default function ControlBranchBody({ initialValues = {}, onFieldChange })
             basedOn === 'percentage' ? (
               <PercentageBranchItem key={b.id} index={i} name={b.name} percentage={b.percentage} onChange={updatePercentage} />
             ) : (
-              <BranchItem key={b.id} index={i} name={b.name} />
+              <BranchItem
+                key={b.id}
+                index={i}
+                name={b.name}
+                draggable={!b.isFallback}
+                onDragStart={() => setDragIndex(i)}
+                onDragOver={(event) => event.preventDefault()}
+                onDrop={() => reorderBranch(i)}
+              />
             )
           )}
         </div>

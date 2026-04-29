@@ -187,3 +187,25 @@
 .flow-canvas__edge-add--drop-target .material-symbols-outlined {
   color: #fff !important;
 }
+
+.flow-canvas__branch-end-wrapper {
+  display: flex;
+  justify-content: center;
+  min-width: 120px;
+}
+
+.flow-canvas__branch-end {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 4px;
+  background: #e9e9eb;
+  color: #555;
+  font-family: 'Roboto', sans-serif;
+  font-size: 12px;
+  line-height: 18px;
+  white-space: nowrap;
+}
