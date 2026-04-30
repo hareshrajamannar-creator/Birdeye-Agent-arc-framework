@@ -145,6 +145,11 @@ const EMPTY_STATE_COPY = {
     title: 'Create your first trend detection agent',
     description: 'Automatically identify and surface emerging trends in your data',
   },
+  // Search AI
+  'FAQ generation agents': {
+    title: 'Create your first FAQ generation agent',
+    description: 'Automatically generate and update FAQs from your business content and customer questions',
+  },
   // Competitors AI
   'Competitor monitoring agents': {
     title: 'Create your first monitoring agent',
@@ -201,6 +206,7 @@ export default function AgentsDashboardTemplate({
   navTitle = 'ReviewsAI',
   ctaLabel = 'Send a review request',
   menuItems,
+  navItems,
   onNavChange,
   onMenuItemClick,
 }) {
@@ -224,6 +230,7 @@ export default function AgentsDashboardTemplate({
 
       {/* Primary Rail Nav */}
       <PrimaryRailNav
+        {...(navItems ? { navItems } : {})}
         activeNavId={activeNavId}
         onNavChange={onNavChange}
       />
@@ -403,6 +410,7 @@ AgentsDashboardTemplate.propTypes = {
   navTitle: PropTypes.string,
   ctaLabel: PropTypes.string,
   menuItems: PropTypes.array,
+  navItems: PropTypes.array,
   onNavChange: PropTypes.func,
   onMenuItemClick: PropTypes.func,
 };
