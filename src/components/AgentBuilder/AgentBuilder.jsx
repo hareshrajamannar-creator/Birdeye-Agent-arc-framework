@@ -1,12 +1,15 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import AppShell from '../AppShell/AppShell';
 import LHSDrawer from '../LHSDrawer/LHSDrawer';
 import FlowCanvas from '../FlowCanvas/FlowCanvas';
 import RHS from '../Organisms/Panels/RHS/RHS';
 import ScheduleBased from '../Molecules/RHS/Trigger/ScheduleBased/ScheduleBased';
 import ShareModal from '../Organisms/Modals/ShareModal/ShareModal';
+import EmptyStates from '../Patterns/EmptyStates/EmptyStates';
 import Button from '@birdeye/elemental/core/atoms/Button/index.js';
-import { saveAgent } from '../../services/agentService';
+import { saveAgent, getAgentBySlug } from '../../services/agentService';
+import { getModuleNav } from '../Modules/moduleNavigation';
 import './AgentBuilder.css';
 
 const START_NODE_ID = '__start__';
@@ -234,10 +237,10 @@ function nextId() {
 
 export default function AgentBuilder({
   agentId: propAgentId,
-  appTitle = 'Reviews AI',
+  appTitle,
   pageTitle = 'Review response agent 1',
   activeNavId = 'reviews',
-  moduleContext = 'agents',
+  moduleContext = 'reviews',
   sectionContext = '',
   templateId,
   templateSource,
@@ -250,7 +253,17 @@ export default function AgentBuilder({
   onClose,
   viewOnly = false,
 }) {
-  const [agentId] = useState(() => propAgentId || crypto.randomUUID());
+  /* ─── URL-based slug params ─── */
+  const { moduleSlug: urlModuleSlug, agentSlug: urlAgentSlug } = useParams() || {};
+
+  const [agentId, setAgentId] = useState(() => propAgentId || crypto.randomUUID());
+  const [agentModuleSlug, setAgentModuleSlug] = useState(urlModuleSlug || moduleContext);
+  const [agentSlug, setAgentSlug] = useState(urlAgentSlug || '');
+  const [derivedAppTitle, setDerivedAppTitle] = useState(appTitle || getModuleNav(moduleContext).title);
+
+  /* ─── Loading / not-found state for URL-based loading ─── */
+  const [isLoadingFromSlug, setIsLoadingFromSlug] = useState(!viewOnly && !!urlAgentSlug && !!urlModuleSlug);
+  const [agentNotFound, setAgentNotFound] = useState(false);
   const [navId, setNavId] = useState(activeNavId);
   const [nodeList, setNodeList] = useState(() => initialNodes || []);
   const [selectedNodeId, setSelectedNodeId] = useState(null);
@@ -275,14 +288,44 @@ export default function AgentBuilder({
   });
   const [agentStatus, setAgentStatus] = useState(initialStatus || 'Draft');
 
+  /* ─── Load agent from URL slugs (edit route only, not view-only) ─── */
+  useEffect(() => {
+    if (viewOnly || !urlAgentSlug || !urlModuleSlug) return;
+    setIsLoadingFromSlug(true);
+    getAgentBySlug(urlModuleSlug, urlAgentSlug)
+      .then((agent) => {
+        if (!agent) { setAgentNotFound(true); return; }
+        setAgentId(agent.id);
+        setAgentModuleSlug(agent.moduleSlug || urlModuleSlug);
+        setAgentSlug(agent.agentSlug || urlAgentSlug);
+        setDerivedAppTitle(getModuleNav(agent.moduleContext || urlModuleSlug).title);
+        setNodeList(agent.nodes || []);
+        setNodeDetails(() => {
+          const base = agent.nodeDetails || {};
+          const startNode = base[START_NODE_ID];
+          return {
+            ...base,
+            [START_NODE_ID]: {
+              goals: '', outcomes: '', locations: [],
+              ...(startNode || {}),
+              agentName: startNode?.agentName || agent.name || '',
+            },
+          };
+        });
+        setAgentStatus(agent.status || 'Draft');
+      })
+      .catch(() => setAgentNotFound(true))
+      .finally(() => setIsLoadingFromSlug(false));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   /* ─── Share modal ─── */
   const [shareModalOpen, setShareModalOpen] = useState(false);
 
   const handleShare = useCallback(async () => {
     setHeaderMenuOpen(false);
     clearTimeout(saveTimerRef.current);
-    const { agentId: id, agentName: name, agentDesc: desc, moduleContext: mod, sectionContext: sec, agentStatus: status, nodeList: nodes, nodeDetails: details } = latestRef.current;
-    await saveAgent(id, { id, name: name || 'Untitled agent', description: desc, status, moduleContext: mod, sectionContext: sec, nodes, nodeDetails: details });
+    const { agentId: id, agentName: name, agentDesc: desc, moduleContext: mod, sectionContext: sec, agentStatus: status, nodeList: nodes, nodeDetails: details, moduleSlug: msSlug, agentSlug: asSlug } = latestRef.current;
+    await saveAgent(id, { id, name: name || 'Untitled agent', description: desc, status, moduleContext: mod, sectionContext: sec, moduleSlug: msSlug, agentSlug: asSlug, nodes, nodeDetails: details });
     setShareModalOpen(true);
   }, []);
 
@@ -307,8 +350,8 @@ export default function AgentBuilder({
   /* ─── Always-fresh ref so publish never reads stale closure values ─── */
   const latestRef = useRef({});
   useEffect(() => {
-    latestRef.current = { agentId, agentName, agentDesc, moduleContext, sectionContext, agentStatus, nodeList, nodeDetails, templateId, templateSource };
-  }, [agentId, agentName, agentDesc, moduleContext, sectionContext, agentStatus, nodeList, nodeDetails, templateId, templateSource]);
+    latestRef.current = { agentId, agentName, agentDesc, moduleContext, sectionContext, agentStatus, nodeList, nodeDetails, templateId, templateSource, moduleSlug: agentModuleSlug, agentSlug };
+  }, [agentId, agentName, agentDesc, moduleContext, sectionContext, agentStatus, nodeList, nodeDetails, templateId, templateSource, agentModuleSlug, agentSlug]);
 
   /* ─── Auto-save to Firestore (debounced 1.5 s) ─── */
   const saveTimerRef = useRef(null);
@@ -316,8 +359,8 @@ export default function AgentBuilder({
     clearTimeout(saveTimerRef.current);
     if (!agentId || !agentName || viewOnly || isTemplateMode) return;
     saveTimerRef.current = setTimeout(() => {
-      const { agentId: id, agentName: name, agentDesc: desc, moduleContext: mod, sectionContext: sec, agentStatus: status, nodeList: nodes, nodeDetails: details } = latestRef.current;
-      saveAgent(id, { id, name, description: desc, status, moduleContext: mod, sectionContext: sec, nodes, nodeDetails: details });
+      const { agentId: id, agentName: name, agentDesc: desc, moduleContext: mod, sectionContext: sec, agentStatus: status, nodeList: nodes, nodeDetails: details, moduleSlug: msSlug, agentSlug: asSlug } = latestRef.current;
+      saveAgent(id, { id, name, description: desc, status, moduleContext: mod, sectionContext: sec, moduleSlug: msSlug, agentSlug: asSlug, nodes, nodeDetails: details });
     }, 1500);
     return () => clearTimeout(saveTimerRef.current);
   }, [agentName, nodeList, nodeDetails, agentId, moduleContext, sectionContext, agentStatus, isTemplateMode]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -339,7 +382,7 @@ export default function AgentBuilder({
   }, [initialDescription, templateId]);
 
   const buildAgentPayload = useCallback((status = 'Running') => {
-    const { agentId: id, agentName: name, agentDesc: desc, moduleContext: mod, sectionContext: sec, nodeList: nodes, nodeDetails: details } = latestRef.current;
+    const { agentId: id, agentName: name, agentDesc: desc, moduleContext: mod, sectionContext: sec, nodeList: nodes, nodeDetails: details, moduleSlug: msSlug, agentSlug: asSlug } = latestRef.current;
     const finalName = (name || details?.[START_NODE_ID]?.agentName || '').trim();
     if (!finalName) return null;
     return {
@@ -349,6 +392,8 @@ export default function AgentBuilder({
       status,
       moduleContext: mod,
       sectionContext: sec,
+      moduleSlug: msSlug,
+      agentSlug: asSlug,
       templateId,
       nodes,
       nodeDetails: details,
@@ -916,9 +961,27 @@ export default function AgentBuilder({
     />
   );
 
+  /* ─── Loading / not-found guards ─── */
+  if (isLoadingFromSlug) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', gap: 10, fontFamily: 'Roboto, sans-serif', fontSize: 15, color: '#555' }}>
+        <span className="material-symbols-outlined" style={{ fontSize: 24, color: '#8d9dca', animation: 'spin 1.5s linear infinite' }}>hourglass_empty</span>
+        <span>Loading agent…</span>
+      </div>
+    );
+  }
+
+  if (agentNotFound) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+        <EmptyStates title="Agent not found" description="This link is no longer valid or the agent has been deleted." />
+      </div>
+    );
+  }
+
   return (
     <AppShell
-      appTitle={appTitle}
+      appTitle={derivedAppTitle}
       pageTitle={editableName}
       activeNavId={navId}
       onNavChange={viewOnly ? undefined : setNavId}
@@ -968,7 +1031,12 @@ export default function AgentBuilder({
 
       {/* ─── Share modal ─── */}
       {shareModalOpen && (
-        <ShareModal agentId={agentId} onClose={() => setShareModalOpen(false)} />
+        <ShareModal
+          shareUrl={agentSlug && agentModuleSlug
+            ? `${window.location.origin}/view/${agentModuleSlug}/${agentSlug}`
+            : `${window.location.origin}/view/${agentId}`}
+          onClose={() => setShareModalOpen(false)}
+        />
       )}
 
     </AppShell>

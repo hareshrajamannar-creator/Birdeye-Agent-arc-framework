@@ -4,8 +4,11 @@ import {
   doc,
   setDoc,
   getDoc,
+  getDocs,
   deleteDoc,
   onSnapshot,
+  query,
+  where,
   serverTimestamp,
 } from 'firebase/firestore';
 
@@ -75,6 +78,18 @@ export async function getAgent(agentId) {
 // Delete an agent by id
 export function deleteAgent(agentId) {
   return deleteDoc(doc(db, COLLECTION, agentId));
+}
+
+// Fetch a single agent by moduleSlug + agentSlug
+export async function getAgentBySlug(moduleSlug, agentSlug) {
+  const q = query(
+    collection(db, COLLECTION),
+    where('agentSlug', '==', agentSlug),
+    where('moduleSlug', '==', moduleSlug)
+  );
+  const snap = await getDocs(q);
+  if (snap.empty) return null;
+  return restoreFromFirestore({ id: snap.docs[0].id, ...snap.docs[0].data() });
 }
 
 // Subscribe to all agents in real-time

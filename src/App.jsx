@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import { ReactFlowProvider } from '@xyflow/react';
 import AgentBuilder from './components/AgentBuilder/AgentBuilder';
 import AgentsDashboardTemplate from './components/Templates/AgentsDashboardTemplate/AgentsDashboardTemplate';
@@ -80,6 +81,9 @@ function mergeTemplates(defaultTemplates, savedTemplates, moduleId, sectionId) {
   return [...defaults, ...custom];
 }
 
+const toSlug = (name) =>
+  name.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
 /* ─── Primary nav items — Search AI inserted above Reviews ─── */
 const CUSTOM_NAV_ITEMS = [
   { id: 'overview',     label: 'Overview',     icon: 'home' },
@@ -103,14 +107,11 @@ const CUSTOM_NAV_ITEMS = [
 /* ─── App ─── */
 
 function App() {
+  const navigate = useNavigate();
   const [currentModule, setCurrentModule] = useState('reviews');
   const [activeL2Item, setActiveL2Item] = useState(() => getModuleNav('reviews').defaultItemId);
   const [agents, setAgents] = useState([]);
   const [savedTemplates, setSavedTemplates] = useState([]);
-  const [builderOpen, setBuilderOpen] = useState(false);
-  const [builderTemplate, setBuilderTemplate] = useState(null);
-  const [editingAgent, setEditingAgent] = useState(null);
-  const [builderAgentId, setBuilderAgentId] = useState(null);
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastTone, setToastTone] = useState('success');
@@ -175,17 +176,28 @@ function App() {
     setCurrentModule(moduleId);
     setActiveL2Item(nextNav.defaultItemId);
     setDashboardInitialTab('agents');
-    setBuilderOpen(false);
-    setBuilderTemplate(null);
-    setEditingAgent(null);
+    navigate('/');
   }
 
   /* ─── Agent builder open / close ─── */
-  function handleCreateAgent(template) {
-    setBuilderAgentId(crypto.randomUUID());
-    setBuilderTemplate(template || null);
-    setEditingAgent(null);
-    setBuilderOpen(true);
+  async function handleCreateAgent(template) {
+    const newId = crypto.randomUUID();
+    const moduleSlug = currentModule;
+    const agentSlug = toSlug(template?.title || 'agent') + '-' + Date.now().toString(36);
+    await saveAgent(newId, {
+      id: newId,
+      name: template?.title || '',
+      moduleSlug,
+      agentSlug,
+      moduleContext: currentModule,
+      sectionContext: activeL2Item,
+      status: 'Draft',
+      nodes: template?.nodes || null,
+      nodeDetails: template?.nodeDetails || null,
+      templateId: template?.id,
+      templateSource: template?.source,
+    });
+    navigate(`/${moduleSlug}/agents/${agentSlug}`);
   }
 
   function handleUseTemplate(templateId) {
@@ -269,27 +281,31 @@ function App() {
     await saveAgent(agentId, { ...rest, [field]: value });
   }
 
-  function handleOpenAgent(agentId) {
+  async function handleOpenAgent(agentId) {
     const agent = agents.find((a) => a.id === agentId);
     if (!agent) return;
-    setBuilderAgentId(agentId);
-    setEditingAgent(agent);
-    setBuilderTemplate(null);
-    setBuilderOpen(true);
+    if (agent.agentSlug && agent.moduleSlug) {
+      navigate(`/${agent.moduleSlug}/agents/${agent.agentSlug}`);
+    } else {
+      const moduleSlug = agent.moduleContext || currentModule;
+      const agentSlug = toSlug(agent.name || 'agent') + '-' + Date.now().toString(36);
+      const { updatedAt, ...rest } = agent;
+      await saveAgent(agent.id, { ...rest, moduleSlug, agentSlug });
+      navigate(`/${moduleSlug}/agents/${agentSlug}`);
+    }
   }
 
   /* ─── Save / Publish ─── */
   function handleSaveAgent(isPublish = false, publishedAgent = null) {
     if (publishedAgent) {
+      if (publishedAgent.moduleContext) setCurrentModule(publishedAgent.moduleContext);
       setAgents((prev) => {
         const entry = { ...publishedAgent, updatedAt: { seconds: Math.floor(Date.now() / 1000) } };
         const rest = prev.filter((a) => a.id !== publishedAgent.id);
         return [entry, ...rest];
       });
     }
-    setBuilderOpen(false);
-    setBuilderTemplate(null);
-    setEditingAgent(null);
+    navigate('/');
     if (isPublish) {
       showToast('Agent published successfully');
     }
@@ -309,13 +325,18 @@ function App() {
 
   async function handleImportAgent(data) {
     const agentId = crypto.randomUUID();
+    const moduleSlug = data.moduleContext || currentModule;
+    const agentSlug = toSlug(data.name || 'agent') + '-' + Date.now().toString(36);
     const imported = {
       ...data,
       id: agentId,
       moduleContext: data.moduleContext || currentModule,
+      moduleSlug,
+      agentSlug,
       status: data.status || 'Draft',
     };
     await saveAgent(agentId, imported);
+    navigate(`/${moduleSlug}/agents/${agentSlug}`);
   }
 
   /* ─── Duplicate agent ─── */
@@ -323,8 +344,11 @@ function App() {
     const full = agents.find((a) => a.id === agentId);
     if (!full) return;
     const newId = crypto.randomUUID();
+    const newName = `Copy of ${full.name || 'Untitled'}`;
+    const moduleSlug = full.moduleSlug || full.moduleContext || currentModule;
+    const agentSlug = toSlug(newName) + '-' + Date.now().toString(36);
     const { updatedAt, ...rest } = full;
-    await saveAgent(newId, { ...rest, id: newId, name: `Copy of ${full.name || 'Untitled'}`, status: 'Draft' });
+    await saveAgent(newId, { ...rest, id: newId, name: newName, moduleSlug, agentSlug, status: 'Draft' });
     showToast('Agent duplicated');
   }
 
@@ -404,7 +428,7 @@ function App() {
     setTemplateShareUrl(`${window.location.origin}/view/template/${template.id}`);
   }
 
-  /* ─── Toast portal (always mounted so it survives builder unmount) ─── */
+  /* ─── Toast portal (always mounted so it survives route changes) ─── */
   const toast = toastVisible
     ? ReactDOM.createPortal(
         <div className={`${styles.toast} ${toastTone === 'error' ? styles.toastError : ''}`}>
@@ -415,78 +439,60 @@ function App() {
       )
     : null;
 
-  /* ─── View-only shared agent route ─── */
-  if (window.location.pathname.startsWith('/view/')) {
-    return <AgentViewerPage />;
-  }
-
-  /* ─── Builder view ─── */
-  if (builderOpen) {
-    return (
-      <>
-        <ReactFlowProvider>
-          <AgentBuilder
-            agentId={builderAgentId}
-            moduleContext={currentModule}
-            sectionContext={editingAgent?.sectionContext || activeL2Item}
-            templateId={!editingAgent ? builderTemplate?.id : undefined}
-            templateSource={!editingAgent ? builderTemplate?.source : undefined}
-            initialStatus={editingAgent?.status || 'Draft'}
-            appTitle={moduleNav.title}
-            pageTitle={editingAgent?.name || builderTemplate?.title || 'Untitled agent'}
-            activeNavId={currentModule}
-            initialDescription={editingAgent?.description || builderTemplate?.description || ''}
-            initialNodes={editingAgent?.nodes || builderTemplate?.nodes || null}
-            initialNodeDetails={editingAgent?.nodeDetails || builderTemplate?.nodeDetails || null}
-            onSaveAgent={handleSaveAgent}
-            onSaveTemplate={handleSaveTemplate}
-            onClose={() => {
-              setBuilderOpen(false);
-              setBuilderTemplate(null);
-              setEditingAgent(null);
-            }}
-          />
-        </ReactFlowProvider>
-        {toast}
-      </>
-    );
-  }
-
-  /* ─── Dashboard ─── */
   const showDashboard = isAgentSection(activeL2Item);
+
+  const dashboardElement = (
+    <AgentsDashboardTemplate
+      navItems={CUSTOM_NAV_ITEMS}
+      navTitle={moduleNav.title}
+      ctaLabel={moduleNav.ctaLabel}
+      menuItems={moduleNav.menuItems}
+      pageTitle={getPageTitle(activeL2Item, moduleNav)}
+      activeNavId={currentModule}
+      activeMenuItemId={activeL2Item}
+      agents={moduleAgents}
+      templates={moduleTemplates}
+      initialActiveTab={dashboardInitialTab}
+      showDashboard={showDashboard}
+      onCreateAgent={() => handleCreateAgent()}
+      onCreateTemplate={handleCreateTemplate}
+      onDeleteTemplate={handleDeleteTemplate}
+      onSaveTemplate={handleSaveTemplate}
+      onUseTemplate={handleUseTemplate}
+      onShareTemplate={handleShareTemplate}
+      onDuplicateTemplate={handleDuplicateTemplate}
+      onMoveTemplate={handleRequestMoveTemplate}
+      onDuplicateAgent={handleDuplicateAgent}
+      onMoveAgent={handleRequestMoveAgent}
+      onNavChange={handleModuleChange}
+      onMenuItemClick={handleL2ItemClick}
+      onOpenAgent={handleOpenAgent}
+      onDeleteAgent={handleDeleteAgent}
+      onAgentUpdate={handleAgentUpdate}
+      onExportAgent={handleExportAgent}
+      onImportAgent={handleImportAgent}
+    />
+  );
+
+  const builderElement = (
+    <ReactFlowProvider>
+      <AgentBuilder
+        onSaveAgent={handleSaveAgent}
+        onSaveTemplate={handleSaveTemplate}
+        onClose={() => navigate('/')}
+      />
+    </ReactFlowProvider>
+  );
 
   return (
     <>
-      <AgentsDashboardTemplate
-        navItems={CUSTOM_NAV_ITEMS}
-        navTitle={moduleNav.title}
-        ctaLabel={moduleNav.ctaLabel}
-        menuItems={moduleNav.menuItems}
-        pageTitle={getPageTitle(activeL2Item, moduleNav)}
-        activeNavId={currentModule}
-        activeMenuItemId={activeL2Item}
-        agents={moduleAgents}
-        templates={moduleTemplates}
-        initialActiveTab={dashboardInitialTab}
-        showDashboard={showDashboard}
-        onCreateAgent={() => handleCreateAgent()}
-        onCreateTemplate={handleCreateTemplate}
-        onDeleteTemplate={handleDeleteTemplate}
-        onSaveTemplate={handleSaveTemplate}
-        onUseTemplate={handleUseTemplate}
-        onShareTemplate={handleShareTemplate}
-        onDuplicateTemplate={handleDuplicateTemplate}
-        onMoveTemplate={handleRequestMoveTemplate}
-        onDuplicateAgent={handleDuplicateAgent}
-        onMoveAgent={handleRequestMoveAgent}
-        onNavChange={handleModuleChange}
-        onMenuItemClick={handleL2ItemClick}
-        onOpenAgent={handleOpenAgent}
-        onDeleteAgent={handleDeleteAgent}
-        onAgentUpdate={handleAgentUpdate}
-        onExportAgent={handleExportAgent}
-        onImportAgent={handleImportAgent}
-      />
+      <Routes>
+        <Route path="/" element={dashboardElement} />
+        <Route path="/:moduleSlug/agents/:agentSlug" element={builderElement} />
+        <Route path="/view/template/:templateId" element={<AgentViewerPage />} />
+        <Route path="/view/:moduleSlug/:agentSlug" element={<AgentViewerPage />} />
+        <Route path="/view/:agentId" element={<AgentViewerPage />} />
+      </Routes>
       {templateShareUrl && (
         <ShareModal shareUrl={templateShareUrl} onClose={() => setTemplateShareUrl(null)} />
       )}
