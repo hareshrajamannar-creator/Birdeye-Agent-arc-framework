@@ -151,6 +151,30 @@ function App() {
   }, []);
 
   const moduleNav = getModuleNav(currentModule);
+
+  /* ─── Merge Firestore agent groups into L2 nav items ─── */
+  const menuItemsWithGroups = useMemo(() => {
+    const dynamicGroups = agents
+      .filter((a) => a.isAgentGroup === true && (a.moduleContext === currentModule || a.moduleSlug === currentModule))
+      .map((a) => ({ id: a.agentSlug || a.id, label: a.name || 'Untitled' }));
+
+    return moduleNav.menuItems.map((item) => {
+      if (item.id !== 'agents') return item;
+      return { ...item, children: [...(item.children || []), ...dynamicGroups] };
+    });
+  }, [moduleNav.menuItems, agents, currentModule]);
+
+  /* ─── Page title — includes dynamic group names ─── */
+  const pageTitle = useMemo(() => {
+    const fromNav = moduleNav.menuItems
+      .flatMap((item) => item.children || [item])
+      .find((item) => item.id === activeL2Item);
+    if (fromNav?.label) return fromNav.label;
+    const fromGroup = agents.find((a) => a.agentSlug === activeL2Item && a.isAgentGroup === true);
+    if (fromGroup?.name) return fromGroup.name;
+    return `${formatTitle(activeL2Item || 'agents')} agents`;
+  }, [activeL2Item, moduleNav, agents]);
+
   const defaultModuleTemplates = useMemo(
     () => getModuleTemplates(currentModule, activeL2Item).map((template) => withTemplateContext(template, currentModule, activeL2Item)),
     [currentModule, activeL2Item]
@@ -273,6 +297,37 @@ function App() {
 
   function handleDeleteAgent(agentId) {
     deleteAgent(agentId);
+  }
+
+  /* ─── Agent group create / delete ─── */
+  async function handleGroupCreate(name) {
+    const groupId = 'agent-' + Date.now().toString(36);
+    const groupSlug = toSlug(name) + '-' + Date.now().toString(36);
+    await saveAgent(groupId, {
+      id: groupId,
+      name,
+      moduleSlug: currentModule,
+      moduleContext: currentModule,
+      agentSlug: groupSlug,
+      isAgentGroup: true,
+      nodes: [],
+      nodeDetails: {},
+      status: 'Draft',
+    });
+    setActiveL2Item(groupSlug);
+    navigate('/');
+  }
+
+  async function handleGroupDelete(itemId) {
+    const group = agents.find(
+      (a) => (a.agentSlug === itemId || a.id === itemId) && a.isAgentGroup === true
+    );
+    if (group) {
+      await deleteAgent(group.id);
+    }
+    if (activeL2Item === itemId) {
+      setActiveL2Item(moduleNav.defaultItemId);
+    }
   }
 
   async function handleAgentUpdate(agentId, field, value) {
@@ -448,8 +503,8 @@ function App() {
       navItems={CUSTOM_NAV_ITEMS}
       navTitle={moduleNav.title}
       ctaLabel={moduleNav.ctaLabel}
-      menuItems={moduleNav.menuItems}
-      pageTitle={getPageTitle(activeL2Item, moduleNav)}
+      menuItems={menuItemsWithGroups}
+      pageTitle={pageTitle}
       activeNavId={currentModule}
       activeMenuItemId={activeL2Item}
       agents={moduleAgents}
@@ -468,6 +523,8 @@ function App() {
       onMoveAgent={handleRequestMoveAgent}
       onNavChange={handleModuleChange}
       onMenuItemClick={handleL2ItemClick}
+      onGroupCreate={handleGroupCreate}
+      onGroupDelete={handleGroupDelete}
       onOpenAgent={handleOpenAgent}
       onDeleteAgent={handleDeleteAgent}
       onAgentUpdate={handleAgentUpdate}

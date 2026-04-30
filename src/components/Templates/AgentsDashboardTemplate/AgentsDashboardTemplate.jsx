@@ -209,6 +209,8 @@ export default function AgentsDashboardTemplate({
   navItems,
   onNavChange,
   onMenuItemClick,
+  onGroupCreate,
+  onGroupDelete,
 }) {
   const [activeTab, setActiveTab] = useState(initialActiveTab || tabs[0]?.id);
   const [libraryView, setLibraryView] = useState('grid');
@@ -243,7 +245,8 @@ export default function AgentsDashboardTemplate({
         activeItemId={activeMenuItemId}
         onItemClick={onMenuItemClick}
         onCtaClick={onCreateAgent}
-        currentModule={activeNavId}
+        onGroupCreate={onGroupCreate}
+        onGroupDelete={onGroupDelete}
       />
 
       {/* Main column */}
@@ -415,4 +418,6 @@ AgentsDashboardTemplate.propTypes = {
   navItems: PropTypes.array,
   onNavChange: PropTypes.func,
   onMenuItemClick: PropTypes.func,
+  onGroupCreate: PropTypes.func,
+  onGroupDelete: PropTypes.func,
 };

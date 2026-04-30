@@ -130,6 +130,46 @@
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
 }
 
+/* ─── Plus button — Agents section header row only, LEFT of chevron ─── */
+.addBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 3px;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.12s, background 0.12s;
+  color: #555;
+}
+
+.addBtnIcon {
+  font-size: 16px !important;
+  line-height: 1;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+}
+
+/* Show plus on section row hover */
+.sectionRow:hover .addBtn {
+  opacity: 1;
+}
+
+/* Always visible when section has an active child */
+.addBtnVisible {
+  opacity: 1;
+}
+
+.addBtn:hover {
+  opacity: 1;
+  background: #e0e5ee;
+  color: #1976d2;
+}
+
 /* ─── Child row (sub-item) ─── */
 .childRow {
   display: flex;
@@ -163,6 +203,40 @@
   text-align: left;
 }
 
+/* ─── Delete (close) button — Agents child rows, not active ─── */
+.deleteBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 3px;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.12s, background 0.12s;
+  color: #888;
+}
+
+.deleteBtnIcon {
+  font-size: 14px !important;
+  line-height: 1;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+}
+
+.childRow:hover .deleteBtn {
+  opacity: 1;
+}
+
+.deleteBtn:hover {
+  background: #fde8e8;
+  color: #b42318;
+  opacity: 1;
+}
+
 /* ─── Standalone nav item (no children) ─── */
 .standaloneRow {
   display: flex;
@@ -192,46 +266,6 @@
   text-align: left;
 }
 
-/* ─── Plus button (agents rows only) ─── */
-.addBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  padding: 0;
-  border: none;
-  background: none;
-  cursor: pointer;
-  border-radius: 3px;
-  flex-shrink: 0;
-  opacity: 0;
-  transition: opacity 0.12s, background 0.12s;
-  color: #555;
-}
-
-.addBtnIcon {
-  font-size: 16px !important;
-  line-height: 1;
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
-}
-
-/* Show plus on row hover or when its section is active */
-.sectionRow:hover .addBtn,
-.childRow:hover .addBtn {
-  opacity: 1;
-}
-
-.childRow--active .addBtn {
-  opacity: 1;
-}
-
-.addBtn:hover {
-  opacity: 1;
-  background: #e0e5ee;
-  color: #1976d2;
-}
-
 /* ─── Inline create input row ─── */
 .createRow {
   display: flex;
@@ -257,4 +291,91 @@
 
 .createInput::placeholder {
   color: #aaa;
+}
+
+/* ─── Confirmation modal ─── */
+.confirmBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(33, 33, 33, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+}
+
+.confirmDialog {
+  background: #ffffff;
+  border-radius: 8px;
+  width: 340px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  font-family: 'Roboto', sans-serif;
+  overflow: hidden;
+}
+
+.confirmHeader {
+  padding: 20px 24px 12px;
+  border-bottom: 1px solid #e5e9f0;
+}
+
+.confirmTitle {
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: -0.32px;
+  color: #212121;
+}
+
+.confirmBody {
+  padding: 16px 24px;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: -0.28px;
+  color: #555;
+  margin: 0;
+}
+
+.confirmFooter {
+  padding: 8px 24px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.confirmCancelBtn {
+  height: 36px;
+  padding: 0 20px;
+  background: #ffffff;
+  color: #212121;
+  border: 1px solid #ccd5e4;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Roboto', sans-serif;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.confirmCancelBtn:hover {
+  background: #f5f5f5;
+}
+
+.confirmRemoveBtn {
+  height: 36px;
+  padding: 0 20px;
+  background: #b42318;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Roboto', sans-serif;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.confirmRemoveBtn:hover {
+  background: #8e1a11;
 }

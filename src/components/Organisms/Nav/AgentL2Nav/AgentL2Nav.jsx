@@ -1,11 +1,7 @@
 import React, { useState, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
-import { useNavigate } from 'react-router-dom';
-import { saveAgent } from '../../../../services/agentService';
 import styles from './AgentL2Nav.module.css';
-
-const toSlug = (name) =>
-  name.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
 export default function AgentL2Nav({
   title = 'ReviewsAI',
@@ -14,14 +10,15 @@ export default function AgentL2Nav({
   ctaLabel = 'Send a review request',
   onCtaClick,
   onItemClick,
-  currentModule = 'reviews',
+  onGroupCreate,
+  onGroupDelete,
 }) {
-  const navigate = useNavigate();
   const [expandedIds, setExpandedIds] = useState(
     () => new Set(menuItems.filter((i) => i.defaultExpanded).map((i) => i.id))
   );
-  const [creatingIn, setCreatingIn] = useState(null); // { parentId, sectionId }
-  const [newAgentName, setNewAgentName] = useState('');
+  const [creating, setCreating] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
   const inputRef = useRef(null);
 
   function toggleExpand(id) {
@@ -33,164 +30,202 @@ export default function AgentL2Nav({
     });
   }
 
-  function openCreate(parentId, sectionId, e) {
+  function openCreate(parentId, e) {
     e.stopPropagation();
-    // Ensure the parent section is expanded
     setExpandedIds((prev) => {
       const next = new Set(prev);
       next.add(parentId);
       return next;
     });
-    setCreatingIn({ parentId, sectionId });
-    setNewAgentName('');
+    setCreating(true);
+    setNewGroupName('');
     setTimeout(() => inputRef.current?.focus(), 0);
   }
 
   function cancelCreate() {
-    setCreatingIn(null);
-    setNewAgentName('');
+    setCreating(false);
+    setNewGroupName('');
   }
 
-  async function commitCreate() {
-    const name = newAgentName.trim();
-    const sectionId = creatingIn?.sectionId;
-    setCreatingIn(null);
-    setNewAgentName('');
-    if (!name || !sectionId) return;
-
-    const agentId = 'agent-' + Date.now().toString(36);
-    const agentSlug = toSlug(name) + '-' + Date.now().toString(36);
-
-    await saveAgent(agentId, {
-      id: agentId,
-      name,
-      moduleSlug: currentModule,
-      moduleContext: currentModule,
-      sectionContext: sectionId,
-      agentSlug,
-      nodes: null,
-      nodeDetails: {},
-      status: 'Draft',
-    });
-
-    navigate(`/${currentModule}/agents/${agentSlug}`);
+  function commitCreate() {
+    const name = newGroupName.trim();
+    setCreating(false);
+    setNewGroupName('');
+    if (!name) return;
+    onGroupCreate?.(name);
   }
 
-  function handleKeyDown(e) {
+  function handleInputKeyDown(e) {
     if (e.key === 'Enter') commitCreate();
     else if (e.key === 'Escape') cancelCreate();
   }
 
-  function handleBlur() {
-    if (!newAgentName.trim()) cancelCreate();
+  function handleInputBlur() {
+    if (!newGroupName.trim()) cancelCreate();
     else commitCreate();
   }
 
-  const isAgentsSection = (item) => item.id === 'agents';
+  function handleDeleteClick(child, e) {
+    e.stopPropagation();
+    setDeleteConfirm({ id: child.id, label: child.label });
+  }
+
+  function confirmDelete() {
+    if (!deleteConfirm) return;
+    onGroupDelete?.(deleteConfirm.id);
+    setDeleteConfirm(null);
+  }
+
+  const confirmModal = deleteConfirm
+    ? ReactDOM.createPortal(
+        <div className={styles.confirmBackdrop} onClick={() => setDeleteConfirm(null)}>
+          <div className={styles.confirmDialog} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.confirmHeader}>
+              <span className={styles.confirmTitle}>Remove agent?</span>
+            </div>
+            <p className={styles.confirmBody}>
+              This will permanently remove <strong>{deleteConfirm.label}</strong> and all its
+              workflows. This cannot be undone.
+            </p>
+            <div className={styles.confirmFooter}>
+              <button
+                className={styles.confirmCancelBtn}
+                type="button"
+                onClick={() => setDeleteConfirm(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className={styles.confirmRemoveBtn}
+                type="button"
+                onClick={confirmDelete}
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )
+    : null;
 
   return (
-    <nav className={styles.nav}>
-      {/* Title */}
-      <div className={styles.titleBar}>
-        <span className={styles.titleText}>{title}</span>
-      </div>
+    <>
+      <nav className={styles.nav}>
+        {/* Title */}
+        <div className={styles.titleBar}>
+          <span className={styles.titleText}>{title}</span>
+        </div>
 
-      {/* Body */}
-      <div className={styles.body}>
-        {/* CTA */}
-        <button className={styles.ctaBtn} onClick={onCtaClick}>
-          <span className={styles.ctaLabel}>{ctaLabel}</span>
-          <div className={styles.ctaDot}>
-            <span className={`material-symbols-outlined ${styles.ctaDotIcon}`}>add</span>
-          </div>
-        </button>
+        {/* Body */}
+        <div className={styles.body}>
+          {/* CTA */}
+          <button className={styles.ctaBtn} onClick={onCtaClick}>
+            <span className={styles.ctaLabel}>{ctaLabel}</span>
+            <div className={styles.ctaDot}>
+              <span className={`material-symbols-outlined ${styles.ctaDotIcon}`}>add</span>
+            </div>
+          </button>
 
-        {/* Menu items */}
-        <div className={styles.menuList}>
-          {menuItems.map((item) => {
-            const isExpanded = expandedIds.has(item.id);
-            const isAgents = isAgentsSection(item);
+          {/* Menu items */}
+          <div className={styles.menuList}>
+            {menuItems.map((item) => {
+              const isExpanded = expandedIds.has(item.id);
+              const isAgents = item.id === 'agents';
+              const sectionHasActiveChild = isAgents && item.children?.some((c) => c.id === activeItemId);
 
-            if (item.children) {
-              return (
-                <div key={item.id} className={styles.sectionWrap}>
-                  {/* Section header row */}
-                  <button
-                    className={styles.sectionRow}
-                    onClick={() => toggleExpand(item.id)}
-                  >
-                    <span className={styles.sectionLabel}>{item.label}</span>
-                    <span className={`material-symbols-outlined ${styles.chevron}`}>
-                      {isExpanded ? 'expand_less' : 'expand_more'}
-                    </span>
-                    {isAgents && (
-                      <button
-                        className={styles.addBtn}
-                        title="New agent"
-                        onClick={(e) => openCreate(item.id, item.children[0]?.id || item.id, e)}
-                      >
-                        <span className={`material-symbols-outlined ${styles.addBtnIcon}`}>add</span>
-                      </button>
-                    )}
-                  </button>
+              if (item.children) {
+                return (
+                  <div key={item.id} className={styles.sectionWrap}>
+                    {/* Section header row */}
+                    <button
+                      className={styles.sectionRow}
+                      onClick={() => toggleExpand(item.id)}
+                    >
+                      <span className={styles.sectionLabel}>{item.label}</span>
 
-                  {/* Expanded children */}
-                  {isExpanded && (
-                    <>
-                      {/* Inline create input — shown at top of Agents section */}
-                      {isAgents && creatingIn?.parentId === item.id && (
-                        <div className={styles.createRow}>
-                          <input
-                            ref={inputRef}
-                            className={styles.createInput}
-                            value={newAgentName}
-                            placeholder="Agent name"
-                            onChange={(e) => setNewAgentName(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            onBlur={handleBlur}
-                          />
-                        </div>
+                      {/* Plus icon — Agents section only, LEFT of chevron */}
+                      {isAgents && (
+                        <button
+                          className={`${styles.addBtn} ${sectionHasActiveChild ? styles.addBtnVisible : ''}`}
+                          type="button"
+                          title="New agent group"
+                          onClick={(e) => openCreate(item.id, e)}
+                        >
+                          <span className={`material-symbols-outlined ${styles.addBtnIcon}`}>add</span>
+                        </button>
                       )}
 
-                      {item.children.map((child) => (
-                        <button
-                          key={child.id}
-                          className={`${styles.childRow} ${activeItemId === child.id ? styles['childRow--active'] : ''}`}
-                          onClick={() => onItemClick?.(child.id)}
-                        >
-                          <span className={styles.childLabel}>{child.label}</span>
-                          {isAgents && (
-                            <button
-                              className={styles.addBtn}
-                              title="New agent"
-                              onClick={(e) => openCreate(item.id, child.id, e)}
-                            >
-                              <span className={`material-symbols-outlined ${styles.addBtnIcon}`}>add</span>
-                            </button>
-                          )}
-                        </button>
-                      ))}
-                    </>
-                  )}
-                </div>
-              );
-            }
+                      <span className={`material-symbols-outlined ${styles.chevron}`}>
+                        {isExpanded ? 'expand_less' : 'expand_more'}
+                      </span>
+                    </button>
 
-            /* Standalone row (no children) */
-            return (
-              <button
-                key={item.id}
-                className={styles.standaloneRow}
-                onClick={() => onItemClick?.(item.id)}
-              >
-                <span className={styles.standaloneLabel}>{item.label}</span>
-                <span className={`material-symbols-outlined ${styles.chevron}`}>expand_more</span>
-              </button>
-            );
-          })}
+                    {/* Expanded children */}
+                    {isExpanded && (
+                      <>
+                        {/* Inline create input — top of Agents list */}
+                        {isAgents && creating && (
+                          <div className={styles.createRow}>
+                            <input
+                              ref={inputRef}
+                              className={styles.createInput}
+                              value={newGroupName}
+                              placeholder="Agent name"
+                              onChange={(e) => setNewGroupName(e.target.value)}
+                              onKeyDown={handleInputKeyDown}
+                              onBlur={handleInputBlur}
+                            />
+                          </div>
+                        )}
+
+                        {item.children.map((child) => {
+                          const isActive = activeItemId === child.id;
+                          return (
+                            <button
+                              key={child.id}
+                              className={`${styles.childRow} ${isActive ? styles['childRow--active'] : ''}`}
+                              onClick={() => onItemClick?.(child.id)}
+                            >
+                              <span className={styles.childLabel}>{child.label}</span>
+                              {/* Close icon — Agents section children, not on active row */}
+                              {isAgents && !isActive && (
+                                <button
+                                  className={styles.deleteBtn}
+                                  type="button"
+                                  title="Remove agent group"
+                                  onClick={(e) => handleDeleteClick(child, e)}
+                                >
+                                  <span className={`material-symbols-outlined ${styles.deleteBtnIcon}`}>close</span>
+                                </button>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </>
+                    )}
+                  </div>
+                );
+              }
+
+              /* Standalone row (no children) */
+              return (
+                <button
+                  key={item.id}
+                  className={styles.standaloneRow}
+                  onClick={() => onItemClick?.(item.id)}
+                >
+                  <span className={styles.standaloneLabel}>{item.label}</span>
+                  <span className={`material-symbols-outlined ${styles.chevron}`}>expand_more</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+
+      {confirmModal}
+    </>
   );
 }
 
@@ -209,5 +244,6 @@ AgentL2Nav.propTypes = {
   ctaLabel: PropTypes.string,
   onCtaClick: PropTypes.func,
   onItemClick: PropTypes.func,
-  currentModule: PropTypes.string,
+  onGroupCreate: PropTypes.func,
+  onGroupDelete: PropTypes.func,
 };
