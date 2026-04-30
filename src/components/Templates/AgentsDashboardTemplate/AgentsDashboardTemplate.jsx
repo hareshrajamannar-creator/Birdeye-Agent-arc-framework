@@ -4,7 +4,7 @@ import Button from '@birdeye/elemental/core/atoms/Button/index.js';
 import Avatar from '@birdeye/elemental/core/atoms/Avatar/index.js';
 import TabHeader from '@birdeye/elemental/core/atoms/TabHeader/index.js';
 import PrimaryRailNav from '../../Organisms/Nav/PrimaryRailNav/PrimaryRailNav';
-import SecondaryRailNav from '../../Organisms/Nav/SecondaryRailNav/SecondaryRailNav';
+import AgentL2Nav from '../../Organisms/Nav/AgentL2Nav/AgentL2Nav';
 import MetricsGroup from '../../Organisms/MetricsGroup/MetricsGroup';
 import AgentsTable from '../../Organisms/DataViews/AgentsTable/AgentsTable';
 import TemplateLibrary from '../../Organisms/TemplateLibrary/TemplateLibrary';
@@ -236,12 +236,14 @@ export default function AgentsDashboardTemplate({
       />
 
       {/* Secondary Rail Nav */}
-      <SecondaryRailNav
+      <AgentL2Nav
         title={navTitle}
         ctaLabel={ctaLabel}
         menuItems={menuItems}
         activeItemId={activeMenuItemId}
         onItemClick={onMenuItemClick}
+        onCtaClick={onCreateAgent}
+        currentModule={activeNavId}
       />
 
       {/* Main column */}
