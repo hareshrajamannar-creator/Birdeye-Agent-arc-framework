@@ -139,7 +139,7 @@ function TemplateGridCard({ template, onDelete, onEdit, onSave, onUse, onShare, 
         <p className={`${styles.description} ${styles.clampDescription}`}>{template.description}</p>
       </div>
       <div className={styles.cardActions}>
-        <Button type="primary" size="small" label="Use agent" onClick={() => onUse?.(template.id)} />
+        <Button type="primary" size="small" label="Edit template" onClick={() => onUse?.(template.id)} />
         <CardMenu
           template={template}
           onShare={onShare}
@@ -195,7 +195,7 @@ function TemplateListView({ templates, onCreateTemplate, onDeleteTemplate, onSav
             <span className={styles.rowDescription}>{template.description}</span>
           </div>
           <div className={styles.rowActions}>
-            <Button type="primary" size="small" label="Use agent" onClick={() => onUseTemplate?.(template.id)} />
+            <Button type="primary" size="small" label="Edit template" onClick={() => onUseTemplate?.(template.id)} />
             <CardMenu
               template={template}
               onShare={onShareTemplate}
