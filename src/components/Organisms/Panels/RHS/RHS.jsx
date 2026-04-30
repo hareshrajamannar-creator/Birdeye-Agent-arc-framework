@@ -97,7 +97,7 @@ export default function RHS({ variant = 'agentDetails', title, bodyProps, onClos
         <RHSSidePanelHeader
           title={title || 'Title'}
           onPreview={viewOnly ? undefined : onPreview}
-          onExpand={viewOnly ? undefined : handleExpand}
+          onExpand={handleExpand}
           onClose={onClose}
           showActions={viewOnly ? false : config.showActions}
         />
@@ -107,11 +107,13 @@ export default function RHS({ variant = 'agentDetails', title, bodyProps, onClos
           overflowY: 'auto',
           padding: '16px 15px',
           boxSizing: 'border-box',
-          pointerEvents: viewOnly ? 'none' : undefined,
-          userSelect: viewOnly ? 'text' : undefined,
-          opacity: viewOnly ? 0.85 : 1,
         }}>
-          <Body {...(bodyProps || {})} />
+          <div style={{
+            pointerEvents: viewOnly ? 'none' : undefined,
+            userSelect: viewOnly ? 'text' : undefined,
+          }}>
+            <Body {...(bodyProps || {})} />
+          </div>
         </div>
 
         {viewOnly ? (

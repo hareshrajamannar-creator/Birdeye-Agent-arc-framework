@@ -256,6 +256,15 @@
   border-color: #1976d2 !important;
 }
 
+.lhs-drawer__card--view-only {
+  cursor: default !important;
+}
+
+.lhs-drawer__card--view-only:hover {
+  background: #fff !important;
+  border-color: #e5e9f0 !important;
+}
+
 .lhs-drawer__card-icon {
   flex-shrink: 0 !important;
   color: #212121 !important;

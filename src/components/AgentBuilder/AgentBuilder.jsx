@@ -933,11 +933,9 @@ export default function AgentBuilder({
         )}
 
         <div className="agent-builder">
-          {!viewOnly && (
-            <div className="agent-builder__lhs">
-              <LHSDrawer defaultTab="Create manually" triggerOpen tasksOpen={false} controlsOpen={false} />
-            </div>
-          )}
+          <div className="agent-builder__lhs">
+            <LHSDrawer defaultTab="Create manually" triggerOpen tasksOpen={false} controlsOpen={false} viewOnly={viewOnly} />
+          </div>
 
           <div className={`agent-builder__canvas${drawerOpen ? ' agent-builder__canvas--with-rhs' : ''}`}>
             <FlowCanvas

@@ -176,7 +176,7 @@ export const CONTROL_CARDS = [
 const INITIAL_SUB_ITEMS = { ...TRIGGER_SUB_ITEMS, ...TASK_SUB_ITEMS };
 
 /* ─── Card Row ─── */
-export function CardRow({ label, icon, action, isActive, onClick, onHover, cardRef, nodeType }) {
+export function CardRow({ label, icon, action, isActive, onClick, onHover, cardRef, nodeType, viewOnly }) {
   const handleDragStart = (e) => {
     e.dataTransfer.setData('application/reactflow-type', nodeType);
     e.dataTransfer.setData('application/reactflow-label', label);
@@ -184,14 +184,16 @@ export function CardRow({ label, icon, action, isActive, onClick, onHover, cardR
     e.dataTransfer.effectAllowed = 'copy';
   };
 
+  const isDraggable = action === 'drag' && !viewOnly;
+
   return (
     <div
       ref={cardRef}
-      className={`lhs-drawer__card ${action === 'drag' ? 'lhs-drawer__card--drag' : ''} ${isActive ? 'lhs-drawer__card--active' : ''}`}
+      className={`lhs-drawer__card ${action === 'drag' ? 'lhs-drawer__card--drag' : ''} ${isActive ? 'lhs-drawer__card--active' : ''} ${viewOnly ? 'lhs-drawer__card--view-only' : ''}`}
       onClick={onClick}
       onMouseEnter={onHover}
-      draggable={action === 'drag'}
-      onDragStart={action === 'drag' ? handleDragStart : undefined}
+      draggable={isDraggable}
+      onDragStart={isDraggable ? handleDragStart : undefined}
     >
       <span className="lhs-drawer__card-icon material-symbols-outlined">
         {icon}
@@ -222,6 +224,7 @@ const AI_OPTIONS = [
 export default function LHSDrawer({
   defaultTab = 'Create manually',
   defaultOpenSection = 'Trigger',
+  viewOnly = false,
 }) {
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [openSection, setOpenSection] = useState(defaultOpenSection);
@@ -280,6 +283,7 @@ export default function LHSDrawer({
               onClick={() => {}}
               onHover={() => handleCardHover(card, section, card.subKey)}
               cardRef={(el) => { cardRefs.current[`${section}-${card.label}`] = el; }}
+              viewOnly={viewOnly}
             />
           </div>
         );
