@@ -190,7 +190,51 @@ explicitly before proceeding and confirm the approach is safe.
 
 ---
 
-## 11. Do not repeat the same mistakes
+## 11. Dropdown menus — one canonical style everywhere
+
+All three-dots / more-options dropdown menus must match the style established
+in `AgentBuilder.css` (`.ab-header-menu` / `.ab-header-menu-item`). Never
+invent a different look for a new context.
+
+**Required values — copy these exactly:**
+
+```css
+/* Container */
+background: #fff;
+border: 1px solid #e5e9f0;
+border-radius: 6px;
+box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+min-width: 160px;
+overflow: hidden;          /* clips hover state to rounded corners */
+
+/* Item */
+padding: 10px 14px;
+font-size: 13px;
+color: #212121;
+gap: 8px;
+transition: background 0.12s;
+
+/* Item hover */
+background: #f4f6f7;       /* neutral grey — NOT blue-tinted */
+
+/* Icon inside item */
+font-size: 16px;
+color: #666;               /* NOT #555 */
+
+/* Destructive item only */
+color: #b42318;
+icon color: #b42318;
+hover background: #fde8e8;
+```
+
+The divider between normal and destructive items is a `1px solid #e5e9f0`
+rule — no margin. Do **not** use `padding: 4px 0` on the container; use
+`overflow: hidden` instead. Do **not** use blue hover (`#f5f8ff`) on any
+non-active menu item.
+
+---
+
+## 13. Do not repeat the same mistakes
 
 The following issues have been fixed multiple times. Never reintroduce them:
 
@@ -210,7 +254,7 @@ The following issues have been fixed multiple times. Never reintroduce them:
 
 ---
 
-## 12. Commit and push after every completed step
+## 14. Commit and push after every completed step
 
 ```bash
 git add <changed files>
@@ -224,7 +268,7 @@ Commit types: `feat`, `fix`, `refactor`, `chore`, `docs`, `style`, `test`
 
 ---
 
-## 13. Architecture reference
+## 15. Architecture reference
 
 ```
 AgentBuilder.jsx          — orchestrator: nodeList, nodeDetails, selectedNodeId,
