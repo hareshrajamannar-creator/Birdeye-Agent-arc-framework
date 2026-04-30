@@ -3,6 +3,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   onSnapshot,
   serverTimestamp,
   setDoc,
@@ -54,6 +55,12 @@ function restoreFromFirestore(value) {
     );
   }
   return value;
+}
+
+export async function getTemplate(templateId) {
+  const snap = await getDoc(doc(db, COLLECTION, templateId));
+  if (!snap.exists()) return null;
+  return restoreFromFirestore({ id: snap.id, ...snap.data() });
 }
 
 export function saveTemplate(templateId, template) {

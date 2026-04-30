@@ -8,6 +8,7 @@ import { getModuleTemplates } from './components/Modules/agentFrameworkData';
 import { getModuleNav } from './components/Modules/moduleNavigation';
 import { subscribeToAgents, deleteAgent, saveAgent } from './services/agentService';
 import { deleteTemplate, saveTemplate, subscribeToTemplates } from './services/templateService';
+import ShareModal from './components/Organisms/Modals/ShareModal/ShareModal';
 import styles from './App.module.css';
 import '@xyflow/react/dist/style.css';
 
@@ -93,6 +94,7 @@ function App() {
   const [toastMessage, setToastMessage] = useState('');
   const [toastTone, setToastTone] = useState('success');
   const [dashboardInitialTab, setDashboardInitialTab] = useState('agents');
+  const [templateShareUrl, setTemplateShareUrl] = useState(null);
   const toastTimerRef = useRef(null);
 
   function showToast(message, tone = 'success') {
@@ -294,6 +296,21 @@ function App() {
     await saveAgent(agentId, imported);
   }
 
+  /* ─── Share template ─── */
+  async function handleShareTemplate(template) {
+    await saveTemplate(template.id, {
+      id: template.id,
+      title: template.title,
+      description: template.description || '',
+      moduleContext: template.moduleContext || currentModule,
+      sectionContext: template.sectionContext || activeL2Item,
+      source: template.source || 'custom',
+      nodes: template.nodes || null,
+      nodeDetails: template.nodeDetails || null,
+    });
+    setTemplateShareUrl(`${window.location.origin}/view/template/${template.id}`);
+  }
+
   /* ─── Toast portal (always mounted so it survives builder unmount) ─── */
   const toast = toastVisible
     ? ReactDOM.createPortal(
@@ -363,6 +380,7 @@ function App() {
         onDeleteTemplate={handleDeleteTemplate}
         onSaveTemplate={handleSaveTemplate}
         onUseTemplate={handleUseTemplate}
+        onShareTemplate={handleShareTemplate}
         onNavChange={handleModuleChange}
         onMenuItemClick={handleL2ItemClick}
         onOpenAgent={handleOpenAgent}
@@ -371,6 +389,9 @@ function App() {
         onExportAgent={handleExportAgent}
         onImportAgent={handleImportAgent}
       />
+      {templateShareUrl && (
+        <ShareModal shareUrl={templateShareUrl} onClose={() => setTemplateShareUrl(null)} />
+      )}
       {toast}
     </>
   );

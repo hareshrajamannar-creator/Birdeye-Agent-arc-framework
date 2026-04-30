@@ -3,16 +3,26 @@ import { ReactFlowProvider } from '@xyflow/react';
 import AgentBuilder from '../components/AgentBuilder/AgentBuilder';
 import EmptyStates from '../components/Patterns/EmptyStates/EmptyStates';
 import { getAgent } from '../services/agentService';
+import { getTemplate } from '../services/templateService';
 import styles from './AgentViewerPage.module.css';
 
 export default function AgentViewerPage() {
-  const agentId = window.location.pathname.split('/view/').pop();
+  const isTemplate = window.location.pathname.startsWith('/view/template/');
+  const resourceId = isTemplate
+    ? window.location.pathname.split('/view/template/').pop()
+    : window.location.pathname.split('/view/').pop();
   const [agent, setAgent] = useState(undefined);
 
   useEffect(() => {
-    if (!agentId) { setAgent(null); return; }
-    getAgent(agentId).then(setAgent).catch(() => setAgent(null));
-  }, [agentId]);
+    if (!resourceId) { setAgent(null); return; }
+    if (isTemplate) {
+      getTemplate(resourceId)
+        .then((t) => t ? setAgent({ id: t.id, name: t.title || 'Untitled template', nodes: t.nodes || null, nodeDetails: t.nodeDetails || null, moduleContext: t.moduleContext || 'reviews' }) : setAgent(null))
+        .catch(() => setAgent(null));
+    } else {
+      getAgent(resourceId).then(setAgent).catch(() => setAgent(null));
+    }
+  }, [resourceId, isTemplate]);
 
   if (agent === undefined) {
     return (

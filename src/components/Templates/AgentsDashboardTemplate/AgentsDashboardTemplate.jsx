@@ -187,6 +187,7 @@ export default function AgentsDashboardTemplate({
   onDeleteTemplate,
   onSaveTemplate,
   onUseTemplate,
+  onShareTemplate,
   onOpenAgent,
   onDeleteAgent,
   onAgentUpdate,
@@ -364,6 +365,7 @@ export default function AgentsDashboardTemplate({
                 onDeleteTemplate={onDeleteTemplate}
                 onSaveTemplate={onSaveTemplate}
                 onUseTemplate={onUseTemplate}
+                onShareTemplate={onShareTemplate}
               />
             </div>
           )}

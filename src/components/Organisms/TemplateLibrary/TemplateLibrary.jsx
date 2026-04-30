@@ -57,7 +57,7 @@ function TemplateForm({ initialTemplate = emptyDraft, onCancel, onSave }) {
   );
 }
 
-function TemplateGridCard({ template, onDelete, onEdit, onSave, onUse }) {
+function TemplateGridCard({ template, onDelete, onEdit, onSave, onUse, onShare }) {
   const [editing, setEditing] = useState(false);
 
   if (editing) {
@@ -83,6 +83,9 @@ function TemplateGridCard({ template, onDelete, onEdit, onSave, onUse }) {
       </div>
       <div className={styles.cardActions}>
         <Button type="primary" size="small" label="Use agent" onClick={() => onUse?.(template.id)} />
+        <button className={styles.editButton} type="button" title="Share template" onClick={() => onShare?.(template)}>
+          <span className="material-symbols-outlined">share</span>
+        </button>
         <button className={styles.editButton} type="button" title="Edit template" onClick={() => { onEdit?.(template); setEditing(true); }}>
           <span className="material-symbols-outlined">edit</span>
         </button>
@@ -119,7 +122,7 @@ function AddTemplateCard({ onSave }) {
   );
 }
 
-function TemplateListView({ templates, onCreateTemplate, onDeleteTemplate, onSaveTemplate, onUseTemplate }) {
+function TemplateListView({ templates, onCreateTemplate, onDeleteTemplate, onSaveTemplate, onUseTemplate, onShareTemplate }) {
   return (
     <div className={styles.list}>
       <div className={styles.listHeader}>
@@ -137,6 +140,9 @@ function TemplateListView({ templates, onCreateTemplate, onDeleteTemplate, onSav
           </div>
           <div className={styles.rowActions}>
             <Button type="primary" size="small" label="Use agent" onClick={() => onUseTemplate?.(template.id)} />
+            <button className={styles.editButton} type="button" title="Share template" onClick={() => onShareTemplate?.(template)}>
+              <span className="material-symbols-outlined">share</span>
+            </button>
             <button className={styles.editButton} type="button" title="Edit template" onClick={() => onSaveTemplate?.({ ...template, editRequested: true })}>
               <span className="material-symbols-outlined">edit</span>
             </button>
@@ -162,6 +168,7 @@ export default function TemplateLibrary({
   onDeleteTemplate,
   onSaveTemplate,
   onUseTemplate,
+  onShareTemplate,
   onSeeMore,
 }) {
   const [listEditTemplate, setListEditTemplate] = useState(null);
@@ -191,6 +198,7 @@ export default function TemplateLibrary({
         onDeleteTemplate={onDeleteTemplate}
         onSaveTemplate={setListEditTemplate}
         onUseTemplate={onUseTemplate}
+        onShareTemplate={onShareTemplate}
       />
     );
   }
@@ -205,6 +213,7 @@ export default function TemplateLibrary({
             onDelete={onDeleteTemplate}
             onSave={onSaveTemplate}
             onUse={onUseTemplate}
+            onShare={onShareTemplate}
           />
         ))}
         {variant !== 'see-more' && <AddTemplateCard onSave={onCreateTemplate} />}

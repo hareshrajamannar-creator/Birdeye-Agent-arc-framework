@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import styles from './ShareModal.module.css';
 
-export default function ShareModal({ agentId, onClose }) {
-  const shareUrl = `${window.location.origin}/view/${agentId}`;
+export default function ShareModal({ agentId, shareUrl: shareUrlProp, onClose }) {
+  const shareUrl = shareUrlProp || `${window.location.origin}/view/${agentId}`;
   const [copied, setCopied] = useState(false);
 
   function handleCopy() {
