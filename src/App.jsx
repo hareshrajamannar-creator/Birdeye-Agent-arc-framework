@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { ReactFlowProvider } from '@xyflow/react';
 import AgentBuilder from './components/AgentBuilder/AgentBuilder';
 import AgentsDashboardTemplate from './components/Templates/AgentsDashboardTemplate/AgentsDashboardTemplate';
@@ -51,6 +51,17 @@ function getPageTitle(activeItemId, moduleNav) {
 /* ─── Agent-section L2 items all end with '-agents' ─── */
 function isAgentSection(itemId) {
   return !itemId || itemId.endsWith('-agents');
+}
+
+/* Returns true if slug is a known agent-section child (static nav or dynamic group) */
+function isSectionSlug(moduleSlug, slug, agentsList) {
+  if (!moduleSlug || !slug) return false;
+  const navData = getModuleNav(moduleSlug);
+  const allChildren = navData.menuItems.flatMap((i) => i.children || []);
+  if (allChildren.some((c) => c.id === slug)) return true;
+  return agentsList.some(
+    (a) => (a.agentSlug === slug || a.id === slug) && a.isAgentGroup === true
+  );
 }
 
 function withTemplateContext(template, moduleId, sectionId) {
@@ -110,6 +121,7 @@ const CUSTOM_NAV_ITEMS = [
 
 function App() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [currentModule, setCurrentModule] = useState('reviews');
   const [activeL2Item, setActiveL2Item] = useState(() => getModuleNav('reviews').defaultItemId);
   const [agents, setAgents] = useState([]);
@@ -150,59 +162,83 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  const moduleNav = getModuleNav(currentModule);
+  /* ─── Derive effective module/section from URL (section view detection) ─── */
+  const pathMatch = location.pathname.match(/^\/([^/]+)\/agents\/([^/]+)$/);
+  const pathModule = pathMatch?.[1] ?? null;
+  const pathSlug = pathMatch?.[2] ?? null;
+  const isAtSectionUrl = !!(pathModule && pathSlug && isSectionSlug(pathModule, pathSlug, agents));
+
+  // When at a section URL, drive display from URL params immediately (no flash on direct navigation)
+  const effectiveModule = isAtSectionUrl ? pathModule : currentModule;
+  const effectiveSection = isAtSectionUrl ? pathSlug : activeL2Item;
+
+  // Keep App state in sync so handlers (create agent, etc.) use the right module/section
+  useEffect(() => {
+    if (!isAtSectionUrl || !pathModule || !pathSlug) return;
+    if (currentModule !== pathModule) setCurrentModule(pathModule);
+    if (activeL2Item !== pathSlug) setActiveL2Item(pathSlug);
+  }, [isAtSectionUrl, pathModule, pathSlug]); // eslint-disable-line
+
+  const moduleNav = getModuleNav(effectiveModule);
 
   /* ─── Merge Firestore agent groups into L2 nav items ─── */
   const menuItemsWithGroups = useMemo(() => {
     const dynamicGroups = agents
-      .filter((a) => a.isAgentGroup === true && (a.moduleContext === currentModule || a.moduleSlug === currentModule))
+      .filter((a) => a.isAgentGroup === true && (a.moduleContext === effectiveModule || a.moduleSlug === effectiveModule))
       .map((a) => ({ id: a.agentSlug || a.id, label: a.name || 'Untitled' }));
 
     return moduleNav.menuItems.map((item) => {
       if (item.id !== 'agents') return item;
       return { ...item, children: [...(item.children || []), ...dynamicGroups] };
     });
-  }, [moduleNav.menuItems, agents, currentModule]);
+  }, [moduleNav.menuItems, agents, effectiveModule]);
 
   /* ─── Page title — includes dynamic group names ─── */
   const pageTitle = useMemo(() => {
     const fromNav = moduleNav.menuItems
       .flatMap((item) => item.children || [item])
-      .find((item) => item.id === activeL2Item);
+      .find((item) => item.id === effectiveSection);
     if (fromNav?.label) return fromNav.label;
-    const fromGroup = agents.find((a) => a.agentSlug === activeL2Item && a.isAgentGroup === true);
+    const fromGroup = agents.find((a) => a.agentSlug === effectiveSection && a.isAgentGroup === true);
     if (fromGroup?.name) return fromGroup.name;
-    return `${formatTitle(activeL2Item || 'agents')} agents`;
-  }, [activeL2Item, moduleNav, agents]);
+    return `${formatTitle(effectiveSection || 'agents')} agents`;
+  }, [effectiveSection, moduleNav, agents]);
 
   const defaultModuleTemplates = useMemo(
-    () => getModuleTemplates(currentModule, activeL2Item).map((template) => withTemplateContext(template, currentModule, activeL2Item)),
-    [currentModule, activeL2Item]
+    () => getModuleTemplates(effectiveModule, effectiveSection).map((template) => withTemplateContext(template, effectiveModule, effectiveSection)),
+    [effectiveModule, effectiveSection]
   );
   const moduleTemplates = useMemo(
-    () => mergeTemplates(defaultModuleTemplates, savedTemplates, currentModule, activeL2Item),
-    [defaultModuleTemplates, savedTemplates, currentModule, activeL2Item]
+    () => mergeTemplates(defaultModuleTemplates, savedTemplates, effectiveModule, effectiveSection),
+    [defaultModuleTemplates, savedTemplates, effectiveModule, effectiveSection]
   );
   const moduleAgents = useMemo(
     () =>
       agents
         .filter((a) => {
-          if (a.moduleContext !== currentModule) return false;
-          if (activeL2Item === 'view-all-agents') return true;
+          if (a.isAgentGroup) return false;
+          if (a.moduleContext !== effectiveModule) return false;
+          if (effectiveSection === 'view-all-agents') return true;
           if (!a.sectionContext) return true;
-          return a.sectionContext === activeL2Item;
+          return a.sectionContext === effectiveSection;
         })
         .map(toDashboardAgent),
-    [agents, currentModule, activeL2Item]
+    [agents, effectiveModule, effectiveSection]
   );
 
   /* ─── Module change ─── */
   function handleModuleChange(moduleId) {
     const nextNav = getModuleNav(moduleId);
+    const defaultId = nextNav.defaultItemId;
     setCurrentModule(moduleId);
-    setActiveL2Item(nextNav.defaultItemId);
+    setActiveL2Item(defaultId);
     setDashboardInitialTab('agents');
-    navigate('/');
+    const agentChildren = nextNav.menuItems.flatMap((i) => i.children || []).map((c) => c.id);
+    if (agentChildren.includes(defaultId)) {
+      navigate(`/${moduleId}/agents/${defaultId}`);
+    } else {
+      navigate('/');
+    }
   }
 
   /* ─── Agent builder open / close ─── */
@@ -293,6 +329,9 @@ function App() {
       return;
     }
     setActiveL2Item(itemId);
+    if (isSectionSlug(currentModule, itemId, agents)) {
+      navigate(`/${currentModule}/agents/${itemId}`);
+    }
   }
 
   function handleDeleteAgent(agentId) {
@@ -315,7 +354,7 @@ function App() {
       status: 'Draft',
     });
     setActiveL2Item(groupSlug);
-    navigate('/');
+    navigate(`/${currentModule}/agents/${groupSlug}`);
   }
 
   async function handleGroupDelete(itemId) {
@@ -496,7 +535,7 @@ function App() {
       )
     : null;
 
-  const showDashboard = isAgentSection(activeL2Item);
+  const showDashboard = isAgentSection(effectiveSection);
 
   const dashboardElement = (
     <AgentsDashboardTemplate
@@ -505,8 +544,8 @@ function App() {
       ctaLabel={moduleNav.ctaLabel}
       menuItems={menuItemsWithGroups}
       pageTitle={pageTitle}
-      activeNavId={currentModule}
-      activeMenuItemId={activeL2Item}
+      activeNavId={effectiveModule}
+      activeMenuItemId={effectiveSection}
       agents={moduleAgents}
       templates={moduleTemplates}
       initialActiveTab={dashboardInitialTab}
@@ -547,7 +586,7 @@ function App() {
     <>
       <Routes>
         <Route path="/" element={dashboardElement} />
-        <Route path="/:moduleSlug/agents/:agentSlug" element={builderElement} />
+        <Route path="/:moduleSlug/agents/:agentSlug" element={isAtSectionUrl ? dashboardElement : builderElement} />
         <Route path="/view/template/:templateId" element={<AgentViewerPage />} />
         <Route path="/view/:moduleSlug/:agentSlug" element={<AgentViewerPage />} />
         <Route path="/view/:agentId" element={<AgentViewerPage />} />
