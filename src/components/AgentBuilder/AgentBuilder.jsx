@@ -278,6 +278,14 @@ export default function AgentBuilder({
   /* ─── Share modal ─── */
   const [shareModalOpen, setShareModalOpen] = useState(false);
 
+  const handleShare = useCallback(async () => {
+    setHeaderMenuOpen(false);
+    clearTimeout(saveTimerRef.current);
+    const { agentId: id, agentName: name, agentDesc: desc, moduleContext: mod, sectionContext: sec, agentStatus: status, nodeList: nodes, nodeDetails: details } = latestRef.current;
+    await saveAgent(id, { id, name: name || 'Untitled agent', description: desc, status, moduleContext: mod, sectionContext: sec, nodes, nodeDetails: details });
+    setShareModalOpen(true);
+  }, []);
+
   /* ─── Header three-dots menu ─── */
   const [headerMenuOpen, setHeaderMenuOpen] = useState(false);
   const headerMenuRef = useRef(null);
@@ -873,7 +881,7 @@ export default function AgentBuilder({
             <button
               className="ab-header-menu-item"
               type="button"
-              onClick={() => { setHeaderMenuOpen(false); setShareModalOpen(true); }}
+              onClick={handleShare}
             >
               <span className="material-symbols-outlined">share</span>
               Share
