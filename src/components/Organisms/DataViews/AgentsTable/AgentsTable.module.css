@@ -84,14 +84,19 @@
   color: #1976d2;
 }
 
-/* ─── Delete action column ─── */
+/* ─── Actions column ─── */
 .tdActions {
   width: 44px;
   padding: 0 8px;
   text-align: right;
 }
 
-.deleteBtn {
+.menuWrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.menuBtn {
   opacity: 0;
   transition: opacity 0.12s;
   background: none;
@@ -102,22 +107,83 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #e53935;
+  color: #555;
 }
 
-.tr:hover .deleteBtn {
+.tr:hover .menuBtn,
+.menuBtn:focus-visible {
   opacity: 1;
 }
 
-.deleteBtn:hover {
+.menuBtn:hover {
+  background: #f0f0f0;
+}
+
+.menuBtnIcon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  line-height: 1 !important;
+}
+
+.menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  background: #ffffff;
+  border: 1px solid #e5e9f0;
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(33, 33, 33, 0.14);
+  min-width: 160px;
+  z-index: 50;
+  padding: 4px 0;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: #212121;
+  font-family: "Roboto", arial, sans-serif;
+  letter-spacing: -0.26px;
+  text-align: left;
+  transition: background 0.1s;
+}
+
+.menuItem:hover {
+  background: #f5f8ff;
+}
+
+.menuItem .material-symbols-outlined {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  line-height: 1;
+  color: #555;
+}
+
+.menuItemDanger {
+  color: #b42318;
+}
+
+.menuItemDanger .material-symbols-outlined {
+  color: #b42318;
+}
+
+.menuItemDanger:hover {
   background: #fde8e8;
 }
 
-.deleteBtnIcon {
-  font-size: 16px !important;
-  width: 16px !important;
-  height: 16px !important;
-  line-height: 1 !important;
+.menuDivider {
+  height: 1px;
+  background: #e5e9f0;
+  margin: 4px 0;
 }
 
 /* ─── Cell inline edit ─── */

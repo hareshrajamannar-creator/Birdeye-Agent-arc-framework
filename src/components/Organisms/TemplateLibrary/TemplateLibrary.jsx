@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Button from '@birdeye/elemental/core/atoms/Button/index.js';
 import FormInput from '@birdeye/elemental/core/atoms/FormInput/index.js';
@@ -57,7 +57,64 @@ function TemplateForm({ initialTemplate = emptyDraft, onCancel, onSave }) {
   );
 }
 
-function TemplateGridCard({ template, onDelete, onEdit, onSave, onUse, onShare }) {
+function CardMenu({ template, onShare, onDuplicate, onMove, onEdit, onDelete }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handleOutside(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, [open]);
+
+  function act(fn) {
+    setOpen(false);
+    fn?.();
+  }
+
+  return (
+    <div className={styles.menuWrap} ref={ref}>
+      <button
+        className={styles.editButton}
+        type="button"
+        title="More options"
+        onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
+      >
+        <span className="material-symbols-outlined">more_vert</span>
+      </button>
+      {open && (
+        <div className={styles.menu}>
+          <button className={styles.menuItem} type="button" onClick={() => act(() => onShare?.(template))}>
+            <span className="material-symbols-outlined">share</span>
+            Share
+          </button>
+          <button className={styles.menuItem} type="button" onClick={() => act(() => onDuplicate?.(template))}>
+            <span className="material-symbols-outlined">content_copy</span>
+            Duplicate
+          </button>
+          <button className={styles.menuItem} type="button" onClick={() => act(() => onMove?.(template))}>
+            <span className="material-symbols-outlined">drive_file_move</span>
+            Move to
+          </button>
+          <button className={styles.menuItem} type="button" onClick={() => act(() => onEdit?.())}>
+            <span className="material-symbols-outlined">edit</span>
+            Edit
+          </button>
+          <div className={styles.menuDivider} />
+          <button className={`${styles.menuItem} ${styles.menuItemDanger}`} type="button" onClick={() => act(() => onDelete?.(template.id))}>
+            <span className="material-symbols-outlined">delete</span>
+            Delete
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TemplateGridCard({ template, onDelete, onEdit, onSave, onUse, onShare, onDuplicate, onMove }) {
   const [editing, setEditing] = useState(false);
 
   if (editing) {
@@ -83,15 +140,14 @@ function TemplateGridCard({ template, onDelete, onEdit, onSave, onUse, onShare }
       </div>
       <div className={styles.cardActions}>
         <Button type="primary" size="small" label="Use agent" onClick={() => onUse?.(template.id)} />
-        <button className={styles.editButton} type="button" title="Share template" onClick={() => onShare?.(template)}>
-          <span className="material-symbols-outlined">share</span>
-        </button>
-        <button className={styles.editButton} type="button" title="Edit template" onClick={() => { onEdit?.(template); setEditing(true); }}>
-          <span className="material-symbols-outlined">edit</span>
-        </button>
-        <button className={`${styles.editButton} ${styles.deleteButton}`} type="button" title="Delete template" onClick={() => onDelete?.(template.id)}>
-          <span className="material-symbols-outlined">delete</span>
-        </button>
+        <CardMenu
+          template={template}
+          onShare={onShare}
+          onDuplicate={onDuplicate}
+          onMove={onMove}
+          onEdit={() => setEditing(true)}
+          onDelete={onDelete}
+        />
       </div>
     </div>
   );
@@ -122,7 +178,7 @@ function AddTemplateCard({ onSave }) {
   );
 }
 
-function TemplateListView({ templates, onCreateTemplate, onDeleteTemplate, onSaveTemplate, onUseTemplate, onShareTemplate }) {
+function TemplateListView({ templates, onCreateTemplate, onDeleteTemplate, onSaveTemplate, onUseTemplate, onShareTemplate, onDuplicateTemplate, onMoveTemplate }) {
   return (
     <div className={styles.list}>
       <div className={styles.listHeader}>
@@ -140,15 +196,14 @@ function TemplateListView({ templates, onCreateTemplate, onDeleteTemplate, onSav
           </div>
           <div className={styles.rowActions}>
             <Button type="primary" size="small" label="Use agent" onClick={() => onUseTemplate?.(template.id)} />
-            <button className={styles.editButton} type="button" title="Share template" onClick={() => onShareTemplate?.(template)}>
-              <span className="material-symbols-outlined">share</span>
-            </button>
-            <button className={styles.editButton} type="button" title="Edit template" onClick={() => onSaveTemplate?.({ ...template, editRequested: true })}>
-              <span className="material-symbols-outlined">edit</span>
-            </button>
-            <button className={`${styles.editButton} ${styles.deleteButton}`} type="button" title="Delete template" onClick={() => onDeleteTemplate?.(template.id)}>
-              <span className="material-symbols-outlined">delete</span>
-            </button>
+            <CardMenu
+              template={template}
+              onShare={onShareTemplate}
+              onDuplicate={onDuplicateTemplate}
+              onMove={onMoveTemplate}
+              onEdit={() => onSaveTemplate?.({ ...template, editRequested: true })}
+              onDelete={onDeleteTemplate}
+            />
           </div>
         </div>
       ))}
@@ -169,6 +224,8 @@ export default function TemplateLibrary({
   onSaveTemplate,
   onUseTemplate,
   onShareTemplate,
+  onDuplicateTemplate,
+  onMoveTemplate,
   onSeeMore,
 }) {
   const [listEditTemplate, setListEditTemplate] = useState(null);
@@ -199,6 +256,8 @@ export default function TemplateLibrary({
         onSaveTemplate={setListEditTemplate}
         onUseTemplate={onUseTemplate}
         onShareTemplate={onShareTemplate}
+        onDuplicateTemplate={onDuplicateTemplate}
+        onMoveTemplate={onMoveTemplate}
       />
     );
   }
@@ -214,6 +273,8 @@ export default function TemplateLibrary({
             onSave={onSaveTemplate}
             onUse={onUseTemplate}
             onShare={onShareTemplate}
+            onDuplicate={onDuplicateTemplate}
+            onMove={onMoveTemplate}
           />
         ))}
         {variant !== 'see-more' && <AddTemplateCard onSave={onCreateTemplate} />}
@@ -234,12 +295,24 @@ TemplateForm.propTypes = {
   onSave: PropTypes.func,
 };
 
+CardMenu.propTypes = {
+  template: PropTypes.object.isRequired,
+  onShare: PropTypes.func,
+  onDuplicate: PropTypes.func,
+  onMove: PropTypes.func,
+  onEdit: PropTypes.func,
+  onDelete: PropTypes.func,
+};
+
 TemplateGridCard.propTypes = {
   template: PropTypes.object.isRequired,
   onDelete: PropTypes.func,
   onEdit: PropTypes.func,
   onSave: PropTypes.func,
   onUse: PropTypes.func,
+  onShare: PropTypes.func,
+  onDuplicate: PropTypes.func,
+  onMove: PropTypes.func,
 };
 
 AddTemplateCard.propTypes = {
@@ -252,6 +325,9 @@ TemplateListView.propTypes = {
   onDeleteTemplate: PropTypes.func,
   onSaveTemplate: PropTypes.func,
   onUseTemplate: PropTypes.func,
+  onShareTemplate: PropTypes.func,
+  onDuplicateTemplate: PropTypes.func,
+  onMoveTemplate: PropTypes.func,
 };
 
 TemplateLibrary.propTypes = {
@@ -262,5 +338,8 @@ TemplateLibrary.propTypes = {
   onDeleteTemplate: PropTypes.func,
   onSaveTemplate: PropTypes.func,
   onUseTemplate: PropTypes.func,
+  onShareTemplate: PropTypes.func,
+  onDuplicateTemplate: PropTypes.func,
+  onMoveTemplate: PropTypes.func,
   onSeeMore: PropTypes.func,
 };

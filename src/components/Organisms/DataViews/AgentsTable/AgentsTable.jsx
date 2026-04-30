@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Chip from '@birdeye/elemental/core/atoms/Chip/index.js';
 import styles from './AgentsTable.module.css';
 
@@ -31,12 +31,24 @@ function CellValue({ colId, value }) {
   return <span>{value}</span>;
 }
 
-export default function AgentsTable({ agents = [], onRowClick, onDeleteAgent, onAgentUpdate }) {
+export default function AgentsTable({ agents = [], onRowClick, onDeleteAgent, onAgentUpdate, onDuplicateAgent, onMoveAgent }) {
   const [columns, setColumns] = useState(DEFAULT_COLUMNS);
   const [editingHeader, setEditingHeader] = useState(null);
   const [editingCell, setEditingCell] = useState(null);
   const [draft, setDraft] = useState('');
+  const [openMenuId, setOpenMenuId] = useState(null);
   const inputRef = useRef(null);
+  const menuRefs = useRef({});
+
+  useEffect(() => {
+    if (!openMenuId) return;
+    function handleOutside(e) {
+      const ref = menuRefs.current[openMenuId];
+      if (ref && !ref.contains(e.target)) setOpenMenuId(null);
+    }
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, [openMenuId]);
 
   function focusInput() {
     setTimeout(() => inputRef.current?.focus(), 0);
@@ -140,13 +152,48 @@ export default function AgentsTable({ agents = [], onRowClick, onDeleteAgent, on
               })}
 
               <td className={`${styles.td} ${styles.tdActions}`}>
-                <button
-                  className={styles.deleteBtn}
-                  title="Delete agent"
-                  onClick={(e) => { e.stopPropagation(); onDeleteAgent?.(agent.id); }}
+                <div
+                  className={styles.menuWrap}
+                  ref={(el) => { menuRefs.current[agent.id] = el; }}
                 >
-                  <span className={`material-symbols-outlined ${styles.deleteBtnIcon}`}>delete</span>
-                </button>
+                  <button
+                    className={styles.menuBtn}
+                    title="More options"
+                    onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === agent.id ? null : agent.id); }}
+                  >
+                    <span className={`material-symbols-outlined ${styles.menuBtnIcon}`}>more_vert</span>
+                  </button>
+
+                  {openMenuId === agent.id && (
+                    <div className={styles.menu}>
+                      <button
+                        className={styles.menuItem}
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); onDuplicateAgent?.(agent.id); setOpenMenuId(null); }}
+                      >
+                        <span className="material-symbols-outlined">content_copy</span>
+                        Duplicate
+                      </button>
+                      <button
+                        className={styles.menuItem}
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); onMoveAgent?.(agent.id); setOpenMenuId(null); }}
+                      >
+                        <span className="material-symbols-outlined">drive_file_move</span>
+                        Move to
+                      </button>
+                      <div className={styles.menuDivider} />
+                      <button
+                        className={`${styles.menuItem} ${styles.menuItemDanger}`}
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); onDeleteAgent?.(agent.id); setOpenMenuId(null); }}
+                      >
+                        <span className="material-symbols-outlined">delete</span>
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
               </td>
             </tr>
           ))}

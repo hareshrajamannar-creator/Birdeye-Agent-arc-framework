@@ -9,6 +9,7 @@ import { getModuleNav } from './components/Modules/moduleNavigation';
 import { subscribeToAgents, deleteAgent, saveAgent } from './services/agentService';
 import { deleteTemplate, saveTemplate, subscribeToTemplates } from './services/templateService';
 import ShareModal from './components/Organisms/Modals/ShareModal/ShareModal';
+import MoveToModal from './components/Organisms/Modals/MoveToModal/MoveToModal';
 import styles from './App.module.css';
 import '@xyflow/react/dist/style.css';
 
@@ -95,6 +96,7 @@ function App() {
   const [toastTone, setToastTone] = useState('success');
   const [dashboardInitialTab, setDashboardInitialTab] = useState('agents');
   const [templateShareUrl, setTemplateShareUrl] = useState(null);
+  const [moveToTarget, setMoveToTarget] = useState(null);
   const toastTimerRef = useRef(null);
 
   function showToast(message, tone = 'success') {
@@ -296,6 +298,77 @@ function App() {
     await saveAgent(agentId, imported);
   }
 
+  /* ─── Duplicate agent ─── */
+  async function handleDuplicateAgent(agentId) {
+    const full = agents.find((a) => a.id === agentId);
+    if (!full) return;
+    const newId = crypto.randomUUID();
+    const { updatedAt, ...rest } = full;
+    await saveAgent(newId, { ...rest, id: newId, name: `Copy of ${full.name || 'Untitled'}`, status: 'Draft' });
+    showToast('Agent duplicated');
+  }
+
+  /* ─── Move agent ─── */
+  async function handleMoveAgent(agentId, moduleId, sectionId) {
+    const full = agents.find((a) => a.id === agentId);
+    if (!full) return;
+    const { updatedAt, ...rest } = full;
+    await saveAgent(agentId, { ...rest, moduleContext: moduleId, sectionContext: sectionId });
+    showToast('Agent moved');
+  }
+
+  /* ─── Duplicate template ─── */
+  async function handleDuplicateTemplate(template) {
+    const newId = crypto.randomUUID();
+    await saveTemplate(newId, {
+      id: newId,
+      title: `Copy of ${template.title || 'Untitled'}`,
+      description: template.description || '',
+      moduleContext: template.moduleContext || currentModule,
+      sectionContext: template.sectionContext || activeL2Item,
+      source: 'custom',
+      nodes: template.nodes || null,
+      nodeDetails: template.nodeDetails || null,
+    });
+    showToast('Template duplicated');
+  }
+
+  /* ─── Move template ─── */
+  async function handleMoveTemplate(templateId, moduleId, sectionId) {
+    const template = moduleTemplates.find((t) => t.id === templateId) || savedTemplates.find((t) => t.id === templateId);
+    if (!template) return;
+    await saveTemplate(templateId, {
+      id: templateId,
+      title: template.title,
+      description: template.description || '',
+      moduleContext: moduleId,
+      sectionContext: sectionId,
+      source: template.source || 'custom',
+      nodes: template.nodes || null,
+      nodeDetails: template.nodeDetails || null,
+    });
+    showToast('Template moved');
+  }
+
+  /* ─── Move To modal helpers ─── */
+  function handleRequestMoveAgent(agentId) {
+    setMoveToTarget({ type: 'agent', id: agentId });
+  }
+
+  function handleRequestMoveTemplate(template) {
+    setMoveToTarget({ type: 'template', id: template.id });
+  }
+
+  function handleMoveConfirm(moduleId, sectionId) {
+    if (!moveToTarget) return;
+    if (moveToTarget.type === 'agent') {
+      handleMoveAgent(moveToTarget.id, moduleId, sectionId);
+    } else {
+      handleMoveTemplate(moveToTarget.id, moduleId, sectionId);
+    }
+    setMoveToTarget(null);
+  }
+
   /* ─── Share template ─── */
   async function handleShareTemplate(template) {
     await saveTemplate(template.id, {
@@ -381,6 +454,10 @@ function App() {
         onSaveTemplate={handleSaveTemplate}
         onUseTemplate={handleUseTemplate}
         onShareTemplate={handleShareTemplate}
+        onDuplicateTemplate={handleDuplicateTemplate}
+        onMoveTemplate={handleRequestMoveTemplate}
+        onDuplicateAgent={handleDuplicateAgent}
+        onMoveAgent={handleRequestMoveAgent}
         onNavChange={handleModuleChange}
         onMenuItemClick={handleL2ItemClick}
         onOpenAgent={handleOpenAgent}
@@ -391,6 +468,9 @@ function App() {
       />
       {templateShareUrl && (
         <ShareModal shareUrl={templateShareUrl} onClose={() => setTemplateShareUrl(null)} />
+      )}
+      {moveToTarget && (
+        <MoveToModal onMove={handleMoveConfirm} onCancel={() => setMoveToTarget(null)} />
       )}
       {toast}
     </>

@@ -188,8 +188,12 @@ export default function AgentsDashboardTemplate({
   onSaveTemplate,
   onUseTemplate,
   onShareTemplate,
+  onDuplicateTemplate,
+  onMoveTemplate,
   onOpenAgent,
   onDeleteAgent,
+  onDuplicateAgent,
+  onMoveAgent,
   onAgentUpdate,
   avatarSrc,
   activeNavId = 'reviews',
@@ -349,6 +353,8 @@ export default function AgentsDashboardTemplate({
                     agents={agentList}
                     onRowClick={(agent) => onOpenAgent?.(agent.id)}
                     onDeleteAgent={onDeleteAgent}
+                    onDuplicateAgent={onDuplicateAgent}
+                    onMoveAgent={onMoveAgent}
                     onAgentUpdate={onAgentUpdate}
                   />
                 </div>
@@ -366,6 +372,8 @@ export default function AgentsDashboardTemplate({
                 onSaveTemplate={onSaveTemplate}
                 onUseTemplate={onUseTemplate}
                 onShareTemplate={onShareTemplate}
+                onDuplicateTemplate={onDuplicateTemplate}
+                onMoveTemplate={onMoveTemplate}
               />
             </div>
           )}
