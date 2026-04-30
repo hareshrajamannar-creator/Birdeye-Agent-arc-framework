@@ -231,6 +231,13 @@ function App() {
     (a) => (a.agentSlug === effectiveSection || a.id === effectiveSection) && a.isAgentGroup === true
   );
 
+  // The Firestore doc for the current group (null on non-group sections)
+  const groupDoc = isDynamicGroupSection
+    ? agents.find(
+        (a) => (a.agentSlug === effectiveSection || a.id === effectiveSection) && a.isAgentGroup === true
+      ) ?? null
+    : null;
+
   const moduleAgents = useMemo(
     () =>
       agents
@@ -383,6 +390,12 @@ function App() {
       try { localStorage.setItem('agentChildOrders', JSON.stringify(next)); } catch {}
       return next;
     });
+  }
+
+  async function handleGroupUpdate(field, value) {
+    if (!groupDoc) return;
+    const { updatedAt, ...rest } = groupDoc;
+    await saveAgent(groupDoc.id, { ...rest, [field]: value });
   }
 
   async function handleGroupDelete(itemId) {
@@ -593,6 +606,9 @@ function App() {
       onGroupCreate={handleGroupCreate}
       onGroupDelete={handleGroupDelete}
       onChildrenReorder={handleChildrenReorder}
+      isGroupPage={isDynamicGroupSection}
+      groupDoc={groupDoc}
+      onGroupUpdate={handleGroupUpdate}
       onOpenAgent={handleOpenAgent}
       onDeleteAgent={handleDeleteAgent}
       onAgentUpdate={handleAgentUpdate}

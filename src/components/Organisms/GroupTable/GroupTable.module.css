@@ -1,0 +1,186 @@
+.wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Roboto', sans-serif;
+}
+
+/* ─── Header ─── */
+.th {
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #555;
+  border-bottom: 1px solid #eaeaea;
+  text-align: left;
+  white-space: nowrap;
+  background: #fff;
+}
+
+.thLocked {
+  background: #fafafa;
+}
+
+.thInner {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: default;
+  user-select: none;
+}
+
+.thEditIcon {
+  opacity: 0;
+  transition: opacity 0.12s;
+  font-size: 14px !important;
+  line-height: 1 !important;
+  color: #aaa;
+  cursor: pointer;
+}
+
+.th:hover .thEditIcon {
+  opacity: 1;
+}
+
+.thInput {
+  border: none;
+  border-bottom: 1px solid #1976d2;
+  outline: none;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Roboto', sans-serif;
+  color: #555;
+  background: transparent;
+  width: 100%;
+  min-width: 60px;
+  padding: 0;
+}
+
+/* ─── Rows ─── */
+.tr {
+  border-bottom: 1px solid #f0f0f0;
+  transition: background 0.1s;
+}
+
+.tr:hover {
+  background: #f5f8ff;
+}
+
+.td {
+  padding: 12px;
+  font-size: 13px;
+  color: #212121;
+  vertical-align: middle;
+}
+
+/* ─── Name cell ─── */
+.nameCell {
+  cursor: pointer;
+}
+
+.nameValue {
+  color: #212121;
+}
+
+.nameLink {
+  color: #1976d2;
+  cursor: pointer;
+}
+
+.nameLink:hover {
+  opacity: 0.8;
+}
+
+.emptyCell {
+  color: #ccc;
+}
+
+/* ─── Status cell ─── */
+.statusCell {
+  cursor: pointer;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: 'Roboto', sans-serif;
+  letter-spacing: 0.1px;
+  cursor: pointer;
+  user-select: none;
+  transition: opacity 0.12s;
+}
+
+.statusPill:hover {
+  opacity: 0.8;
+}
+
+.statusRunning {
+  background: #e6f4ea;
+  color: #1e7a34;
+}
+
+.statusPaused {
+  background: #f0f0f0;
+  color: #555;
+}
+
+.statusDraft {
+  background: #e3f0fd;
+  color: #1976d2;
+}
+
+/* ─── Cell edit ─── */
+.cellValue {
+  display: block;
+  min-height: 18px;
+}
+
+.cellInput {
+  border: none;
+  border-bottom: 1px solid #1976d2;
+  outline: none;
+  font-size: 13px;
+  font-family: 'Roboto', sans-serif;
+  color: #212121;
+  background: transparent;
+  width: 100%;
+  min-width: 60px;
+  padding: 0;
+}
+
+/* ─── Add row ─── */
+.addRowBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid #e5e9f0;
+  border-radius: 6px;
+  background: #fff;
+  color: #555;
+  font-size: 13px;
+  font-family: 'Roboto', sans-serif;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.addRowBtn:hover {
+  background: #f5f5f5;
+  color: #212121;
+}
+
+.addRowBtn span {
+  font-size: 16px !important;
+  line-height: 1;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+}

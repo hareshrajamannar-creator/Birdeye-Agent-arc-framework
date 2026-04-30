@@ -1,0 +1,306 @@
+.root {
+  padding: 20px 24px 8px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+/* ─── Card ─── */
+.card {
+  position: relative;
+  background: #fff;
+  border: 1px solid #e5e9f0;
+  border-radius: 8px;
+  padding: 14px 16px 16px;
+  min-width: 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.typeIcon {
+  font-size: 18px !important;
+  color: #aaa;
+  line-height: 1;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.actionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 4px;
+  color: #aaa;
+  padding: 0;
+  transition: background 0.12s, color 0.12s;
+}
+
+.actionBtn:hover {
+  background: #f0f0f0;
+  color: #212121;
+}
+
+.actionBtn span {
+  font-size: 16px !important;
+  line-height: 1;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+}
+
+.deleteBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 4px;
+  color: #aaa;
+  padding: 0;
+  opacity: 0;
+  transition: opacity 0.12s, background 0.12s, color 0.12s;
+}
+
+.card:hover .deleteBtn {
+  opacity: 1;
+}
+
+.deleteBtn:hover {
+  background: #fde8e8;
+  color: #b42318;
+}
+
+.deleteBtn span {
+  font-size: 14px !important;
+  line-height: 1;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+}
+
+/* ─── Value ─── */
+.value {
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1.1;
+  color: #212121;
+  font-family: 'Roboto', sans-serif;
+  cursor: pointer;
+  letter-spacing: -0.5px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.value:hover {
+  color: #1976d2;
+}
+
+.valueInput {
+  font-size: 28px;
+  font-weight: 500;
+  color: #212121;
+  font-family: 'Roboto', sans-serif;
+  border: none;
+  border-bottom: 1px solid #1976d2;
+  outline: none;
+  background: transparent;
+  padding: 0;
+  width: 100%;
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+
+/* ─── Label ─── */
+.label {
+  font-size: 13px;
+  line-height: 1.4;
+  color: #666;
+  font-family: 'Roboto', sans-serif;
+  cursor: pointer;
+  display: block;
+}
+
+.label:hover {
+  color: #212121;
+}
+
+.labelInput {
+  font-size: 13px;
+  color: #666;
+  font-family: 'Roboto', sans-serif;
+  border: none;
+  border-bottom: 1px solid #1976d2;
+  outline: none;
+  background: transparent;
+  padding: 0;
+  width: 100%;
+}
+
+/* ─── Tooltip inline editor ─── */
+.tooltipInput {
+  font-size: 12px;
+  color: #212121;
+  font-family: 'Roboto', sans-serif;
+  border: none;
+  border-bottom: 1px solid #1976d2;
+  outline: none;
+  background: transparent;
+  padding: 0;
+  width: 100%;
+  margin-top: 6px;
+}
+
+/* ─── Tooltip bubble ─── */
+.infoContainer {
+  position: relative;
+}
+
+.tooltipBubble {
+  position: absolute;
+  top: 28px;
+  right: 0;
+  background: #333;
+  color: #fff;
+  font-size: 12px;
+  font-family: 'Roboto', sans-serif;
+  padding: 6px 10px;
+  border-radius: 4px;
+  white-space: normal;
+  max-width: 180px;
+  z-index: 100;
+  pointer-events: none;
+}
+
+/* ─── Calculation note ─── */
+.calcNote {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.calcNoteLabel {
+  font-size: 11px;
+  font-weight: 500;
+  color: #888;
+  font-family: 'Roboto', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.calcNoteArea {
+  font-size: 13px;
+  font-family: 'Roboto', sans-serif;
+  color: #212121;
+  border: 1px solid #e5e9f0;
+  border-radius: 4px;
+  padding: 8px;
+  resize: none;
+  min-height: 60px;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.calcNoteArea:focus {
+  border-color: #1976d2;
+}
+
+/* ─── Muted placeholder ─── */
+.muted {
+  color: #ccc;
+}
+
+/* ─── Add metric button ─── */
+.addWrap {
+  position: relative;
+  align-self: center;
+}
+
+.addBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid #e5e9f0;
+  border-radius: 6px;
+  background: #fff;
+  color: #212121;
+  font-size: 13px;
+  font-family: 'Roboto', sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s;
+}
+
+.addBtn:hover {
+  background: #f5f5f5;
+}
+
+.addBtn span {
+  font-size: 18px !important;
+  line-height: 1;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+}
+
+/* ─── Picker dropdown ─── */
+.picker {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  background: #fff;
+  border: 1px solid #e5e9f0;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  min-width: 160px;
+  overflow: hidden;
+  z-index: 200;
+}
+
+.pickerItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #212121;
+  font-family: 'Roboto', sans-serif;
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.12s;
+}
+
+.pickerItem:hover {
+  background: #f4f6f7;
+}
+
+.pickerIcon {
+  font-size: 16px !important;
+  color: #666;
+  line-height: 1;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+}

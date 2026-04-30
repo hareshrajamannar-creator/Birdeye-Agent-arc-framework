@@ -7,6 +7,8 @@ import PrimaryRailNav from '../../Organisms/Nav/PrimaryRailNav/PrimaryRailNav';
 import AgentL2Nav from '../../Organisms/Nav/AgentL2Nav/AgentL2Nav';
 import MetricsGroup from '../../Organisms/MetricsGroup/MetricsGroup';
 import AgentsTable from '../../Organisms/DataViews/AgentsTable/AgentsTable';
+import GroupMetrics from '../../Organisms/GroupMetrics/GroupMetrics';
+import GroupTable from '../../Organisms/GroupTable/GroupTable';
 import TemplateLibrary from '../../Organisms/TemplateLibrary/TemplateLibrary';
 import EmptyStates from '../../Patterns/EmptyStates/EmptyStates';
 
@@ -212,6 +214,9 @@ export default function AgentsDashboardTemplate({
   onGroupCreate,
   onGroupDelete,
   onChildrenReorder,
+  isGroupPage = false,
+  groupDoc,
+  onGroupUpdate,
 }) {
   const [activeTab, setActiveTab] = useState(initialActiveTab || tabs[0]?.id);
   const [libraryView, setLibraryView] = useState('grid');
@@ -341,7 +346,23 @@ export default function AgentsDashboardTemplate({
           </div>
 
           {activeTab === 'agents' && (
-            isEmpty ? (
+            isGroupPage ? (
+              <>
+                <GroupMetrics
+                  key={activeMenuItemId + '-metrics'}
+                  metrics={groupDoc?.metrics ?? []}
+                  onMetricsChange={(m) => onGroupUpdate?.('metrics', m)}
+                />
+                <div style={{ padding: '20px 24px 24px' }}>
+                  <GroupTable
+                    key={activeMenuItemId + '-table'}
+                    tableData={groupDoc?.table}
+                    onTableDataChange={(t) => onGroupUpdate?.('table', t)}
+                    onAgentRowClick={(row) => row.agentId && onOpenAgent?.(row.agentId)}
+                  />
+                </div>
+              </>
+            ) : isEmpty ? (
               <EmptyStates
                 title={emptyCopy.title}
                 description={emptyCopy.description}
@@ -423,4 +444,7 @@ AgentsDashboardTemplate.propTypes = {
   onGroupCreate: PropTypes.func,
   onGroupDelete: PropTypes.func,
   onChildrenReorder: PropTypes.func,
+  isGroupPage: PropTypes.bool,
+  groupDoc: PropTypes.object,
+  onGroupUpdate: PropTypes.func,
 };
