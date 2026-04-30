@@ -18,6 +18,7 @@ export default function ExpandedRHSModal({
   promptFillWidth = 52,
   formContent,
   testContent,
+  viewOnly = false,
 }) {
   const noop = () => {};
   return (
@@ -38,7 +39,9 @@ export default function ExpandedRHSModal({
 
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
         <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
-          {formContent}
+          <div style={{ pointerEvents: viewOnly ? 'none' : undefined, userSelect: viewOnly ? 'text' : undefined }}>
+            {formContent}
+          </div>
         </div>
         {DIVIDER}
         <div style={{ flex: 1, overflowY: 'auto', padding: '24px', background: '#fafafa' }}>
@@ -46,13 +49,31 @@ export default function ExpandedRHSModal({
         </div>
       </div>
 
-      <ExpandedRHSFooter
-        onCancel={onCancel || noop}
-        onSave={onSave || noop}
-        showPromptStrength={showPromptStrength}
-        promptStrength={promptStrength}
-        promptFillWidth={promptFillWidth}
-      />
+      {viewOnly ? (
+        <div style={{
+          borderTop: '1px solid #eaeaea',
+          padding: '0 24px',
+          height: 64,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          background: '#ffffff',
+          borderRadius: '0 0 8px 8px',
+        }}>
+          <span className="material-symbols-outlined" style={{ fontSize: 16, color: '#8f8f8f' }}>visibility</span>
+          <span style={{ fontSize: 12, color: '#8f8f8f', fontFamily: font, letterSpacing: '-0.24px' }}>
+            View only — editing is disabled
+          </span>
+        </div>
+      ) : (
+        <ExpandedRHSFooter
+          onCancel={onCancel || noop}
+          onSave={onSave || noop}
+          showPromptStrength={showPromptStrength}
+          promptStrength={promptStrength}
+          promptFillWidth={promptFillWidth}
+        />
+      )}
     </div>
   );
 }

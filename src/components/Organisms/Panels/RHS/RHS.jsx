@@ -162,6 +162,7 @@ export default function RHS({ variant = 'agentDetails', title, bodyProps, onClos
               promptFillWidth={52}
               formContent={<Body {...(bodyProps || {})} />}
               testContent={testContent}
+              viewOnly={viewOnly}
             />
           </div>
         </div>,

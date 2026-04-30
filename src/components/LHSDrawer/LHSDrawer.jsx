@@ -365,6 +365,7 @@ export default function LHSDrawer({
             nodeType={expandedSection === 'trigger' ? 'trigger' : 'task'}
             parentLabel={expandedCard}
             onItemsChange={(newItems) => handleSubItemsChange(expandedCard, newItems)}
+            viewOnly={viewOnly}
           />
         </div>
       )}
