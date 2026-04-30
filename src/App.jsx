@@ -132,6 +132,10 @@ function App() {
   const [dashboardInitialTab, setDashboardInitialTab] = useState('agents');
   const [templateShareUrl, setTemplateShareUrl] = useState(null);
   const [moveToTarget, setMoveToTarget] = useState(null);
+  const [childOrders, setChildOrders] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('agentChildOrders') || '{}'); }
+    catch { return {}; }
+  });
   const toastTimerRef = useRef(null);
 
   function showToast(message, tone = 'success') {
@@ -185,13 +189,23 @@ function App() {
   const menuItemsWithGroups = useMemo(() => {
     const dynamicGroups = agents
       .filter((a) => a.isAgentGroup === true && (a.moduleContext === effectiveModule || a.moduleSlug === effectiveModule))
+      // Newest first so fresh creates land at the top
+      .sort((a, b) => (b.updatedAt?.seconds ?? 0) - (a.updatedAt?.seconds ?? 0))
       .map((a) => ({ id: a.agentSlug || a.id, label: a.name || 'Untitled' }));
 
     return moduleNav.menuItems.map((item) => {
       if (item.id !== 'agents') return item;
-      return { ...item, children: [...(item.children || []), ...dynamicGroups] };
+      // Dynamic groups appear above static children
+      const baseChildren = [...dynamicGroups, ...(item.children || [])];
+      const order = childOrders[effectiveModule];
+      if (!order || order.length === 0) return { ...item, children: baseChildren };
+      // Apply saved order; any children not yet in the order go on top
+      const byId = Object.fromEntries(baseChildren.map((c) => [c.id, c]));
+      const ordered = order.map((id) => byId[id]).filter(Boolean);
+      const fresh = baseChildren.filter((c) => !order.includes(c.id));
+      return { ...item, children: [...fresh, ...ordered] };
     });
-  }, [moduleNav.menuItems, agents, effectiveModule]);
+  }, [moduleNav.menuItems, agents, effectiveModule, childOrders]);
 
   /* ─── Page title — includes dynamic group names ─── */
   const pageTitle = useMemo(() => {
@@ -212,6 +226,11 @@ function App() {
     () => mergeTemplates(defaultModuleTemplates, savedTemplates, effectiveModule, effectiveSection),
     [defaultModuleTemplates, savedTemplates, effectiveModule, effectiveSection]
   );
+  // True when the active section is a user-created group (not a static nav entry)
+  const isDynamicGroupSection = agents.some(
+    (a) => (a.agentSlug === effectiveSection || a.id === effectiveSection) && a.isAgentGroup === true
+  );
+
   const moduleAgents = useMemo(
     () =>
       agents
@@ -219,11 +238,12 @@ function App() {
           if (a.isAgentGroup) return false;
           if (a.moduleContext !== effectiveModule) return false;
           if (effectiveSection === 'view-all-agents') return true;
-          if (!a.sectionContext) return true;
+          // Legacy agents without sectionContext are only surfaced in static sections
+          if (!a.sectionContext) return !isDynamicGroupSection;
           return a.sectionContext === effectiveSection;
         })
         .map(toDashboardAgent),
-    [agents, effectiveModule, effectiveSection]
+    [agents, effectiveModule, effectiveSection, isDynamicGroupSection]
   );
 
   /* ─── Module change ─── */
@@ -355,6 +375,14 @@ function App() {
     });
     setActiveL2Item(groupSlug);
     navigate(`/${currentModule}/agents/${groupSlug}`);
+  }
+
+  function handleChildrenReorder(orderedIds) {
+    setChildOrders((prev) => {
+      const next = { ...prev, [effectiveModule]: orderedIds };
+      try { localStorage.setItem('agentChildOrders', JSON.stringify(next)); } catch {}
+      return next;
+    });
   }
 
   async function handleGroupDelete(itemId) {
@@ -564,6 +592,7 @@ function App() {
       onMenuItemClick={handleL2ItemClick}
       onGroupCreate={handleGroupCreate}
       onGroupDelete={handleGroupDelete}
+      onChildrenReorder={handleChildrenReorder}
       onOpenAgent={handleOpenAgent}
       onDeleteAgent={handleDeleteAgent}
       onAgentUpdate={handleAgentUpdate}

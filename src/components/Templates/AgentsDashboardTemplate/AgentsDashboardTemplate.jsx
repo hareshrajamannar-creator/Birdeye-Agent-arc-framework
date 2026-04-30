@@ -211,6 +211,7 @@ export default function AgentsDashboardTemplate({
   onMenuItemClick,
   onGroupCreate,
   onGroupDelete,
+  onChildrenReorder,
 }) {
   const [activeTab, setActiveTab] = useState(initialActiveTab || tabs[0]?.id);
   const [libraryView, setLibraryView] = useState('grid');
@@ -247,6 +248,7 @@ export default function AgentsDashboardTemplate({
         onCtaClick={onCreateAgent}
         onGroupCreate={onGroupCreate}
         onGroupDelete={onGroupDelete}
+        onChildrenReorder={onChildrenReorder}
       />
 
       {/* Main column */}
@@ -420,4 +422,5 @@ AgentsDashboardTemplate.propTypes = {
   onMenuItemClick: PropTypes.func,
   onGroupCreate: PropTypes.func,
   onGroupDelete: PropTypes.func,
+  onChildrenReorder: PropTypes.func,
 };
