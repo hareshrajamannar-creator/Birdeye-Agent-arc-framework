@@ -220,6 +220,7 @@ background: #f4f6f7;       /* neutral grey — NOT blue-tinted */
 /* Icon inside item */
 font-size: 16px;
 color: #666;               /* NOT #555 */
+font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20; /* always explicit — elemental context may inherit FILL:1 */
 
 /* Destructive item only */
 color: #b42318;
