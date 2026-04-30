@@ -8,7 +8,7 @@ import ScheduleBased from '../Molecules/RHS/Trigger/ScheduleBased/ScheduleBased'
 import ShareModal from '../Organisms/Modals/ShareModal/ShareModal';
 import EmptyStates from '../Patterns/EmptyStates/EmptyStates';
 import Button from '@birdeye/elemental/core/atoms/Button/index.js';
-import { saveAgent, getAgentBySlug } from '../../services/agentService';
+import { saveAgent, getAgentBySlug, getCachedAgent } from '../../services/agentService';
 import { getModuleNav } from '../Modules/moduleNavigation';
 import './AgentBuilder.css';
 
@@ -288,35 +288,53 @@ export default function AgentBuilder({
   });
   const [agentStatus, setAgentStatus] = useState(initialStatus || 'Draft');
 
-  /* ─── Load agent from URL slugs (edit route only, not view-only) ─── */
+  /* ─── Load agent from URL slugs — re-runs whenever the URL params change ─── */
   useEffect(() => {
     if (viewOnly || !urlAgentSlug || !urlModuleSlug) return;
+
+    function applyAgent(agent) {
+      setAgentId(agent.id);
+      setAgentModuleSlug(agent.moduleSlug || urlModuleSlug);
+      setAgentSlug(agent.agentSlug || urlAgentSlug);
+      setDerivedAppTitle(getModuleNav(agent.moduleContext || urlModuleSlug).title);
+      setNodeList(agent.nodes || []);
+      setNodeDetails(() => {
+        const base = agent.nodeDetails || {};
+        const startNode = base[START_NODE_ID];
+        return {
+          ...base,
+          [START_NODE_ID]: {
+            goals: '', outcomes: '', locations: [],
+            ...(startNode || {}),
+            agentName: startNode?.agentName || agent.name || '',
+          },
+        };
+      });
+      setAgentStatus(agent.status || 'Draft');
+      setSelectedNodeId(null);
+      setDrawerOpen(false);
+    }
+
+    // Check cache first — instant load, no spinner
+    const cached = getCachedAgent(urlAgentSlug, urlModuleSlug);
+    if (cached) {
+      setAgentNotFound(false);
+      applyAgent(cached);
+      setIsLoadingFromSlug(false);
+      return;
+    }
+
+    // Cache miss — fetch from Firestore
+    setAgentNotFound(false);
     setIsLoadingFromSlug(true);
     getAgentBySlug(urlModuleSlug, urlAgentSlug)
       .then((agent) => {
         if (!agent) { setAgentNotFound(true); return; }
-        setAgentId(agent.id);
-        setAgentModuleSlug(agent.moduleSlug || urlModuleSlug);
-        setAgentSlug(agent.agentSlug || urlAgentSlug);
-        setDerivedAppTitle(getModuleNav(agent.moduleContext || urlModuleSlug).title);
-        setNodeList(agent.nodes || []);
-        setNodeDetails(() => {
-          const base = agent.nodeDetails || {};
-          const startNode = base[START_NODE_ID];
-          return {
-            ...base,
-            [START_NODE_ID]: {
-              goals: '', outcomes: '', locations: [],
-              ...(startNode || {}),
-              agentName: startNode?.agentName || agent.name || '',
-            },
-          };
-        });
-        setAgentStatus(agent.status || 'Draft');
+        applyAgent(agent);
       })
       .catch(() => setAgentNotFound(true))
       .finally(() => setIsLoadingFromSlug(false));
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [urlAgentSlug, urlModuleSlug]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ─── Share modal ─── */
   const [shareModalOpen, setShareModalOpen] = useState(false);
@@ -964,8 +982,8 @@ export default function AgentBuilder({
   /* ─── Loading / not-found guards ─── */
   if (isLoadingFromSlug) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', gap: 10, fontFamily: 'Roboto, sans-serif', fontSize: 15, color: '#555' }}>
-        <span className="material-symbols-outlined" style={{ fontSize: 24, color: '#8d9dca', animation: 'spin 1.5s linear infinite' }}>hourglass_empty</span>
+      <div className="ab-loading">
+        <div className="ab-spinner" />
         <span>Loading agent…</span>
       </div>
     );
@@ -973,7 +991,7 @@ export default function AgentBuilder({
 
   if (agentNotFound) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+      <div className="ab-not-found">
         <EmptyStates title="Agent not found" description="This link is no longer valid or the agent has been deleted." />
       </div>
     );

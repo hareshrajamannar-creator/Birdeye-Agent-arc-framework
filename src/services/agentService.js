@@ -80,8 +80,37 @@ export function deleteAgent(agentId) {
   return deleteDoc(doc(db, COLLECTION, agentId));
 }
 
-// Fetch a single agent by moduleSlug + agentSlug
+// ─── Module-level prefetch cache ─────────────────────────────────────────────
+const agentCache = {};
+
+function cacheKey(moduleSlug, agentSlug) {
+  return `${moduleSlug}/${agentSlug}`;
+}
+
+export async function prefetchAgent(agentSlug, moduleSlug) {
+  if (!agentSlug || !moduleSlug) return;
+  const key = cacheKey(moduleSlug, agentSlug);
+  if (agentCache[key]) return;
+  const q = query(
+    collection(db, COLLECTION),
+    where('agentSlug', '==', agentSlug),
+    where('moduleSlug', '==', moduleSlug)
+  );
+  const snap = await getDocs(q);
+  if (!snap.empty) {
+    agentCache[key] = restoreFromFirestore({ id: snap.docs[0].id, ...snap.docs[0].data() });
+  }
+}
+
+export function getCachedAgent(agentSlug, moduleSlug) {
+  if (!agentSlug || !moduleSlug) return null;
+  return agentCache[cacheKey(moduleSlug, agentSlug)] ?? null;
+}
+
+// Fetch a single agent by moduleSlug + agentSlug (checks cache first)
 export async function getAgentBySlug(moduleSlug, agentSlug) {
+  const key = cacheKey(moduleSlug, agentSlug);
+  if (agentCache[key]) return agentCache[key];
   const q = query(
     collection(db, COLLECTION),
     where('agentSlug', '==', agentSlug),
@@ -89,7 +118,9 @@ export async function getAgentBySlug(moduleSlug, agentSlug) {
   );
   const snap = await getDocs(q);
   if (snap.empty) return null;
-  return restoreFromFirestore({ id: snap.docs[0].id, ...snap.docs[0].data() });
+  const result = restoreFromFirestore({ id: snap.docs[0].id, ...snap.docs[0].data() });
+  agentCache[key] = result;
+  return result;
 }
 
 // Subscribe to all agents in real-time

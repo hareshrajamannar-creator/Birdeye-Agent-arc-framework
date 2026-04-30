@@ -34,6 +34,8 @@ function toDashboardAgent(agent) {
     avgResponseTime: agent.avgResponseTime || '—',
     timeSaved: agent.timeSaved || '—',
     locations: agent.locations || 0,
+    agentSlug: agent.agentSlug || '',
+    moduleSlug: agent.moduleSlug || agent.moduleContext || '',
   };
 }
 

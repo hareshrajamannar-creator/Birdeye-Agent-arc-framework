@@ -307,6 +307,39 @@
   color: #888;
 }
 
+/* ─── Loading spinner ─── */
+.ab-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  gap: 12px;
+  font-family: 'Roboto', sans-serif;
+  font-size: 15px;
+  color: #555;
+}
+
+.ab-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2.5px solid #e3eafd;
+  border-top-color: #1976d2;
+  border-radius: 50%;
+  animation: ab-spin 0.65s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes ab-spin {
+  to { transform: rotate(360deg); }
+}
+
+.ab-not-found {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
 /* ─── Empty state ─── */
 .agent-builder__empty {
   position: absolute;

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Chip from '@birdeye/elemental/core/atoms/Chip/index.js';
+import { prefetchAgent } from '../../../../services/agentService';
 import styles from './AgentsTable.module.css';
 
 const DEFAULT_COLUMNS = [
@@ -121,6 +122,7 @@ export default function AgentsTable({ agents = [], onRowClick, onDeleteAgent, on
             <tr
               key={agent.id}
               className={styles.tr}
+              onMouseEnter={() => prefetchAgent(agent.agentSlug, agent.moduleSlug)}
               onClick={() => !editingCell && onRowClick?.(agent)}
             >
               {columns.map((col) => {
