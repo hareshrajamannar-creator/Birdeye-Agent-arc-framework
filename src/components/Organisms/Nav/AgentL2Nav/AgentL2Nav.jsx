@@ -13,6 +13,7 @@ export default function AgentL2Nav({
   onGroupCreate,
   onGroupDelete,
   onChildrenReorder,
+  viewOnly = false,
 }) {
   const [expandedIds, setExpandedIds] = useState(
     () => new Set(menuItems.filter((i) => i.defaultExpanded).map((i) => i.id))
@@ -155,18 +156,20 @@ export default function AgentL2Nav({
         </div>
 
         <div className={styles.body}>
-          <button className={styles.ctaBtn} onClick={onCtaClick}>
-            <span className={styles.ctaLabel}>{ctaLabel}</span>
-            <div className={styles.ctaDot}>
-              <span className={`material-symbols-outlined ${styles.ctaDotIcon}`}>add</span>
-            </div>
-          </button>
+          {!viewOnly && (
+            <button className={styles.ctaBtn} onClick={onCtaClick}>
+              <span className={styles.ctaLabel}>{ctaLabel}</span>
+              <div className={styles.ctaDot}>
+                <span className={`material-symbols-outlined ${styles.ctaDotIcon}`}>add</span>
+              </div>
+            </button>
+          )}
 
           <div className={styles.menuList}>
             {menuItems.map((item) => {
-              const isExpanded = expandedIds.has(item.id);
+              const sectionHasActiveChild = item.children?.some((c) => c.id === activeItemId);
+              const isExpanded = viewOnly ? sectionHasActiveChild : expandedIds.has(item.id);
               const isAgents = item.id === 'agents';
-              const sectionHasActiveChild = isAgents && item.children?.some((c) => c.id === activeItemId);
 
               if (item.children) {
                 // Build the display order: use localOrder during drag, otherwise prop order
@@ -178,10 +181,11 @@ export default function AgentL2Nav({
                   <div key={item.id} className={styles.sectionWrap}>
                     <button
                       className={styles.sectionRow}
-                      onClick={() => toggleExpand(item.id)}
+                      onClick={!viewOnly ? () => toggleExpand(item.id) : undefined}
+                      style={viewOnly ? { cursor: 'default' } : undefined}
                     >
                       <span className={styles.sectionLabel}>{item.label}</span>
-                      {isAgents && (
+                      {isAgents && !viewOnly && (
                         <button
                           className={`${styles.addBtn} ${sectionHasActiveChild ? styles.addBtnVisible : ''}`}
                           type="button"
@@ -218,21 +222,22 @@ export default function AgentL2Nav({
                           return (
                             <button
                               key={child.id}
-                              draggable={isAgents}
+                              draggable={isAgents && !viewOnly}
                               className={[
                                 styles.childRow,
                                 isActive ? styles['childRow--active'] : '',
-                                isAgents ? styles.childRowDraggable : '',
+                                isAgents && !viewOnly ? styles.childRowDraggable : '',
                                 isDragging ? styles.childRowDragging : '',
                               ].join(' ')}
-                              onClick={() => !isDragging && onItemClick?.(child.id)}
-                              onDragStart={isAgents ? (e) => handleDragStart(child.id, item.children, e) : undefined}
-                              onDragEnter={isAgents ? () => handleDragEnter(child.id) : undefined}
-                              onDragOver={isAgents ? handleDragOver : undefined}
-                              onDragEnd={isAgents ? handleDragEnd : undefined}
+                              onClick={!viewOnly ? () => !isDragging && onItemClick?.(child.id) : undefined}
+                              style={viewOnly && !isActive ? { cursor: 'default', opacity: 0.5 } : undefined}
+                              onDragStart={isAgents && !viewOnly ? (e) => handleDragStart(child.id, item.children, e) : undefined}
+                              onDragEnter={isAgents && !viewOnly ? () => handleDragEnter(child.id) : undefined}
+                              onDragOver={isAgents && !viewOnly ? handleDragOver : undefined}
+                              onDragEnd={isAgents && !viewOnly ? handleDragEnd : undefined}
                             >
                               <span className={styles.childLabel}>{child.label}</span>
-                              {isAgents && !isActive && (
+                              {isAgents && !isActive && !viewOnly && (
                                 <button
                                   className={styles.deleteBtn}
                                   type="button"
@@ -255,7 +260,8 @@ export default function AgentL2Nav({
                 <button
                   key={item.id}
                   className={styles.standaloneRow}
-                  onClick={() => onItemClick?.(item.id)}
+                  onClick={!viewOnly ? () => onItemClick?.(item.id) : undefined}
+                  style={viewOnly ? { cursor: 'default' } : undefined}
                 >
                   <span className={styles.standaloneLabel}>{item.label}</span>
                   <span className={`material-symbols-outlined ${styles.chevron}`}>expand_more</span>

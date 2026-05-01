@@ -26,7 +26,7 @@ function uid() {
 
 const LOCKED_IDS = new Set(LOCKED_COLS.map((c) => c.id));
 
-export default function GroupTable({ tableData, onTableDataChange, onAgentRowClick, agents = [] }) {
+export default function GroupTable({ tableData, onTableDataChange, onAgentRowClick, agents = [], viewOnly = false }) {
   const [cols, setCols] = useState(() => tableData?.columns ?? DEFAULT_EDITABLE_COLS);
   const [rows, setRows] = useState(() => tableData?.rows ?? []);
   const [editingHeader, setEditingHeader] = useState(null);
@@ -202,7 +202,7 @@ export default function GroupTable({ tableData, onTableDataChange, onAgentRowCli
                   ) : (
                     <div className={styles.thInner}>
                       <span>{col.label}</span>
-                      {!isLocked && (
+                      {!isLocked && !viewOnly && (
                         <span
                           className={`material-symbols-outlined ${styles.thEditIcon}`}
                           onClick={() => startHeaderEdit(col.id, col.label)}
@@ -215,7 +215,7 @@ export default function GroupTable({ tableData, onTableDataChange, onAgentRowCli
                 </th>
               );
             })}
-            <th className={`${styles.th} ${styles.deleteColHeader}`}></th>
+            {!viewOnly && <th className={`${styles.th} ${styles.deleteColHeader}`}></th>}
           </tr>
         </thead>
         <tbody>
@@ -230,6 +230,10 @@ export default function GroupTable({ tableData, onTableDataChange, onAgentRowCli
                 <td
                   className={`${styles.td} ${styles.nameCell}`}
                   onClick={() => {
+                    if (viewOnly) {
+                      if (row.agentId || row.name?.trim()) onAgentRowClick?.(row);
+                      return;
+                    }
                     if (editingCell?.rowId === row.id && editingCell?.colId === 'name') return;
                     if (row.agentId || row.name?.trim()) {
                       onAgentRowClick?.(row);
@@ -238,7 +242,7 @@ export default function GroupTable({ tableData, onTableDataChange, onAgentRowCli
                     }
                   }}
                 >
-                  {editingCell?.rowId === row.id && editingCell?.colId === 'name' ? (
+                  {!viewOnly && editingCell?.rowId === row.id && editingCell?.colId === 'name' ? (
                     <input
                       ref={inputRef}
                       className={styles.cellInput}
@@ -258,8 +262,8 @@ export default function GroupTable({ tableData, onTableDataChange, onAgentRowCli
                 {/* Status — live for linked rows, cycleable for manual rows */}
                 <td
                   className={`${styles.td} ${styles.statusCell}`}
-                  onClick={() => cycleStatus(row.id)}
-                  style={row.agentId ? { cursor: 'default' } : undefined}
+                  onClick={!viewOnly ? () => cycleStatus(row.id) : undefined}
+                  style={(viewOnly || row.agentId) ? { cursor: 'default' } : undefined}
                 >
                   <Chip
                     label={displayStatus}
@@ -270,12 +274,12 @@ export default function GroupTable({ tableData, onTableDataChange, onAgentRowCli
 
                 {/* Editable cols */}
                 {cols.map((col) => {
-                  const isEditing = editingCell?.rowId === row.id && editingCell?.colId === col.id;
+                  const isEditing = !viewOnly && editingCell?.rowId === row.id && editingCell?.colId === col.id;
                   return (
                     <td
                       key={col.id}
                       className={styles.td}
-                      onClick={() => { if (!isEditing) startCellEdit(row.id, col.id, row[col.id]); }}
+                      onClick={!viewOnly ? () => { if (!isEditing) startCellEdit(row.id, col.id, row[col.id]); } : undefined}
                     >
                       {isEditing ? (
                         <input
@@ -297,25 +301,29 @@ export default function GroupTable({ tableData, onTableDataChange, onAgentRowCli
                 })}
 
                 {/* Delete row */}
-                <td className={`${styles.td} ${styles.deleteCell}`} onClick={(e) => e.stopPropagation()}>
-                  <button
-                    className={styles.deleteRowBtn}
-                    title="Remove row"
-                    onClick={() => deleteRow(row.id)}
-                  >
-                    <span className={`material-symbols-outlined ${styles.deleteRowBtnIcon}`}>close</span>
-                  </button>
-                </td>
+                {!viewOnly && (
+                  <td className={`${styles.td} ${styles.deleteCell}`} onClick={(e) => e.stopPropagation()}>
+                    <button
+                      className={styles.deleteRowBtn}
+                      title="Remove row"
+                      onClick={() => deleteRow(row.id)}
+                    >
+                      <span className={`material-symbols-outlined ${styles.deleteRowBtnIcon}`}>close</span>
+                    </button>
+                  </td>
+                )}
               </tr>
             );
           })}
         </tbody>
       </table>
 
-      <button className={styles.addRowBtn} onClick={addRow}>
-        <span className="material-symbols-outlined">add</span>
-        Add row
-      </button>
+      {!viewOnly && (
+        <button className={styles.addRowBtn} onClick={addRow}>
+          <span className="material-symbols-outlined">add</span>
+          Add row
+        </button>
+      )}
     </div>
   );
 }

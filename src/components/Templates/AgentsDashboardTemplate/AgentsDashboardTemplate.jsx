@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import Button from '@birdeye/elemental/core/atoms/Button/index.js';
 import Avatar from '@birdeye/elemental/core/atoms/Avatar/index.js';
@@ -11,6 +12,7 @@ import GroupMetrics from '../../Organisms/GroupMetrics/GroupMetrics';
 import GroupTable from '../../Organisms/GroupTable/GroupTable';
 import TemplateLibrary from '../../Organisms/TemplateLibrary/TemplateLibrary';
 import EmptyStates from '../../Patterns/EmptyStates/EmptyStates';
+import styles from './AgentsDashboardTemplate.module.css';
 
 const font = '"Roboto", sans-serif';
 
@@ -218,6 +220,7 @@ export default function AgentsDashboardTemplate({
   groupDoc,
   onGroupUpdate,
   onCreateAgentFromRow,
+  viewOnly = false,
 }) {
   const [activeTab, setActiveTab] = useState(initialActiveTab || tabs[0]?.id);
   const [libraryView, setLibraryView] = useState('grid');
@@ -226,23 +229,113 @@ export default function AgentsDashboardTemplate({
   const [savedMetrics, setSavedMetrics] = useState(metrics);
   const [savedPrimaryValue, setSavedPrimaryValue] = useState(primaryMetricValue);
 
+  // Share menu + modal state
+  const [shareMenuOpen, setShareMenuOpen] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const shareMenuRef = useRef(null);
+  const copyTimeoutRef = useRef(null);
+
   const agentList = agents ?? [];
   const isEmpty = agentList.length === 0;
   const emptyCopy = EMPTY_STATE_COPY[pageTitle] ?? DEFAULT_EMPTY;
+
+  const shareUrl = `${window.location.origin}/view/${activeNavId}/${activeMenuItemId}`;
 
   useEffect(() => {
     setActiveTab(initialActiveTab || tabs[0]?.id);
   }, [initialActiveTab, tabs]);
 
+  // Close share menu on outside click
+  useEffect(() => {
+    if (!shareMenuOpen) return;
+    function handleOutside(e) {
+      if (shareMenuRef.current && !shareMenuRef.current.contains(e.target)) {
+        setShareMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, [shareMenuOpen]);
+
+  function handleCopy() {
+    navigator.clipboard.writeText(shareUrl).catch(() => {});
+    setCopied(true);
+    clearTimeout(copyTimeoutRef.current);
+    copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000);
+  }
+
+  function handleCloseShareModal() {
+    setShareModalOpen(false);
+    setCopied(false);
+  }
+
+  const shareModal = shareModalOpen
+    ? ReactDOM.createPortal(
+        <div className={styles.modalBackdrop} onClick={handleCloseShareModal}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <p className={styles.modalTitle}>Share {pageTitle}</p>
+              <button className={styles.modalCloseBtn} onClick={handleCloseShareModal}>
+                <span className={`material-symbols-outlined ${styles.modalCloseBtnIcon}`}>close</span>
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <p className={styles.modalBodyText}>
+                Anyone with this link can view this agent group in read-only mode.
+              </p>
+              <div className={styles.urlRow}>
+                <input
+                  className={styles.urlInput}
+                  readOnly
+                  value={shareUrl}
+                  onFocus={(e) => e.target.select()}
+                />
+                <button
+                  className={`${styles.copyBtn} ${copied ? styles.copyBtnCopied : ''}`}
+                  onClick={handleCopy}
+                >
+                  {copied ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+            </div>
+            <div className={styles.modalFooter}>
+              <button className={styles.doneBtn} onClick={handleCloseShareModal}>Done</button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )
+    : null;
+
+  const viewOnlyBanner = viewOnly
+    ? (
+        <div className={styles.viewOnlyBanner}>
+          <span className={`material-symbols-outlined ${styles.viewOnlyBannerIcon}`}>info</span>
+          <span className={styles.viewOnlyBannerText}>
+            You&apos;re viewing a shared agent group in read-only mode.
+          </span>
+          <a
+            href={`mailto:?subject=Request edit access to ${encodeURIComponent(pageTitle)}&body=I'd like to request edit access to this agent group: ${encodeURIComponent(shareUrl)}`}
+            className={styles.viewOnlyBannerLink}
+          >
+            Request edit access
+          </a>
+        </div>
+      )
+    : null;
+
   return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: font, color: '#212121', overflow: 'hidden' }}>
 
-      {/* Primary Rail Nav */}
-      <PrimaryRailNav
-        {...(navItems ? { navItems } : {})}
-        activeNavId={activeNavId}
-        onNavChange={onNavChange}
-      />
+      {/* Primary Rail Nav — locked in view-only mode */}
+      <div className={viewOnly ? styles.l1NavLocked : undefined}>
+        <PrimaryRailNav
+          {...(navItems ? { navItems } : {})}
+          activeNavId={activeNavId}
+          onNavChange={onNavChange}
+        />
+      </div>
 
       {/* Secondary Rail Nav */}
       <AgentL2Nav
@@ -255,6 +348,7 @@ export default function AgentsDashboardTemplate({
         onGroupCreate={onGroupCreate}
         onGroupDelete={onGroupDelete}
         onChildrenReorder={onChildrenReorder}
+        viewOnly={viewOnly}
       />
 
       {/* Main column */}
@@ -285,6 +379,9 @@ export default function AgentsDashboardTemplate({
             <span className="material-symbols-outlined" style={{ fontSize: 20, color: '#555', lineHeight: 1 }}>menu</span>
           </button>
         </div>
+
+        {/* View-only banner */}
+        {viewOnlyBanner}
 
         {/* Page Header */}
         <div style={{
@@ -328,10 +425,43 @@ export default function AgentsDashboardTemplate({
               <button style={{ width: 28, height: 28, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 4 }}>
                 <span className="material-symbols-outlined" style={{ fontSize: 20, color: '#555', lineHeight: 1 }}>search</span>
               </button>
-              <Button theme="primary" label="Create agent" onClick={onCreateAgent} />
+
+              {viewOnly ? (
+                <span className={styles.viewOnlyPill}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 14, lineHeight: 1, fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}>lock</span>
+                  View only
+                </span>
+              ) : (
+                <Button theme="primary" label="Create agent" onClick={onCreateAgent} />
+              )}
+
               <button style={{ width: 36, height: 36, border: '1px solid #e5e9f0', borderRadius: 4, background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <span className="material-symbols-outlined" style={{ fontSize: 20, color: '#555', lineHeight: 1 }}>filter_list</span>
               </button>
+
+              {/* Three-dot share menu — only on group pages in non-viewOnly mode */}
+              {isGroupPage && !viewOnly && (
+                <div className={styles.shareMenuWrap} ref={shareMenuRef}>
+                  <button
+                    className={styles.shareMenuBtn}
+                    onClick={() => setShareMenuOpen((v) => !v)}
+                    title="More options"
+                  >
+                    <span className={`material-symbols-outlined ${styles.shareMenuBtnIcon}`}>more_vert</span>
+                  </button>
+                  {shareMenuOpen && (
+                    <div className={styles.shareMenu}>
+                      <button
+                        className={styles.shareMenuItem}
+                        onClick={() => { setShareMenuOpen(false); setShareModalOpen(true); }}
+                      >
+                        <span className={`material-symbols-outlined ${styles.shareMenuItemIcon}`}>share</span>
+                        Share
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -353,6 +483,7 @@ export default function AgentsDashboardTemplate({
                   key={activeMenuItemId + '-metrics'}
                   metrics={groupDoc?.metrics ?? []}
                   onMetricsChange={(m) => onGroupUpdate?.('metrics', m)}
+                  viewOnly={viewOnly}
                 />
                 <div style={{ padding: '20px 24px 24px' }}>
                   <GroupTable
@@ -364,6 +495,7 @@ export default function AgentsDashboardTemplate({
                       if (row.agentId) onOpenAgent?.(row.agentId);
                       else if (row.name?.trim()) onCreateAgentFromRow?.(row);
                     }}
+                    viewOnly={viewOnly}
                   />
                 </div>
               </>
@@ -414,11 +546,14 @@ export default function AgentsDashboardTemplate({
                 onShareTemplate={onShareTemplate}
                 onDuplicateTemplate={onDuplicateTemplate}
                 onMoveTemplate={onMoveTemplate}
+                viewOnly={viewOnly}
               />
             </div>
           )}
         </div>
       </div>
+
+      {shareModal}
     </div>
   );
 }
@@ -453,4 +588,5 @@ AgentsDashboardTemplate.propTypes = {
   groupDoc: PropTypes.object,
   onGroupUpdate: PropTypes.func,
   onCreateAgentFromRow: PropTypes.func,
+  viewOnly: PropTypes.bool,
 };

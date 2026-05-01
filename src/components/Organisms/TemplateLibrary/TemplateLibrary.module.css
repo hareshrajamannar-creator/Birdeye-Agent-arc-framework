@@ -293,3 +293,55 @@
   letter-spacing: -0.28px;
   line-height: 20px;
 }
+
+/* ─── View-only mode ─── */
+.cardViewOnly {
+  overflow: hidden;
+}
+
+.useAgentOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s;
+  text-decoration: none;
+  color: #1976d2;
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px;
+}
+
+.cardViewOnly:hover .useAgentOverlay {
+  opacity: 1;
+}
+
+.rowViewOnly {
+  cursor: default;
+}
+
+.useAgentRowBtn {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 14px;
+  background: #1976d2;
+  color: #fff;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: "Roboto", sans-serif;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.rowViewOnly:hover .useAgentRowBtn {
+  opacity: 1;
+}

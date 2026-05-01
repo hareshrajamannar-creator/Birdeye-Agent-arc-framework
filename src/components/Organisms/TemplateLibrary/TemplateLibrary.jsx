@@ -114,7 +114,7 @@ function CardMenu({ template, onShare, onDuplicate, onMove, onEdit, onDelete }) 
   );
 }
 
-function TemplateGridCard({ template, onDelete, onEdit, onSave, onUse, onShare, onDuplicate, onMove }) {
+function TemplateGridCard({ template, onDelete, onEdit, onSave, onUse, onShare, onDuplicate, onMove, viewOnly = false }) {
   const [editing, setEditing] = useState(false);
 
   if (editing) {
@@ -128,6 +128,26 @@ function TemplateGridCard({ template, onDelete, onEdit, onSave, onUse, onShare, 
             setEditing(false);
           }}
         />
+      </div>
+    );
+  }
+
+  if (viewOnly) {
+    return (
+      <div className={`${styles.card} ${styles.cardViewOnly}`}>
+        <div className={styles.cardBody}>
+          <p className={`${styles.title} ${styles.clampTitle}`}>{template.title}</p>
+          <p className={`${styles.description} ${styles.clampDescription}`}>{template.description}</p>
+        </div>
+        <a
+          href={`/view/template/${template.id}`}
+          className={styles.useAgentOverlay}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 18, marginRight: 6 }}>open_in_new</span>
+          Use agent
+        </a>
       </div>
     );
   }
@@ -178,7 +198,7 @@ function AddTemplateCard({ onSave }) {
   );
 }
 
-function TemplateListView({ templates, onCreateTemplate, onDeleteTemplate, onSaveTemplate, onUseTemplate, onShareTemplate, onDuplicateTemplate, onMoveTemplate }) {
+function TemplateListView({ templates, onCreateTemplate, onDeleteTemplate, onSaveTemplate, onUseTemplate, onShareTemplate, onDuplicateTemplate, onMoveTemplate, viewOnly = false }) {
   return (
     <div className={styles.list}>
       <div className={styles.listHeader}>
@@ -189,28 +209,41 @@ function TemplateListView({ templates, onCreateTemplate, onDeleteTemplate, onSav
       </div>
 
       {templates.map((template) => (
-        <div key={template.id} className={styles.row}>
+        <div key={template.id} className={`${styles.row} ${viewOnly ? styles.rowViewOnly : ''}`}>
           <div className={styles.rowBody}>
             <span className={styles.rowTitle}>{template.title}</span>
             <span className={styles.rowDescription}>{template.description}</span>
           </div>
-          <div className={styles.rowActions}>
-            <Button type="primary" size="small" label="Edit template" onClick={() => onUseTemplate?.(template.id)} />
-            <CardMenu
-              template={template}
-              onShare={onShareTemplate}
-              onDuplicate={onDuplicateTemplate}
-              onMove={onMoveTemplate}
-              onEdit={() => onSaveTemplate?.({ ...template, editRequested: true })}
-              onDelete={onDeleteTemplate}
-            />
-          </div>
+          {viewOnly ? (
+            <a
+              href={`/view/template/${template.id}`}
+              className={styles.useAgentRowBtn}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Use agent
+            </a>
+          ) : (
+            <div className={styles.rowActions}>
+              <Button type="primary" size="small" label="Edit template" onClick={() => onUseTemplate?.(template.id)} />
+              <CardMenu
+                template={template}
+                onShare={onShareTemplate}
+                onDuplicate={onDuplicateTemplate}
+                onMove={onMoveTemplate}
+                onEdit={() => onSaveTemplate?.({ ...template, editRequested: true })}
+                onDelete={onDeleteTemplate}
+              />
+            </div>
+          )}
         </div>
       ))}
 
-      <div className={styles.row}>
-        <TemplateForm onCancel={() => {}} onSave={onCreateTemplate} />
-      </div>
+      {!viewOnly && (
+        <div className={styles.row}>
+          <TemplateForm onCancel={() => {}} onSave={onCreateTemplate} />
+        </div>
+      )}
     </div>
   );
 }
@@ -227,6 +260,7 @@ export default function TemplateLibrary({
   onDuplicateTemplate,
   onMoveTemplate,
   onSeeMore,
+  viewOnly = false,
 }) {
   const [listEditTemplate, setListEditTemplate] = useState(null);
   const visible = variant === 'see-more' ? templates.slice(0, initialCount) : templates;
@@ -258,6 +292,7 @@ export default function TemplateLibrary({
         onShareTemplate={onShareTemplate}
         onDuplicateTemplate={onDuplicateTemplate}
         onMoveTemplate={onMoveTemplate}
+        viewOnly={viewOnly}
       />
     );
   }
@@ -275,9 +310,10 @@ export default function TemplateLibrary({
             onShare={onShareTemplate}
             onDuplicate={onDuplicateTemplate}
             onMove={onMoveTemplate}
+            viewOnly={viewOnly}
           />
         ))}
-        {variant !== 'see-more' && <AddTemplateCard onSave={onCreateTemplate} />}
+        {variant !== 'see-more' && !viewOnly && <AddTemplateCard onSave={onCreateTemplate} />}
       </div>
 
       {hasMore && (
