@@ -308,22 +308,6 @@ export default function AgentsDashboardTemplate({
       )
     : null;
 
-  const viewOnlyBanner = viewOnly
-    ? (
-        <div className={styles.viewOnlyBanner}>
-          <span className={`material-symbols-outlined ${styles.viewOnlyBannerIcon}`}>info</span>
-          <span className={styles.viewOnlyBannerText}>
-            You&apos;re viewing a shared agent group in read-only mode.
-          </span>
-          <a
-            href={`mailto:?subject=Request edit access to ${encodeURIComponent(pageTitle)}&body=I'd like to request edit access to this agent group: ${encodeURIComponent(shareUrl)}`}
-            className={styles.viewOnlyBannerLink}
-          >
-            Request edit access
-          </a>
-        </div>
-      )
-    : null;
 
   return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: font, color: '#212121', overflow: 'hidden' }}>
@@ -380,9 +364,6 @@ export default function AgentsDashboardTemplate({
           </button>
         </div>
 
-        {/* View-only banner */}
-        {viewOnlyBanner}
-
         {/* Page Header */}
         <div style={{
           height: 64,
@@ -426,14 +407,7 @@ export default function AgentsDashboardTemplate({
                 <span className="material-symbols-outlined" style={{ fontSize: 20, color: '#555', lineHeight: 1 }}>search</span>
               </button>
 
-              {viewOnly ? (
-                <span className={styles.viewOnlyPill}>
-                  <span className="material-symbols-outlined" style={{ fontSize: 14, lineHeight: 1, fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20" }}>lock</span>
-                  View only
-                </span>
-              ) : (
-                <Button theme="primary" label="Create agent" onClick={onCreateAgent} />
-              )}
+              <Button theme="primary" label="Create agent" onClick={onCreateAgent} />
 
               <button style={{ width: 36, height: 36, border: '1px solid #e5e9f0', borderRadius: 4, background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <span className="material-symbols-outlined" style={{ fontSize: 20, color: '#555', lineHeight: 1 }}>filter_list</span>

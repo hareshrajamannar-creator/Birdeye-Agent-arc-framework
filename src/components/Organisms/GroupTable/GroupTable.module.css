@@ -90,8 +90,12 @@
 }
 
 .nameLink {
-  color: #1976d2;
+  color: inherit;
   cursor: pointer;
+}
+
+.tr:hover .nameLink {
+  color: #1976d2;
 }
 
 .emptyCell {

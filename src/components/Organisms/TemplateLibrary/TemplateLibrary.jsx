@@ -134,20 +134,21 @@ function TemplateGridCard({ template, onDelete, onEdit, onSave, onUse, onShare, 
 
   if (viewOnly) {
     return (
-      <div className={`${styles.card} ${styles.cardViewOnly}`}>
+      <div className={styles.card}>
         <div className={styles.cardBody}>
           <p className={`${styles.title} ${styles.clampTitle}`}>{template.title}</p>
           <p className={`${styles.description} ${styles.clampDescription}`}>{template.description}</p>
         </div>
-        <a
-          href={`/view/template/${template.id}`}
-          className={styles.useAgentOverlay}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: 18, marginRight: 6 }}>open_in_new</span>
-          Use agent
-        </a>
+        <div className={styles.cardActions}>
+          <a
+            href={`/view/template/${template.id}`}
+            className={styles.useAgentViewOnlyBtn}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Use agent
+          </a>
+        </div>
       </div>
     );
   }
