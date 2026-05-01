@@ -203,9 +203,11 @@ export default function GroupTable({ tableData, onTableDataChange, onAgentRowCli
               <td
                 className={`${styles.td} ${styles.nameCell}`}
                 onClick={() => {
-                  if (row.agentId) {
+                  if (editingCell?.rowId === row.id && editingCell?.colId === 'name') return;
+                  if (row.agentId || row.name?.trim()) {
+                    // Named rows (with or without agentId) open the agent builder
                     onAgentRowClick?.(row);
-                  } else if (!(editingCell?.rowId === row.id && editingCell?.colId === 'name')) {
+                  } else {
                     startCellEdit(row.id, 'name', row.name);
                   }
                 }}
@@ -221,7 +223,7 @@ export default function GroupTable({ tableData, onTableDataChange, onAgentRowCli
                     onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
-                  <span className={row.agentId ? styles.nameLink : styles.nameValue}>
+                  <span className={(row.agentId || row.name?.trim()) ? styles.nameLink : styles.nameValue}>
                     {row.name || <span className={styles.emptyCell}>—</span>}
                   </span>
                 )}

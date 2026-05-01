@@ -217,6 +217,7 @@ export default function AgentsDashboardTemplate({
   isGroupPage = false,
   groupDoc,
   onGroupUpdate,
+  onCreateAgentFromRow,
 }) {
   const [activeTab, setActiveTab] = useState(initialActiveTab || tabs[0]?.id);
   const [libraryView, setLibraryView] = useState('grid');
@@ -358,7 +359,10 @@ export default function AgentsDashboardTemplate({
                     key={activeMenuItemId + '-table'}
                     tableData={groupDoc?.table}
                     onTableDataChange={(t) => onGroupUpdate?.('table', t)}
-                    onAgentRowClick={(row) => row.agentId && onOpenAgent?.(row.agentId)}
+                    onAgentRowClick={(row) => {
+                    if (row.agentId) onOpenAgent?.(row.agentId);
+                    else if (row.name?.trim()) onCreateAgentFromRow?.(row);
+                  }}
                   />
                 </div>
               </>
@@ -447,4 +451,5 @@ AgentsDashboardTemplate.propTypes = {
   isGroupPage: PropTypes.bool,
   groupDoc: PropTypes.object,
   onGroupUpdate: PropTypes.func,
+  onCreateAgentFromRow: PropTypes.func,
 };

@@ -277,21 +277,67 @@ function App() {
   /* ─── Agent builder open / close ─── */
   async function handleCreateAgent(template) {
     const newId = crypto.randomUUID();
-    const moduleSlug = currentModule;
-    const agentSlug = toSlug(template?.title || 'agent') + '-' + Date.now().toString(36);
+    const moduleSlug = effectiveModule;
+    const agentName = template?.title || '';
+    const agentSlug = toSlug(agentName || 'agent') + '-' + Date.now().toString(36);
     await saveAgent(newId, {
       id: newId,
-      name: template?.title || '',
+      name: agentName,
       moduleSlug,
       agentSlug,
-      moduleContext: currentModule,
-      sectionContext: activeL2Item,
+      moduleContext: effectiveModule,
+      sectionContext: effectiveSection,
       status: 'Draft',
       nodes: template?.nodes || null,
       nodeDetails: template?.nodeDetails || null,
       templateId: template?.id,
       templateSource: template?.source,
     });
+
+    // Add a row to the section's GroupTable so the new agent appears in the list
+    if (isGroupPage) {
+      const existingTable = groupDoc?.table ?? { rows: [] };
+      const newRow = {
+        id: crypto.randomUUID(),
+        agentId: newId,
+        name: agentName || 'Untitled agent',
+        status: 'Draft',
+        col1: '', col2: '', col3: '', col4: '', col5: '',
+      };
+      await handleGroupUpdate('table', {
+        ...existingTable,
+        rows: [...(existingTable.rows ?? []), newRow],
+      });
+    }
+
+    navigate(`/${moduleSlug}/agents/${agentSlug}`);
+  }
+
+  /* ─── Open agent from a named GroupTable row (no agentId yet) ─── */
+  async function handleCreateAgentFromRow(row) {
+    const newId = crypto.randomUUID();
+    const moduleSlug = effectiveModule;
+    const agentName = row.name?.trim() || 'Untitled agent';
+    const agentSlug = toSlug(agentName) + '-' + Date.now().toString(36);
+
+    await saveAgent(newId, {
+      id: newId,
+      name: agentName,
+      moduleSlug,
+      agentSlug,
+      moduleContext: effectiveModule,
+      sectionContext: effectiveSection,
+      status: 'Draft',
+    });
+
+    // Link the existing row to the new agent
+    if (groupDoc?.table) {
+      const updatedRows = (groupDoc.table.rows ?? []).map((r) =>
+        r.id === row.id ? { ...r, agentId: newId } : r
+      );
+      await handleGroupUpdate('table', { ...groupDoc.table, rows: updatedRows });
+    }
+
     navigate(`/${moduleSlug}/agents/${agentSlug}`);
   }
 
@@ -461,7 +507,14 @@ function App() {
         return [entry, ...rest];
       });
     }
-    navigate('/');
+    // Navigate back to the section the agent belongs to, not the root
+    const mod = publishedAgent?.moduleSlug || publishedAgent?.moduleContext;
+    const sec = publishedAgent?.sectionContext;
+    if (mod && sec) {
+      navigate(`/${mod}/agents/${sec}`);
+    } else {
+      navigate('/');
+    }
     if (isPublish) {
       showToast('Agent published successfully');
     }
@@ -629,6 +682,7 @@ function App() {
       groupDoc={groupDoc}
       onGroupUpdate={handleGroupUpdate}
       onOpenAgent={handleOpenAgent}
+      onCreateAgentFromRow={handleCreateAgentFromRow}
       onDeleteAgent={handleDeleteAgent}
       onAgentUpdate={handleAgentUpdate}
       onExportAgent={handleExportAgent}
@@ -641,7 +695,14 @@ function App() {
       <AgentBuilder
         onSaveAgent={handleSaveAgent}
         onSaveTemplate={handleSaveTemplate}
-        onClose={() => navigate('/')}
+        onClose={() => {
+          // Navigate back to the section the agent belongs to
+          const agent = agents.find((a) => a.agentSlug === pathSlug && !a.isAgentGroup && !a.isSectionConfig);
+          const mod = agent?.moduleSlug || agent?.moduleContext || pathModule;
+          const sec = agent?.sectionContext;
+          if (mod && sec) navigate(`/${mod}/agents/${sec}`);
+          else navigate('/');
+        }}
       />
     </ReactFlowProvider>
   );
