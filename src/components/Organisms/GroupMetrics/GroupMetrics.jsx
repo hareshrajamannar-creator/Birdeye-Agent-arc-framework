@@ -101,22 +101,24 @@ export default function GroupMetrics({ metrics = [], onMetricsChange }) {
           </div>
         ))}
 
-        <div className={styles.addWrap} ref={pickerRef}>
-          <button className={styles.addBtn} onClick={() => setPickerOpen((p) => !p)}>
-            <span className="material-symbols-outlined">add</span>
-            Add metric
-          </button>
-          {pickerOpen && (
-            <div className={styles.picker}>
-              {CARD_TYPES.map(({ type, icon, label }) => (
-                <button key={type} className={styles.pickerItem} onClick={() => addCard(type)}>
-                  <span className={`material-symbols-outlined ${styles.pickerIcon}`}>{icon}</span>
-                  {label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        {items.length < 4 && (
+          <div className={styles.addWrap} ref={pickerRef}>
+            <button className={styles.addBtn} onClick={() => setPickerOpen((p) => !p)}>
+              <span className="material-symbols-outlined">add</span>
+              Add metric
+            </button>
+            {pickerOpen && (
+              <div className={styles.picker}>
+                {CARD_TYPES.map(({ type, icon, label }) => (
+                  <button key={type} className={styles.pickerItem} onClick={() => addCard(type)}>
+                    <span className={`material-symbols-outlined ${styles.pickerIcon}`}>{icon}</span>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <MetricCustomiserModal

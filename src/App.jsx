@@ -231,10 +231,15 @@ function App() {
     (a) => (a.agentSlug === effectiveSection || a.id === effectiveSection) && a.isAgentGroup === true
   );
 
-  // The Firestore doc for the current group (null on non-group sections)
-  const groupDoc = isDynamicGroupSection
+  // Group page: true for ALL section URLs — consistent configurator UI on every section
+  const isGroupPage = isAtSectionUrl;
+
+  // Firestore doc for the current section (dynamic group OR static section config)
+  const groupDoc = isGroupPage
     ? agents.find(
-        (a) => (a.agentSlug === effectiveSection || a.id === effectiveSection) && a.isAgentGroup === true
+        (a) =>
+          ((a.agentSlug === effectiveSection || a.id === effectiveSection) && a.isAgentGroup === true) ||
+          (a.isSectionConfig === true && a.agentSlug === effectiveSection && a.moduleContext === effectiveModule)
       ) ?? null
     : null;
 
@@ -243,6 +248,7 @@ function App() {
       agents
         .filter((a) => {
           if (a.isAgentGroup) return false;
+          if (a.isSectionConfig) return false;
           if (a.moduleContext !== effectiveModule) return false;
           if (effectiveSection === 'view-all-agents') return true;
           // Legacy agents without sectionContext are only surfaced in static sections
@@ -393,9 +399,22 @@ function App() {
   }
 
   async function handleGroupUpdate(field, value) {
-    if (!groupDoc) return;
-    const { updatedAt, ...rest } = groupDoc;
-    await saveAgent(groupDoc.id, { ...rest, [field]: value });
+    if (!isGroupPage) return;
+    if (groupDoc) {
+      const { updatedAt, ...rest } = groupDoc;
+      await saveAgent(groupDoc.id, { ...rest, [field]: value });
+    } else {
+      // Static section — create a section config doc on first save
+      const configId = `section-${effectiveModule}-${effectiveSection}`;
+      await saveAgent(configId, {
+        id: configId,
+        isSectionConfig: true,
+        agentSlug: effectiveSection,
+        moduleContext: effectiveModule,
+        moduleSlug: effectiveModule,
+        [field]: value,
+      });
+    }
   }
 
   async function handleGroupDelete(itemId) {
@@ -606,7 +625,7 @@ function App() {
       onGroupCreate={handleGroupCreate}
       onGroupDelete={handleGroupDelete}
       onChildrenReorder={handleChildrenReorder}
-      isGroupPage={isDynamicGroupSection}
+      isGroupPage={isGroupPage}
       groupDoc={groupDoc}
       onGroupUpdate={handleGroupUpdate}
       onOpenAgent={handleOpenAgent}

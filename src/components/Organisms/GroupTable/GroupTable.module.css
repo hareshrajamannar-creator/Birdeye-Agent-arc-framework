@@ -122,6 +122,49 @@
   padding: 0;
 }
 
+/* ─── Delete row ─── */
+.deleteColHeader {
+  width: 40px;
+  padding: 10px 4px;
+}
+
+.deleteCell {
+  width: 40px;
+  padding: 4px;
+  text-align: center;
+}
+
+.deleteRowBtn {
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.12s, background 0.12s;
+  padding: 0;
+}
+
+.tr:hover .deleteRowBtn {
+  opacity: 1;
+}
+
+.deleteRowBtn:hover {
+  background: #fde8e8;
+}
+
+.deleteRowBtnIcon {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+  line-height: 1 !important;
+  color: #b42318;
+}
+
 /* ─── Add row ─── */
 .addRowBtn {
   display: flex;

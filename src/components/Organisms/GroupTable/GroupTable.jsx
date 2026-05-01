@@ -135,6 +135,13 @@ export default function GroupTable({ tableData, onTableDataChange, onAgentRowCli
     emit(cols, updated);
   }
 
+  /* ─── Delete row ─── */
+  function deleteRow(rowId) {
+    const updated = rows.filter((r) => r.id !== rowId);
+    setRows(updated);
+    emit(cols, updated);
+  }
+
   /* ─── Add row ─── */
   function addRow() {
     const newRow = {
@@ -186,6 +193,7 @@ export default function GroupTable({ tableData, onTableDataChange, onAgentRowCli
                 </th>
               );
             })}
+            <th className={`${styles.th} ${styles.deleteColHeader}`}></th>
           </tr>
         </thead>
         <tbody>
@@ -258,6 +266,17 @@ export default function GroupTable({ tableData, onTableDataChange, onAgentRowCli
                   </td>
                 );
               })}
+
+              {/* Delete row */}
+              <td className={`${styles.td} ${styles.deleteCell}`} onClick={(e) => e.stopPropagation()}>
+                <button
+                  className={styles.deleteRowBtn}
+                  title="Remove row"
+                  onClick={() => deleteRow(row.id)}
+                >
+                  <span className={`material-symbols-outlined ${styles.deleteRowBtnIcon}`}>close</span>
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
