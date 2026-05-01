@@ -121,10 +121,10 @@
   padding: 6px 10px;
   border-radius: 4px;
   white-space: normal;
-  max-width: 200px;
+  max-width: 280px;
   z-index: 200;
   pointer-events: none;
-  text-align: center;
+  text-align: left;
   line-height: 1.4;
 }
 

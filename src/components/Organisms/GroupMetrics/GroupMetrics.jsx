@@ -89,6 +89,9 @@ export default function GroupMetrics({ metrics = [], onMetricsChange }) {
               onConfig={() => setConfigCardId(card.id)}
               onValueChange={(v) => updateCard(card.id, { value: v })}
               onTitleChange={(t) => updateCard(card.id, { label: t })}
+              onBatchSave={({ value: v, title: t, tooltip }) =>
+                updateCard(card.id, { value: v, label: t, tooltip })
+              }
               autoEdit={card.id === newCardId}
             />
             <button

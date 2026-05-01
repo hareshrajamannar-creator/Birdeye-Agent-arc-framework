@@ -14,6 +14,7 @@ export default function MetricCard({
   onTitleChange,
   tooltipText = '',
   onTooltipChange,
+  onBatchSave,
   autoEdit = false,
 }) {
   const [editing, setEditing] = useState(false);
@@ -45,9 +46,14 @@ export default function MetricCard({
     committedRef.current = true;
     const v = draftValue.trim() || value;
     const t = draftTitle.trim() || title;
-    if (v !== value) onValueChange?.(v);
-    if (t !== title) onTitleChange?.(t);
-    if (hasActionButtons && draftTooltip !== (tooltipText ?? '')) onTooltipChange(draftTooltip);
+    if (onBatchSave) {
+      // Single atomic update — avoids stale-closure bug when both value and title change
+      onBatchSave({ value: v, title: t, tooltip: draftTooltip });
+    } else {
+      if (v !== value) onValueChange?.(v);
+      if (t !== title) onTitleChange?.(t);
+      if (hasActionButtons && draftTooltip !== (tooltipText ?? '')) onTooltipChange?.(draftTooltip);
+    }
     setEditing(false);
   }
 
