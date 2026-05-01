@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import Chip from '@birdeye/elemental/core/atoms/Chip/index.js';
 import styles from './GroupTable.module.css';
 
 const LOCKED_COLS = [
@@ -15,11 +16,7 @@ const DEFAULT_EDITABLE_COLS = [
 ];
 
 const STATUS_CYCLE = ['Running', 'Paused', 'Draft'];
-const STATUS_CLASS = {
-  Running: styles.statusRunning,
-  Paused: styles.statusPaused,
-  Draft: styles.statusDraft,
-};
+const STATUS_COLOR = { Running: 'green', Paused: 'yellow', Draft: 'grey' };
 
 function uid() {
   return typeof crypto !== 'undefined' && crypto.randomUUID
@@ -227,9 +224,11 @@ export default function GroupTable({ tableData, onTableDataChange, onAgentRowCli
                 className={`${styles.td} ${styles.statusCell}`}
                 onClick={() => cycleStatus(row.id)}
               >
-                <span className={`${styles.statusPill} ${STATUS_CLASS[row.status] || styles.statusDraft}`}>
-                  {row.status || 'Draft'}
-                </span>
+                <Chip
+                  label={row.status || 'Draft'}
+                  colorType={STATUS_COLOR[row.status] || 'grey'}
+                  size="small"
+                />
               </td>
 
               {/* Editable cols */}

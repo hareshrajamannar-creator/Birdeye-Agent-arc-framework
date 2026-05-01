@@ -4,200 +4,69 @@
 
 .row {
   display: flex;
-  flex-wrap: wrap;
   gap: 12px;
+  width: 100%;
   align-items: flex-start;
 }
 
-/* ─── Card ─── */
-.card {
+/* ─── Card wrapper (overlay for delete button + calc note) ─── */
+.cardWrap {
   position: relative;
-  background: #fff;
-  border: 1px solid #e5e9f0;
-  border-radius: 8px;
-  padding: 14px 16px 16px;
-  min-width: 160px;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.cardHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.typeIcon {
-  font-size: 18px !important;
-  color: #aaa;
-  line-height: 1;
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
-}
-
-.actions {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-
-.actionBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  border-radius: 4px;
-  color: #aaa;
-  padding: 0;
-  transition: background 0.12s, color 0.12s;
-}
-
-.actionBtn:hover {
-  background: #f0f0f0;
-  color: #212121;
-}
-
-.actionBtn span {
-  font-size: 16px !important;
-  line-height: 1;
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+  flex: 1 0 0;
+  min-width: 0;
 }
 
 .deleteBtn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid #eaeaea;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  border-radius: 4px;
-  color: #aaa;
   padding: 0;
+  cursor: pointer;
   opacity: 0;
-  transition: opacity 0.12s, background 0.12s, color 0.12s;
+  z-index: 1;
+  color: #888;
+  transition: opacity 0.12s, background 0.12s, color 0.12s, border-color 0.12s;
 }
 
-.card:hover .deleteBtn {
+.cardWrap:hover .deleteBtn {
   opacity: 1;
 }
 
 .deleteBtn:hover {
   background: #fde8e8;
+  border-color: #fde8e8;
   color: #b42318;
 }
 
 .deleteBtn span {
-  font-size: 14px !important;
+  font-size: 13px !important;
   line-height: 1;
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
 }
 
-/* ─── Value ─── */
-.value {
-  font-size: 28px;
-  font-weight: 500;
-  line-height: 1.1;
-  color: #212121;
-  font-family: 'Roboto', sans-serif;
-  cursor: pointer;
-  letter-spacing: -0.5px;
-  display: block;
-  margin-bottom: 4px;
-}
-
-.value:hover {
-  color: #1976d2;
-}
-
-.valueInput {
-  font-size: 28px;
-  font-weight: 500;
-  color: #212121;
-  font-family: 'Roboto', sans-serif;
-  border: none;
-  border-bottom: 1px solid #1976d2;
-  outline: none;
-  background: transparent;
-  padding: 0;
-  width: 100%;
-  letter-spacing: -0.5px;
-  margin-bottom: 4px;
-}
-
-/* ─── Label ─── */
-.label {
-  font-size: 13px;
-  line-height: 1.4;
-  color: #666;
-  font-family: 'Roboto', sans-serif;
-  cursor: pointer;
-  display: block;
-}
-
-.label:hover {
-  color: #212121;
-}
-
-.labelInput {
-  font-size: 13px;
-  color: #666;
-  font-family: 'Roboto', sans-serif;
-  border: none;
-  border-bottom: 1px solid #1976d2;
-  outline: none;
-  background: transparent;
-  padding: 0;
-  width: 100%;
-}
-
-/* ─── Tooltip inline editor ─── */
-.tooltipInput {
-  font-size: 12px;
-  color: #212121;
-  font-family: 'Roboto', sans-serif;
-  border: none;
-  border-bottom: 1px solid #1976d2;
-  outline: none;
-  background: transparent;
-  padding: 0;
-  width: 100%;
-  margin-top: 6px;
-}
-
-/* ─── Tooltip bubble ─── */
-.infoContainer {
-  position: relative;
-}
-
-.tooltipBubble {
+/* ─── Calculation note popover (timesaved cards) ─── */
+.calcNotePanel {
   position: absolute;
-  top: 28px;
+  top: calc(100% + 6px);
+  left: 0;
   right: 0;
-  background: #333;
-  color: #fff;
-  font-size: 12px;
-  font-family: 'Roboto', sans-serif;
-  padding: 6px 10px;
+  background: #fff;
+  border: 1px solid #eaeaea;
   border-radius: 4px;
-  white-space: normal;
-  max-width: 180px;
-  z-index: 100;
-  pointer-events: none;
-}
-
-/* ─── Calculation note ─── */
-.calcNote {
-  margin-top: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  padding: 12px;
+  z-index: 200;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .calcNoteLabel {
@@ -213,7 +82,7 @@
   font-size: 13px;
   font-family: 'Roboto', sans-serif;
   color: #212121;
-  border: 1px solid #e5e9f0;
+  border: 1px solid #eaeaea;
   border-radius: 4px;
   padding: 8px;
   resize: none;
@@ -221,21 +90,18 @@
   outline: none;
   width: 100%;
   box-sizing: border-box;
+  transition: border-color 0.15s;
 }
 
 .calcNoteArea:focus {
-  border-color: #1976d2;
-}
-
-/* ─── Muted placeholder ─── */
-.muted {
-  color: #ccc;
+  border-color: #c5d8fc;
 }
 
 /* ─── Add metric button ─── */
 .addWrap {
   position: relative;
   align-self: center;
+  flex-shrink: 0;
 }
 
 .addBtn {
@@ -244,19 +110,20 @@
   gap: 6px;
   height: 36px;
   padding: 0 14px;
-  border: 1px solid #e5e9f0;
-  border-radius: 6px;
+  border: 1px solid #eaeaea;
+  border-radius: 4px;
   background: #fff;
   color: #212121;
   font-size: 13px;
   font-family: 'Roboto', sans-serif;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.12s;
+  transition: border-color 0.15s, background 0.12s;
 }
 
 .addBtn:hover {
-  background: #f5f5f5;
+  border-color: #c5d8fc;
+  background: #f5f8ff;
 }
 
 .addBtn span {

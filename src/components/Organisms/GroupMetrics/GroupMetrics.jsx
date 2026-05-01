@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import MetricCard from '../../Molecules/MetricCard/MetricCard';
 import styles from './GroupMetrics.module.css';
 
 const CARD_TYPES = [
@@ -12,131 +13,10 @@ function uid() {
     : Math.random().toString(36).slice(2);
 }
 
-function MetricCard({ card, onUpdate, onDelete }) {
-  const [editingField, setEditingField] = useState(null);
-  const [draft, setDraft] = useState('');
-  const [showTooltip, setShowTooltip] = useState(false);
-  const [calcNoteOpen, setCalcNoteOpen] = useState(false);
-
-  function startEdit(field) {
-    setEditingField(field);
-    setDraft(card[field] ?? '');
-    setCalcNoteOpen(false);
-  }
-
-  function commit(field) {
-    onUpdate({ ...card, [field]: draft });
-    setEditingField(null);
-  }
-
-  function kd(e, field) {
-    if (e.key === 'Enter') commit(field);
-    if (e.key === 'Escape') setEditingField(null);
-  }
-
-  const isTimeSaved = card.type === 'timesaved';
-
-  return (
-    <div className={styles.card}>
-      <div className={styles.cardHead}>
-        <span className={`material-symbols-outlined ${styles.typeIcon}`}>
-          {isTimeSaved ? 'schedule' : 'bar_chart'}
-        </span>
-        <div className={styles.actions}>
-          {isTimeSaved ? (
-            <button
-              className={styles.actionBtn}
-              title="Calculation note"
-              onClick={() => setCalcNoteOpen((p) => !p)}
-            >
-              <span className="material-symbols-outlined">settings</span>
-            </button>
-          ) : (
-            <div
-              className={styles.infoContainer}
-              onMouseEnter={() => setShowTooltip(true)}
-              onMouseLeave={() => setShowTooltip(false)}
-            >
-              <button
-                className={styles.actionBtn}
-                title="Edit tooltip"
-                onClick={() => startEdit('tooltip')}
-              >
-                <span className="material-symbols-outlined">info</span>
-              </button>
-              {showTooltip && card.tooltip && (
-                <div className={styles.tooltipBubble}>{card.tooltip}</div>
-              )}
-            </div>
-          )}
-          <button className={styles.deleteBtn} title="Remove metric" onClick={onDelete}>
-            <span className="material-symbols-outlined">close</span>
-          </button>
-        </div>
-      </div>
-
-      {editingField === 'value' ? (
-        <input
-          autoFocus
-          className={styles.valueInput}
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={() => commit('value')}
-          onKeyDown={(e) => kd(e, 'value')}
-        />
-      ) : (
-        <span className={styles.value} onClick={() => startEdit('value')}>
-          {card.value || <span className={styles.muted}>0</span>}
-        </span>
-      )}
-
-      {editingField === 'label' ? (
-        <input
-          autoFocus
-          className={styles.labelInput}
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={() => commit('label')}
-          onKeyDown={(e) => kd(e, 'label')}
-        />
-      ) : (
-        <span className={styles.label} onClick={() => startEdit('label')}>
-          {card.label || <span className={styles.muted}>Label</span>}
-        </span>
-      )}
-
-      {editingField === 'tooltip' && (
-        <input
-          autoFocus
-          className={styles.tooltipInput}
-          placeholder="Tooltip text…"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={() => commit('tooltip')}
-          onKeyDown={(e) => kd(e, 'tooltip')}
-        />
-      )}
-
-      {calcNoteOpen && (
-        <div className={styles.calcNote}>
-          <span className={styles.calcNoteLabel}>Calculation note</span>
-          <textarea
-            autoFocus
-            className={styles.calcNoteArea}
-            placeholder="How is this calculated?"
-            value={card.calculationNote ?? ''}
-            onChange={(e) => onUpdate({ ...card, calculationNote: e.target.value })}
-            onBlur={() => setCalcNoteOpen(false)}
-          />
-        </div>
-      )}
-    </div>
-  );
-}
-
 export default function GroupMetrics({ metrics = [], onMetricsChange }) {
   const [items, setItems] = useState(metrics);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [calcNoteOpenId, setCalcNoteOpenId] = useState(null);
   const pickerRef = useRef(null);
   const initialized = useRef(metrics.length > 0);
 
@@ -157,40 +37,62 @@ export default function GroupMetrics({ metrics = [], onMetricsChange }) {
     return () => document.removeEventListener('mousedown', handler);
   }, [pickerOpen]);
 
-  function addCard(type) {
-    const newCard = { id: uid(), type, value: '', label: '', tooltip: '', calculationNote: '' };
-    const next = [...items, newCard];
+  function push(next) {
     setItems(next);
     initialized.current = true;
     onMetricsChange(next);
+  }
+
+  function addCard(type) {
+    const newCard = { id: uid(), type, value: '', label: '', calculationNote: '' };
+    push([...items, newCard]);
     setPickerOpen(false);
   }
 
-  function updateCard(id, updated) {
-    const next = items.map((m) => (m.id === id ? updated : m));
-    setItems(next);
-    initialized.current = true;
-    onMetricsChange(next);
+  function updateCard(id, patch) {
+    push(items.map((m) => (m.id === id ? { ...m, ...patch } : m)));
   }
 
   function deleteCard(id) {
-    const next = items.filter((m) => m.id !== id);
-    setItems(next);
-    initialized.current = true;
-    onMetricsChange(next);
+    push(items.filter((m) => m.id !== id));
+    if (calcNoteOpenId === id) setCalcNoteOpenId(null);
   }
 
   return (
     <div className={styles.root}>
       <div className={styles.row}>
         {items.map((card) => (
-          <MetricCard
-            key={card.id}
-            card={card}
-            onUpdate={(updated) => updateCard(card.id, updated)}
-            onDelete={() => deleteCard(card.id)}
-          />
+          <div key={card.id} className={styles.cardWrap}>
+            <MetricCard
+              value={card.value}
+              title={card.label}
+              showConfig={card.type === 'timesaved'}
+              onConfig={() => setCalcNoteOpenId(calcNoteOpenId === card.id ? null : card.id)}
+              onValueChange={(v) => updateCard(card.id, { value: v })}
+              onTitleChange={(t) => updateCard(card.id, { label: t })}
+            />
+            <button
+              className={styles.deleteBtn}
+              title="Remove metric"
+              onClick={() => deleteCard(card.id)}
+            >
+              <span className="material-symbols-outlined">close</span>
+            </button>
+            {calcNoteOpenId === card.id && (
+              <div className={styles.calcNotePanel}>
+                <span className={styles.calcNoteLabel}>Calculation note</span>
+                <textarea
+                  autoFocus
+                  className={styles.calcNoteArea}
+                  placeholder="How is this calculated?"
+                  value={card.calculationNote ?? ''}
+                  onChange={(e) => updateCard(card.id, { calculationNote: e.target.value })}
+                />
+              </div>
+            )}
+          </div>
         ))}
+
         <div className={styles.addWrap} ref={pickerRef}>
           <button className={styles.addBtn} onClick={() => setPickerOpen((p) => !p)}>
             <span className="material-symbols-outlined">add</span>
