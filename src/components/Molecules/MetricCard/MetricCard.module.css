@@ -19,8 +19,9 @@
   opacity: 0;
   transition: opacity 0.12s;
   position: absolute;
-  top: 8px;
-  right: 44px;
+  bottom: 10px;
+  right: 12px;
+  cursor: pointer;
 }
 
 .card:hover .editHint {
@@ -28,9 +29,9 @@
 }
 
 .editHintIcon {
-  font-size: 14px !important;
-  width: 14px !important;
-  height: 14px !important;
+  font-size: 20px !important;
+  width: 20px !important;
+  height: 20px !important;
   line-height: 1 !important;
   color: #aaa;
 }
@@ -92,6 +93,13 @@
   color: #1976d2;
 }
 
+.infoIconWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
 .infoIcon {
   font-size: 16px !important;
   width: 16px !important;
@@ -99,6 +107,25 @@
   line-height: 1 !important;
   color: #757575;
   flex-shrink: 0;
+}
+
+.tooltipPopup {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: #fff;
+  font-size: 12px;
+  font-family: 'Roboto', sans-serif;
+  padding: 6px 10px;
+  border-radius: 4px;
+  white-space: normal;
+  max-width: 200px;
+  z-index: 200;
+  pointer-events: none;
+  text-align: center;
+  line-height: 1.4;
 }
 
 /* ─── Inline edit inputs ─── */
@@ -131,6 +158,13 @@
   font-weight: 400;
   line-height: 24px;
   letter-spacing: -0.32px;
+}
+
+.editInputTooltip {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #757575;
 }
 
 /* ─── Config button ─── */

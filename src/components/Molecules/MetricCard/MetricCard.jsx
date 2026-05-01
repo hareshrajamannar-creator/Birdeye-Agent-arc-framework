@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import styles from './MetricCard.module.css';
 
 export default function MetricCard({
@@ -12,16 +12,30 @@ export default function MetricCard({
   dollarValue,
   onValueChange,
   onTitleChange,
+  tooltipText = '',
+  onTooltipChange,
+  autoEdit = false,
 }) {
   const [editing, setEditing] = useState(false);
   const [draftValue, setDraftValue] = useState(value);
   const [draftTitle, setDraftTitle] = useState(title);
+  const [draftTooltip, setDraftTooltip] = useState(tooltipText);
+  const [showTooltip, setShowTooltip] = useState(false);
   const valueInputRef = useRef(null);
   const titleInputRef = useRef(null);
+  const tooltipInputRef = useRef(null);
+  // Guard: prevents blur from double-firing commitEdit after Enter already committed
+  const committedRef = useRef(false);
+
+  useEffect(() => {
+    if (autoEdit) startEdit('value');
+  }, []); // eslint-disable-line
 
   function startEdit(field = 'value') {
+    committedRef.current = false;
     setDraftValue(value);
     setDraftTitle(title);
+    setDraftTooltip(tooltipText ?? '');
     setEditing(true);
     setTimeout(() => {
       if (field === 'title') titleInputRef.current?.focus();
@@ -30,19 +44,25 @@ export default function MetricCard({
   }
 
   function commitEdit() {
+    if (committedRef.current) return;
+    committedRef.current = true;
     const v = draftValue.trim() || value;
     const t = draftTitle.trim() || title;
     if (v !== value) onValueChange?.(v);
     if (t !== title) onTitleChange?.(t);
+    if (onTooltipChange && draftTooltip !== (tooltipText ?? '')) onTooltipChange(draftTooltip);
     setEditing(false);
   }
 
   function handleKeyDown(e) {
     if (e.key === 'Enter') commitEdit();
-    if (e.key === 'Escape') setEditing(false);
+    if (e.key === 'Escape') {
+      committedRef.current = true; // suppress subsequent blur commit
+      setEditing(false);
+    }
   }
 
-  // Only commit when focus leaves the entire editing container, not between its own inputs
+  // Only commit when focus truly leaves the entire editing container
   function handleContainerBlur(e) {
     if (e.currentTarget.contains(e.relatedTarget)) return;
     commitEdit();
@@ -74,6 +94,16 @@ export default function MetricCard({
             onKeyDown={handleKeyDown}
             placeholder="Label"
           />
+          {onTooltipChange !== undefined && (
+            <input
+              ref={tooltipInputRef}
+              className={`${styles.editInput} ${styles.editInputTooltip}`}
+              value={draftTooltip}
+              onChange={(e) => setDraftTooltip(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Tooltip text (shown on hover over ⓘ)"
+            />
+          )}
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', paddingRight: showConfig ? 44 : 0 }}>
@@ -102,7 +132,16 @@ export default function MetricCard({
             >
               {title}
             </span>
-            <span className={`material-symbols-outlined ${styles.infoIcon}`}>info</span>
+            <div
+              className={styles.infoIconWrap}
+              onMouseEnter={() => tooltipText && setShowTooltip(true)}
+              onMouseLeave={() => setShowTooltip(false)}
+            >
+              <span className={`material-symbols-outlined ${styles.infoIcon}`}>info</span>
+              {showTooltip && tooltipText && (
+                <div className={styles.tooltipPopup}>{tooltipText}</div>
+              )}
+            </div>
             {dollarValue && (
               <span style={{
                 flexShrink: 0,

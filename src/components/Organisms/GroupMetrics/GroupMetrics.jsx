@@ -17,6 +17,7 @@ export default function GroupMetrics({ metrics = [], onMetricsChange }) {
   const [items, setItems] = useState(metrics);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [calcNoteOpenId, setCalcNoteOpenId] = useState(null);
+  const [newCardId, setNewCardId] = useState(null);
   const pickerRef = useRef(null);
   const initialized = useRef(metrics.length > 0);
 
@@ -44,8 +45,10 @@ export default function GroupMetrics({ metrics = [], onMetricsChange }) {
   }
 
   function addCard(type) {
-    const newCard = { id: uid(), type, value: '', label: '', calculationNote: '' };
+    const id = uid();
+    const newCard = { id, type, value: '', label: '', tooltip: '', calculationNote: '' };
     push([...items, newCard]);
+    setNewCardId(id);
     setPickerOpen(false);
   }
 
@@ -56,6 +59,7 @@ export default function GroupMetrics({ metrics = [], onMetricsChange }) {
   function deleteCard(id) {
     push(items.filter((m) => m.id !== id));
     if (calcNoteOpenId === id) setCalcNoteOpenId(null);
+    if (newCardId === id) setNewCardId(null);
   }
 
   return (
@@ -66,10 +70,13 @@ export default function GroupMetrics({ metrics = [], onMetricsChange }) {
             <MetricCard
               value={card.value}
               title={card.label}
+              tooltipText={card.tooltip}
+              onTooltipChange={(t) => updateCard(card.id, { tooltip: t })}
               showConfig={card.type === 'timesaved'}
               onConfig={() => setCalcNoteOpenId(calcNoteOpenId === card.id ? null : card.id)}
               onValueChange={(v) => updateCard(card.id, { value: v })}
               onTitleChange={(t) => updateCard(card.id, { label: t })}
+              autoEdit={card.id === newCardId}
             />
             <button
               className={styles.deleteBtn}
