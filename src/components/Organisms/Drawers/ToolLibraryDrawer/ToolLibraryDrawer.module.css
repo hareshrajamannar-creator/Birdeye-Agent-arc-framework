@@ -1,0 +1,254 @@
+/* ─── Close button (list header) ─── */
+
+.closeBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  background: transparent;
+  color: #555;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 4px;
+}
+
+.closeBtn:hover {
+  color: #212121;
+  background: #f0f2f5;
+}
+
+.closeBtn .material-symbols-outlined {
+  font-size: 20px;
+  line-height: 1;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+}
+
+/* ─── List body ─── */
+
+.listBody {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Tool row ─── */
+
+.toolRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-bottom: 1px solid #e5e9f0;
+}
+
+.toolRow:hover {
+  background: #f8fafc;
+}
+
+.toolRowMain {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  min-width: 0;
+}
+
+.toolIconWrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #f0f2f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.toolIconImg {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.toolIconFallback {
+  font-size: 20px;
+  color: #555;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+}
+
+.toolInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.toolName {
+  font-size: 14px;
+  color: #212121;
+  font-family: "Roboto", sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.28px;
+  line-height: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.toolDesc {
+  font-size: 12px;
+  color: #8f8f8f;
+  font-family: "Roboto", sans-serif;
+  letter-spacing: -0.24px;
+  line-height: 18px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.checkIcon {
+  font-size: 20px;
+  color: #1976d2;
+  flex-shrink: 0;
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+}
+
+/* ─── Row actions (edit / delete) ─── */
+
+.rowActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  background: transparent;
+  color: #555;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+}
+
+.toolRow:hover .actionBtn {
+  opacity: 1;
+}
+
+.actionBtn:hover {
+  color: #212121;
+  background: #f0f2f5;
+}
+
+.actionBtnDanger:hover {
+  color: #b42318;
+  background: #fde8e8;
+}
+
+.actionBtn .material-symbols-outlined {
+  font-size: 18px;
+  line-height: 1;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+}
+
+/* Inline delete confirm — always visible when active */
+
+.deleteConfirm {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.deleteConfirmText {
+  font-size: 12px;
+  color: #b42318;
+  font-family: "Roboto", sans-serif;
+  white-space: nowrap;
+}
+
+.deleteConfirmBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 4px;
+}
+
+.deleteConfirmBtn .material-symbols-outlined {
+  font-size: 16px;
+  line-height: 1;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+}
+
+.deleteConfirmYes {
+  color: #b42318;
+}
+
+.deleteConfirmYes:hover {
+  background: #fde8e8;
+}
+
+.deleteConfirmNo {
+  color: #555;
+}
+
+.deleteConfirmNo:hover {
+  background: #f0f2f5;
+}
+
+/* ─── Empty state ─── */
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 24px;
+  flex: 1;
+}
+
+.emptyState .material-symbols-outlined {
+  font-size: 48px;
+  color: #c0c7d0;
+  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 48;
+}
+
+.emptyStateTitle {
+  font-size: 16px;
+  color: #555;
+  font-family: "Roboto", sans-serif;
+  margin: 0;
+  font-weight: 400;
+}
+
+.emptyStateDesc {
+  font-size: 14px;
+  color: #8f8f8f;
+  font-family: "Roboto", sans-serif;
+  margin: 0;
+  text-align: center;
+  letter-spacing: -0.28px;
+  line-height: 20px;
+}

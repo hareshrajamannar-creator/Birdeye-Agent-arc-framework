@@ -3,6 +3,7 @@ import CommonSideDrawer from '@birdeye/elemental/core/atoms/CommonSideDrawer/ind
 import Button from '@birdeye/elemental/core/atoms/Button/index.js';
 import FormInput from '@birdeye/elemental/core/atoms/FormInput/index.js';
 import TextArea from '@birdeye/elemental/core/atoms/TextArea/index.js';
+import { saveCustomTool } from '../../../../services/agentService';
 import './CustomToolBuilder.css';
 
 // ─── Field type definitions ────────────────────────────────────────────────────
@@ -290,7 +291,7 @@ export function PreviewField({ field }) {
   }
 }
 
-function LivePreview({ toolName, toolDescription, fields }) {
+export function LivePreview({ toolName, toolDescription, fields }) {
   return (
     <div className="ctb__preview-card">
       {(toolName || toolDescription) ? (
@@ -390,14 +391,16 @@ export default function CustomToolBuilder({ isOpen = false, onClose, onSave, ini
 
   const handleSave = () => {
     if (!toolName.trim()) return;
-    onSave?.({
+    const tool = {
       id: initialTool?.id ?? makeId(),
       name: toolName.trim(),
       description: toolDescription.trim(),
       fields,
       iconDataUrl,
       createdAt: initialTool?.createdAt ?? new Date().toISOString(),
-    });
+    };
+    saveCustomTool(tool);
+    onSave?.(tool);
   };
 
   const handleClose = () => {

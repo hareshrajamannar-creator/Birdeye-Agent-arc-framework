@@ -132,3 +132,27 @@ export function subscribeToAgents(onAgents) {
     onAgents(agents);
   });
 }
+
+// ─── Custom tools collection ───────────────────────────────────────────────────
+
+const TOOLS_COLLECTION = 'customTools';
+
+export function saveCustomTool(tool) {
+  const toolId = tool.id || doc(collection(db, TOOLS_COLLECTION)).id;
+  const toolToSave = { ...tool, id: toolId };
+  return setDoc(doc(db, TOOLS_COLLECTION, toolId), {
+    ...sanitizeForFirestore(toolToSave),
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export function deleteCustomTool(toolId) {
+  return deleteDoc(doc(db, TOOLS_COLLECTION, toolId));
+}
+
+export function subscribeToCustomTools(onTools) {
+  return onSnapshot(collection(db, TOOLS_COLLECTION), (snapshot) => {
+    const tools = snapshot.docs.map((d) => restoreFromFirestore({ id: d.id, ...d.data() }));
+    onTools(tools);
+  });
+}

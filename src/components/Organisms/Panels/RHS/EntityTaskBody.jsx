@@ -1,21 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import FormInput from '@birdeye/elemental/core/atoms/FormInput/index.js';
 import TextArea from '@birdeye/elemental/core/atoms/TextArea/index.js';
-import CustomToolBuilder from '../../Drawers/CustomToolBuilder/CustomToolBuilder.jsx';
-import CustomToolViewer from '../../Drawers/CustomToolViewer/CustomToolViewer.jsx';
+import ToolLibraryDrawer from '../../Drawers/ToolLibraryDrawer/ToolLibraryDrawer.jsx';
+import { subscribeToCustomTools } from '../../../../services/agentService';
 import styles from './EntityTaskBody.module.css';
 
 export default function EntityTaskBody({ initialValues = {}, onFieldChange }) {
   const [taskName, setTaskName] = useState(initialValues.taskName ?? '');
   const [description, setDescription] = useState(initialValues.description ?? '');
+  const [selectedTools, setSelectedTools] = useState(initialValues.selectedTools ?? []);
+  const [allTools, setAllTools] = useState([]);
+  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
 
-  const [isBuilderOpen, setIsBuilderOpen] = useState(false);
-  const [editingTool, setEditingTool] = useState(null);
-
-  const [isViewerOpen, setIsViewerOpen] = useState(false);
-  const [viewingTool, setViewingTool] = useState(null);
-
-  const [customTools, setCustomTools] = useState(initialValues.customTools ?? []);
+  useEffect(() => {
+    const unsub = subscribeToCustomTools((tools) => setAllTools(tools));
+    return unsub;
+  }, []);
 
   const handleTaskName = (e) => {
     const val = e.target.value;
@@ -29,58 +29,17 @@ export default function EntityTaskBody({ initialValues = {}, onFieldChange }) {
     onFieldChange?.('description', val);
   };
 
-  const openCreate = () => {
-    setEditingTool(null);
-    setIsBuilderOpen(true);
-  };
-
-  const openEditDirect = (tool) => {
-    setEditingTool(tool);
-    setIsBuilderOpen(true);
-  };
-
-  const openViewer = (tool) => {
-    setViewingTool(tool);
-    setIsViewerOpen(true);
-  };
-
-  const closeViewer = () => {
-    setIsViewerOpen(false);
-    setViewingTool(null);
-  };
-
-  const openEditFromViewer = (tool) => {
-    setIsViewerOpen(false);
-    setViewingTool(null);
-    setEditingTool(tool);
-    setIsBuilderOpen(true);
-  };
-
-  const handleBuilderClose = () => {
-    setIsBuilderOpen(false);
-    setEditingTool(null);
-  };
-
-  const handleBuilderSave = (tool) => {
-    setCustomTools((prev) => {
-      const idx = prev.findIndex((t) => t.id === tool.id);
-      const next = idx >= 0
-        ? prev.map((t) => (t.id === tool.id ? tool : t))
-        : [...prev, tool];
-      onFieldChange?.('customTools', next);
-      return next;
-    });
-    setIsBuilderOpen(false);
-    setEditingTool(null);
-  };
-
-  const handleDeleteTool = (id) => {
-    setCustomTools((prev) => {
-      const next = prev.filter((t) => t.id !== id);
-      onFieldChange?.('customTools', next);
+  const handleToggleTool = (toolId) => {
+    setSelectedTools((prev) => {
+      const next = prev.includes(toolId)
+        ? prev.filter((id) => id !== toolId)
+        : [...prev, toolId];
+      onFieldChange?.('selectedTools', next);
       return next;
     });
   };
+
+  const displayedTools = allTools.filter((t) => selectedTools.includes(t.id));
 
   return (
     <>
@@ -110,19 +69,17 @@ export default function EntityTaskBody({ initialValues = {}, onFieldChange }) {
           </div>
 
           <div className={styles.addBox}>
-            {customTools.length === 0 && (
-              <button className={styles.addBtn} onClick={openCreate}>
-                <span className={`material-symbols-outlined ${styles.addBtnIcon}`}>add_circle</span>
-                <span className={styles.addBtnLabel}>Add</span>
-              </button>
-            )}
+            <button className={styles.addBtn} onClick={() => setIsLibraryOpen(true)}>
+              <span className={`material-symbols-outlined ${styles.addBtnIcon}`}>add_circle</span>
+              <span className={styles.addBtnLabel}>Add</span>
+            </button>
 
-            {customTools.map((tool) => (
+            {displayedTools.map((tool) => (
               <div key={tool.id} className={styles.toolRow}>
                 <button
                   className={styles.toolRowMain}
                   type="button"
-                  onClick={() => openViewer(tool)}
+                  onClick={() => setIsLibraryOpen(true)}
                 >
                   <div className={styles.toolIconWrap}>
                     {tool.iconDataUrl ? (
@@ -135,18 +92,11 @@ export default function EntityTaskBody({ initialValues = {}, onFieldChange }) {
                 </button>
                 <div className={styles.toolActions}>
                   <button
-                    className={styles.iconBtn}
-                    onClick={() => openEditDirect(tool)}
-                    title="Edit tool"
-                  >
-                    <span className={`material-symbols-outlined ${styles.iconBtnIcon}`}>edit</span>
-                  </button>
-                  <button
                     className={`${styles.iconBtn} ${styles.iconBtnDanger}`}
-                    onClick={() => handleDeleteTool(tool.id)}
-                    title="Delete tool"
+                    onClick={() => handleToggleTool(tool.id)}
+                    title="Remove tool"
                   >
-                    <span className={`material-symbols-outlined ${styles.iconBtnIcon}`}>delete</span>
+                    <span className={`material-symbols-outlined ${styles.iconBtnIcon}`}>close</span>
                   </button>
                 </div>
               </div>
@@ -155,18 +105,11 @@ export default function EntityTaskBody({ initialValues = {}, onFieldChange }) {
         </div>
       </div>
 
-      <CustomToolViewer
-        isOpen={isViewerOpen}
-        tool={viewingTool}
-        onClose={closeViewer}
-        onEditTool={openEditFromViewer}
-      />
-
-      <CustomToolBuilder
-        isOpen={isBuilderOpen}
-        initialTool={editingTool}
-        onClose={handleBuilderClose}
-        onSave={handleBuilderSave}
+      <ToolLibraryDrawer
+        isOpen={isLibraryOpen}
+        onClose={() => setIsLibraryOpen(false)}
+        selectedToolIds={selectedTools}
+        onToggleTool={handleToggleTool}
       />
     </>
   );
