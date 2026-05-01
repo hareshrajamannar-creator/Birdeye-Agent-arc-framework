@@ -29,9 +29,7 @@ const DEFAULT_CONDITION_OPTIONS = {
 };
 
 const DEFAULT_CONDITIONS = [
-  { id: 1, fieldValue: 'event', operatorValue: 'is', valueValue: 'review_received' },
-  { id: 2, fieldValue: 'message_type', operatorValue: 'is', valueValue: 'google' },
-  { id: 3, fieldValue: 'message_age', operatorValue: 'less_than', valueValue: '48_hours' },
+  { id: 1, fieldValue: '', operatorValue: '', valueValue: '' },
 ];
 
 const makeCondition = (id) => ({ id, fieldValue: '', operatorValue: '', valueValue: '' });
