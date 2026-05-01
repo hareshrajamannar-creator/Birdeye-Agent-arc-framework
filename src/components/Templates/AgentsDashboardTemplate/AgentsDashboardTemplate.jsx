@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import Button from '@birdeye/elemental/core/atoms/Button/index.js';
 import Avatar from '@birdeye/elemental/core/atoms/Avatar/index.js';
@@ -12,6 +11,7 @@ import GroupMetrics from '../../Organisms/GroupMetrics/GroupMetrics';
 import GroupTable from '../../Organisms/GroupTable/GroupTable';
 import TemplateLibrary from '../../Organisms/TemplateLibrary/TemplateLibrary';
 import EmptyStates from '../../Patterns/EmptyStates/EmptyStates';
+import ShareModal from '../../Organisms/Modals/ShareModal/ShareModal';
 import styles from './AgentsDashboardTemplate.module.css';
 
 const font = '"Roboto", sans-serif';
@@ -232,9 +232,7 @@ export default function AgentsDashboardTemplate({
   // Share menu + modal state
   const [shareMenuOpen, setShareMenuOpen] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
   const shareMenuRef = useRef(null);
-  const copyTimeoutRef = useRef(null);
 
   const agentList = agents ?? [];
   const isEmpty = agentList.length === 0;
@@ -258,54 +256,8 @@ export default function AgentsDashboardTemplate({
     return () => document.removeEventListener('mousedown', handleOutside);
   }, [shareMenuOpen]);
 
-  function handleCopy() {
-    navigator.clipboard.writeText(shareUrl).catch(() => {});
-    setCopied(true);
-    clearTimeout(copyTimeoutRef.current);
-    copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000);
-  }
-
-  function handleCloseShareModal() {
-    setShareModalOpen(false);
-    setCopied(false);
-  }
-
   const shareModal = shareModalOpen
-    ? ReactDOM.createPortal(
-        <div className={styles.modalBackdrop} onClick={handleCloseShareModal}>
-          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <p className={styles.modalTitle}>Share {pageTitle}</p>
-              <button className={styles.modalCloseBtn} onClick={handleCloseShareModal}>
-                <span className={`material-symbols-outlined ${styles.modalCloseBtnIcon}`}>close</span>
-              </button>
-            </div>
-            <div className={styles.modalBody}>
-              <p className={styles.modalBodyText}>
-                Anyone with this link can view this agent group in read-only mode.
-              </p>
-              <div className={styles.urlRow}>
-                <input
-                  className={styles.urlInput}
-                  readOnly
-                  value={shareUrl}
-                  onFocus={(e) => e.target.select()}
-                />
-                <button
-                  className={`${styles.copyBtn} ${copied ? styles.copyBtnCopied : ''}`}
-                  onClick={handleCopy}
-                >
-                  {copied ? 'Copied!' : 'Copy'}
-                </button>
-              </div>
-            </div>
-            <div className={styles.modalFooter}>
-              <button className={styles.doneBtn} onClick={handleCloseShareModal}>Done</button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )
+    ? <ShareModal shareUrl={shareUrl} onClose={() => setShareModalOpen(false)} />
     : null;
 
 
