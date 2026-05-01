@@ -358,11 +358,12 @@ export default function AgentsDashboardTemplate({
                   <GroupTable
                     key={activeMenuItemId + '-table'}
                     tableData={groupDoc?.table}
+                    agents={agentList}
                     onTableDataChange={(t) => onGroupUpdate?.('table', t)}
                     onAgentRowClick={(row) => {
-                    if (row.agentId) onOpenAgent?.(row.agentId);
-                    else if (row.name?.trim()) onCreateAgentFromRow?.(row);
-                  }}
+                      if (row.agentId) onOpenAgent?.(row.agentId);
+                      else if (row.name?.trim()) onCreateAgentFromRow?.(row);
+                    }}
                   />
                 </div>
               </>

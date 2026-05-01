@@ -26,16 +26,18 @@ function uid() {
 
 const LOCKED_IDS = new Set(LOCKED_COLS.map((c) => c.id));
 
-export default function GroupTable({ tableData, onTableDataChange, onAgentRowClick }) {
+export default function GroupTable({ tableData, onTableDataChange, onAgentRowClick, agents = [] }) {
   const [cols, setCols] = useState(() => tableData?.columns ?? DEFAULT_EDITABLE_COLS);
   const [rows, setRows] = useState(() => tableData?.rows ?? []);
   const [editingHeader, setEditingHeader] = useState(null);
-  const [editingCell, setEditingCell] = useState(null); // { rowId, colId }
+  const [editingCell, setEditingCell] = useState(null);
   const [draft, setDraft] = useState('');
   const inputRef = useRef(null);
   const initialized = useRef(!!(tableData?.columns));
+  // Tracks whether orphaned section agents have been merged into rows this mount
+  const agentsMergedRef = useRef(false);
 
-  // Sync from Firestore once when real data arrives (before user has made edits)
+  // Sync stored rows from Firestore once (before user edits)
   useEffect(() => {
     if (initialized.current) return;
     if (tableData?.columns) {
@@ -44,6 +46,25 @@ export default function GroupTable({ tableData, onTableDataChange, onAgentRowCli
       initialized.current = true;
     }
   }, [tableData]); // eslint-disable-line
+
+  // One-time per mount: add any section agents that have no row yet
+  useEffect(() => {
+    if (agentsMergedRef.current || agents.length === 0) return;
+    agentsMergedRef.current = true;
+    setRows((prev) => {
+      const linkedAgentIds = new Set(prev.filter((r) => r.agentId).map((r) => r.agentId));
+      const orphaned = agents
+        .filter((a) => !linkedAgentIds.has(a.id))
+        .map((a) => ({
+          id: a.id,
+          agentId: a.id,
+          name: a.name || 'Untitled agent',
+          status: a.status || 'Draft',
+          col1: '', col2: '', col3: '', col4: '', col5: '',
+        }));
+      return orphaned.length > 0 ? [...prev, ...orphaned] : prev;
+    });
+  }, [agents]); // eslint-disable-line
 
   function emit(newCols, newRows) {
     initialized.current = true;
@@ -124,10 +145,11 @@ export default function GroupTable({ tableData, onTableDataChange, onAgentRowCli
     }
   }
 
-  /* ─── Status cycle ─── */
+  /* ─── Status cycle — only for manual (unlinked) rows ─── */
   function cycleStatus(rowId) {
     const row = rows.find((r) => r.id === rowId);
-    if (!row) return;
+    // Linked rows get their status from the actual agent doc — don't cycle them
+    if (!row || row.agentId) return;
     const idx = STATUS_CYCLE.indexOf(row.status ?? 'Draft');
     const next = STATUS_CYCLE[(idx + 1) % STATUS_CYCLE.length];
     const updated = rows.map((r) => r.id === rowId ? { ...r, status: next } : r);
@@ -197,90 +219,96 @@ export default function GroupTable({ tableData, onTableDataChange, onAgentRowCli
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
-            <tr key={row.id} className={styles.tr}>
-              {/* Name */}
-              <td
-                className={`${styles.td} ${styles.nameCell}`}
-                onClick={() => {
-                  if (editingCell?.rowId === row.id && editingCell?.colId === 'name') return;
-                  if (row.agentId || row.name?.trim()) {
-                    // Named rows (with or without agentId) open the agent builder
-                    onAgentRowClick?.(row);
-                  } else {
-                    startCellEdit(row.id, 'name', row.name);
-                  }
-                }}
-              >
-                {editingCell?.rowId === row.id && editingCell?.colId === 'name' ? (
-                  <input
-                    ref={inputRef}
-                    className={styles.cellInput}
-                    value={draft}
-                    onChange={(e) => setDraft(e.target.value)}
-                    onBlur={() => commitCell()}
-                    onKeyDown={handleCellKeyDown}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                ) : (
-                  <span className={(row.agentId || row.name?.trim()) ? styles.nameLink : styles.nameValue}>
-                    {row.name || <span className={styles.emptyCell}>—</span>}
-                  </span>
-                )}
-              </td>
+          {rows.map((row) => {
+            // For linked rows, status always reflects the live agent doc
+            const liveAgent = row.agentId ? agents.find((a) => a.id === row.agentId) : null;
+            const displayStatus = liveAgent ? (liveAgent.status || 'Draft') : (row.status || 'Draft');
 
-              {/* Status */}
-              <td
-                className={`${styles.td} ${styles.statusCell}`}
-                onClick={() => cycleStatus(row.id)}
-              >
-                <Chip
-                  label={row.status || 'Draft'}
-                  colorType={STATUS_COLOR[row.status] || 'grey'}
-                  size="small"
-                />
-              </td>
-
-              {/* Editable cols */}
-              {cols.map((col) => {
-                const isEditing = editingCell?.rowId === row.id && editingCell?.colId === col.id;
-                return (
-                  <td
-                    key={col.id}
-                    className={styles.td}
-                    onClick={() => { if (!isEditing) startCellEdit(row.id, col.id, row[col.id]); }}
-                  >
-                    {isEditing ? (
-                      <input
-                        ref={inputRef}
-                        className={styles.cellInput}
-                        value={draft}
-                        onChange={(e) => setDraft(e.target.value)}
-                        onBlur={() => commitCell()}
-                        onKeyDown={handleCellKeyDown}
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    ) : (
-                      <span className={styles.cellValue}>
-                        {row[col.id] || <span className={styles.emptyCell}>—</span>}
-                      </span>
-                    )}
-                  </td>
-                );
-              })}
-
-              {/* Delete row */}
-              <td className={`${styles.td} ${styles.deleteCell}`} onClick={(e) => e.stopPropagation()}>
-                <button
-                  className={styles.deleteRowBtn}
-                  title="Remove row"
-                  onClick={() => deleteRow(row.id)}
+            return (
+              <tr key={row.id} className={styles.tr}>
+                {/* Name */}
+                <td
+                  className={`${styles.td} ${styles.nameCell}`}
+                  onClick={() => {
+                    if (editingCell?.rowId === row.id && editingCell?.colId === 'name') return;
+                    if (row.agentId || row.name?.trim()) {
+                      onAgentRowClick?.(row);
+                    } else {
+                      startCellEdit(row.id, 'name', row.name);
+                    }
+                  }}
                 >
-                  <span className={`material-symbols-outlined ${styles.deleteRowBtnIcon}`}>close</span>
-                </button>
-              </td>
-            </tr>
-          ))}
+                  {editingCell?.rowId === row.id && editingCell?.colId === 'name' ? (
+                    <input
+                      ref={inputRef}
+                      className={styles.cellInput}
+                      value={draft}
+                      onChange={(e) => setDraft(e.target.value)}
+                      onBlur={() => commitCell()}
+                      onKeyDown={handleCellKeyDown}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  ) : (
+                    <span className={(row.agentId || row.name?.trim()) ? styles.nameLink : styles.nameValue}>
+                      {liveAgent?.name || row.name || <span className={styles.emptyCell}>—</span>}
+                    </span>
+                  )}
+                </td>
+
+                {/* Status — live for linked rows, cycleable for manual rows */}
+                <td
+                  className={`${styles.td} ${styles.statusCell}`}
+                  onClick={() => cycleStatus(row.id)}
+                  style={row.agentId ? { cursor: 'default' } : undefined}
+                >
+                  <Chip
+                    label={displayStatus}
+                    colorType={STATUS_COLOR[displayStatus] || 'grey'}
+                    size="small"
+                  />
+                </td>
+
+                {/* Editable cols */}
+                {cols.map((col) => {
+                  const isEditing = editingCell?.rowId === row.id && editingCell?.colId === col.id;
+                  return (
+                    <td
+                      key={col.id}
+                      className={styles.td}
+                      onClick={() => { if (!isEditing) startCellEdit(row.id, col.id, row[col.id]); }}
+                    >
+                      {isEditing ? (
+                        <input
+                          ref={inputRef}
+                          className={styles.cellInput}
+                          value={draft}
+                          onChange={(e) => setDraft(e.target.value)}
+                          onBlur={() => commitCell()}
+                          onKeyDown={handleCellKeyDown}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      ) : (
+                        <span className={styles.cellValue}>
+                          {row[col.id] || <span className={styles.emptyCell}>—</span>}
+                        </span>
+                      )}
+                    </td>
+                  );
+                })}
+
+                {/* Delete row */}
+                <td className={`${styles.td} ${styles.deleteCell}`} onClick={(e) => e.stopPropagation()}>
+                  <button
+                    className={styles.deleteRowBtn}
+                    title="Remove row"
+                    onClick={() => deleteRow(row.id)}
+                  >
+                    <span className={`material-symbols-outlined ${styles.deleteRowBtnIcon}`}>close</span>
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
 
