@@ -1,11 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import MetricCard from '../../Molecules/MetricCard/MetricCard';
+import MetricCustomiserModal from '../Modals/MetricCustomiserModal/MetricCustomiserModal';
 import styles from './GroupMetrics.module.css';
 
 const CARD_TYPES = [
   { type: 'metric', icon: 'bar_chart', label: 'Metric card' },
   { type: 'timesaved', icon: 'schedule', label: 'Time saved card' },
 ];
+
+const PRIMARY_LABELS = { time: 'Time saved', cost: 'Cost saved' };
 
 function uid() {
   return typeof crypto !== 'undefined' && crypto.randomUUID
@@ -16,7 +19,7 @@ function uid() {
 export default function GroupMetrics({ metrics = [], onMetricsChange }) {
   const [items, setItems] = useState(metrics);
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [calcNoteOpenId, setCalcNoteOpenId] = useState(null);
+  const [configCardId, setConfigCardId] = useState(null);
   const [newCardId, setNewCardId] = useState(null);
   const pickerRef = useRef(null);
   const initialized = useRef(metrics.length > 0);
@@ -46,7 +49,16 @@ export default function GroupMetrics({ metrics = [], onMetricsChange }) {
 
   function addCard(type) {
     const id = uid();
-    const newCard = { id, type, value: '', label: '', tooltip: '', calculationNote: '' };
+    const newCard = {
+      id,
+      type,
+      value: '',
+      label: type === 'timesaved' ? 'Time saved' : '',
+      tooltip: '',
+      metricConfig: type === 'timesaved'
+        ? { mode: 'time', timeValue: 5, wage: 36, currency: 'USD' }
+        : undefined,
+    };
     push([...items, newCard]);
     setNewCardId(id);
     setPickerOpen(false);
@@ -58,9 +70,10 @@ export default function GroupMetrics({ metrics = [], onMetricsChange }) {
 
   function deleteCard(id) {
     push(items.filter((m) => m.id !== id));
-    if (calcNoteOpenId === id) setCalcNoteOpenId(null);
     if (newCardId === id) setNewCardId(null);
   }
+
+  const configCard = items.find((m) => m.id === configCardId);
 
   return (
     <div className={styles.root}>
@@ -73,7 +86,7 @@ export default function GroupMetrics({ metrics = [], onMetricsChange }) {
               tooltipText={card.tooltip}
               onTooltipChange={(t) => updateCard(card.id, { tooltip: t })}
               showConfig={card.type === 'timesaved'}
-              onConfig={() => setCalcNoteOpenId(calcNoteOpenId === card.id ? null : card.id)}
+              onConfig={() => setConfigCardId(card.id)}
               onValueChange={(v) => updateCard(card.id, { value: v })}
               onTitleChange={(t) => updateCard(card.id, { label: t })}
               autoEdit={card.id === newCardId}
@@ -85,18 +98,6 @@ export default function GroupMetrics({ metrics = [], onMetricsChange }) {
             >
               <span className="material-symbols-outlined">close</span>
             </button>
-            {calcNoteOpenId === card.id && (
-              <div className={styles.calcNotePanel}>
-                <span className={styles.calcNoteLabel}>Calculation note</span>
-                <textarea
-                  autoFocus
-                  className={styles.calcNoteArea}
-                  placeholder="How is this calculated?"
-                  value={card.calculationNote ?? ''}
-                  onChange={(e) => updateCard(card.id, { calculationNote: e.target.value })}
-                />
-              </div>
-            )}
           </div>
         ))}
 
@@ -117,6 +118,23 @@ export default function GroupMetrics({ metrics = [], onMetricsChange }) {
           )}
         </div>
       </div>
+
+      <MetricCustomiserModal
+        isOpen={!!configCard}
+        onClose={() => setConfigCardId(null)}
+        onSave={({ mode, timeValue, wage, currency }) => {
+          if (!configCard) return;
+          updateCard(configCard.id, {
+            label: PRIMARY_LABELS[mode] ?? configCard.label,
+            metricConfig: { mode, timeValue, wage, currency },
+          });
+          setConfigCardId(null);
+        }}
+        defaultMode={configCard?.metricConfig?.mode ?? 'time'}
+        defaultTimeValue={configCard?.metricConfig?.timeValue ?? 5}
+        defaultWage={configCard?.metricConfig?.wage ?? 36}
+        defaultCurrency={configCard?.metricConfig?.currency ?? 'USD'}
+      />
     </div>
   );
 }

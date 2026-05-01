@@ -167,6 +167,51 @@
   color: #757575;
 }
 
+/* ─── Save / Cancel buttons (group-page edit mode only) ─── */
+.editActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.editCancelBtn {
+  height: 32px;
+  padding: 0 16px;
+  background: #fff;
+  color: #212121;
+  border: 1px solid #ccd5e4;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Roboto', sans-serif;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.editCancelBtn:hover {
+  background: #f5f5f5;
+}
+
+.editSaveBtn {
+  height: 32px;
+  padding: 0 16px;
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Roboto', sans-serif;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.editSaveBtn:hover {
+  background: #1565c0;
+}
+
 /* ─── Config button ─── */
 .configBtn {
   position: absolute;

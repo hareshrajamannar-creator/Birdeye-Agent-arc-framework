@@ -22,10 +22,10 @@ export default function MetricCard({
   const [draftTooltip, setDraftTooltip] = useState(tooltipText);
   const [showTooltip, setShowTooltip] = useState(false);
   const valueInputRef = useRef(null);
-  const titleInputRef = useRef(null);
-  const tooltipInputRef = useRef(null);
-  // Guard: prevents blur from double-firing commitEdit after Enter already committed
   const committedRef = useRef(false);
+
+  // Whether we're in "group page" mode (shows Save/Cancel buttons, no blur-to-commit)
+  const hasActionButtons = onTooltipChange !== undefined;
 
   useEffect(() => {
     if (autoEdit) startEdit('value');
@@ -37,10 +37,7 @@ export default function MetricCard({
     setDraftTitle(title);
     setDraftTooltip(tooltipText ?? '');
     setEditing(true);
-    setTimeout(() => {
-      if (field === 'title') titleInputRef.current?.focus();
-      else valueInputRef.current?.focus();
-    }, 0);
+    setTimeout(() => valueInputRef.current?.focus(), 0);
   }
 
   function commitEdit() {
@@ -50,19 +47,21 @@ export default function MetricCard({
     const t = draftTitle.trim() || title;
     if (v !== value) onValueChange?.(v);
     if (t !== title) onTitleChange?.(t);
-    if (onTooltipChange && draftTooltip !== (tooltipText ?? '')) onTooltipChange(draftTooltip);
+    if (hasActionButtons && draftTooltip !== (tooltipText ?? '')) onTooltipChange(draftTooltip);
+    setEditing(false);
+  }
+
+  function cancelEdit() {
+    committedRef.current = true;
     setEditing(false);
   }
 
   function handleKeyDown(e) {
     if (e.key === 'Enter') commitEdit();
-    if (e.key === 'Escape') {
-      committedRef.current = true; // suppress subsequent blur commit
-      setEditing(false);
-    }
+    if (e.key === 'Escape') cancelEdit();
   }
 
-  // Only commit when focus truly leaves the entire editing container
+  // Only used in non-button mode (existing MetricsGroup behaviour)
   function handleContainerBlur(e) {
     if (e.currentTarget.contains(e.relatedTarget)) return;
     commitEdit();
@@ -77,7 +76,10 @@ export default function MetricCard({
       )}
 
       {editing ? (
-        <div className={styles.editingContent} onBlur={handleContainerBlur}>
+        <div
+          className={styles.editingContent}
+          {...(!hasActionButtons && { onBlur: handleContainerBlur })}
+        >
           <input
             ref={valueInputRef}
             className={`${styles.editInput} ${styles.editInputValue}`}
@@ -87,22 +89,30 @@ export default function MetricCard({
             placeholder="Value"
           />
           <input
-            ref={titleInputRef}
             className={`${styles.editInput} ${styles.editInputTitle}`}
             value={draftTitle}
             onChange={(e) => setDraftTitle(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Label"
           />
-          {onTooltipChange !== undefined && (
+          {hasActionButtons && (
             <input
-              ref={tooltipInputRef}
               className={`${styles.editInput} ${styles.editInputTooltip}`}
               value={draftTooltip}
               onChange={(e) => setDraftTooltip(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Tooltip text (shown on hover over ⓘ)"
             />
+          )}
+          {hasActionButtons && (
+            <div className={styles.editActions}>
+              <button className={styles.editCancelBtn} type="button" onClick={cancelEdit}>
+                Cancel
+              </button>
+              <button className={styles.editSaveBtn} type="button" onClick={commitEdit}>
+                Save
+              </button>
+            </div>
           )}
         </div>
       ) : (
