@@ -5,6 +5,7 @@ import TextArea from '@birdeye/elemental/core/atoms/TextArea/index.js';
 import { Select, SelectItem } from '@birdeye/elemental/core/atoms/Select/index.js';
 import Toggle from '@birdeye/elemental/core/atoms/Toggle/index.js';
 import { OPTION_FIELD_TYPES } from '../CustomToolBuilder/CustomToolBuilder.jsx';
+import VariableChip from '../../../Molecules/Inputs/VariableChip/VariableChip';
 import styles from './CustomToolViewer.module.css';
 
 // ─── Interactive field ────────────────────────────────────────────────────────
@@ -99,9 +100,11 @@ function InteractiveField({ field }) {
     case 'checkbox':
       return (
         <div className={styles.fieldWrap}>
-          <span className={styles.fieldLabel}>
-            {label}{required && <span className={styles.required}> *</span>}
-          </span>
+          {!field.hideLabel && (
+            <span className={styles.fieldLabel}>
+              {label}{required && <span className={styles.required}> *</span>}
+            </span>
+          )}
           <div className={styles.optionGroup}>
             {field.options.map((opt) => (
               <label key={opt} className={styles.optionLabel}>
@@ -140,14 +143,14 @@ function InteractiveField({ field }) {
     case 'variable':
       return (
         <div className={styles.fieldWrap}>
-          <FormInput
-            name={`view_${field.id}`}
-            type="text"
-            label={label}
-            placeholder={field.placeholder || 'Select a variable...'}
-            value={textValue}
-            onChange={(e) => setTextValue(e.target.value)}
-            required={required}
+          <span className={styles.fieldLabel}>
+            {label}{required && <span className={styles.required}> *</span>}
+          </span>
+          <VariableChip
+            value={textValue || field.placeholder || 'variable_name'}
+            type="variable"
+            onChange={setTextValue}
+            onDelete={() => setTextValue('')}
           />
         </div>
       );

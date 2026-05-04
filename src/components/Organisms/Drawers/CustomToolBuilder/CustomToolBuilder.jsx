@@ -3,6 +3,7 @@ import CommonSideDrawer from '@birdeye/elemental/core/atoms/CommonSideDrawer/ind
 import Button from '@birdeye/elemental/core/atoms/Button/index.js';
 import FormInput from '@birdeye/elemental/core/atoms/FormInput/index.js';
 import TextArea from '@birdeye/elemental/core/atoms/TextArea/index.js';
+import VariableChip from '../../../Molecules/Inputs/VariableChip/VariableChip';
 import { saveCustomTool } from '../../../../services/agentService';
 import './CustomToolBuilder.css';
 
@@ -190,6 +191,40 @@ export function FieldCard({ field, index, total, onChange, onDelete, onMoveUp, o
           Required field
         </label>
       </div>
+
+      {field.type === 'checkbox' && (
+        <div className="ctb__required-row">
+          <label className="ctb__required-label">
+            <input
+              type="checkbox"
+              className="ctb__checkbox"
+              checked={field.hideLabel ?? false}
+              onChange={(e) => onChange({ ...field, hideLabel: e.target.checked })}
+            />
+            Hide label
+          </label>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Variable field preview (stateful so the chip can be edited) ──────────────
+
+function VariableFieldPreview({ field }) {
+  const [varName, setVarName] = useState(field.placeholder || 'variable_name');
+  const label = field.label || <em className="ctb__prev-untitled">Untitled field</em>;
+  return (
+    <div className="ctb__prev-field">
+      <span className="ctb__prev-label">
+        {label}{field.required && <span className="ctb__prev-required"> *</span>}
+      </span>
+      <VariableChip
+        value={varName || 'variable_name'}
+        type="variable"
+        onChange={setVarName}
+        onDelete={() => setVarName('')}
+      />
     </div>
   );
 }
@@ -243,7 +278,9 @@ export function PreviewField({ field }) {
     case 'checkbox':
       return (
         <div className="ctb__prev-field">
-          <span className="ctb__prev-label">{label}{field.required && <span className="ctb__prev-required"> *</span>}</span>
+          {!field.hideLabel && (
+            <span className="ctb__prev-label">{label}{field.required && <span className="ctb__prev-required"> *</span>}</span>
+          )}
           <div className="ctb__prev-options">
             {(field.options.length ? field.options : ['Option 1', 'Option 2']).map((opt, i) => (
               <div key={i} className="ctb__prev-option">
@@ -264,18 +301,7 @@ export function PreviewField({ field }) {
         </div>
       );
     case 'variable':
-      return (
-        <div className="ctb__prev-field">
-          <span className="ctb__prev-label">{label}{field.required && <span className="ctb__prev-required"> *</span>}</span>
-          <div className="ctb__prev-variable">
-            <div className="ctb__prev-variable-chip">
-              <span className="material-symbols-outlined ctb__prev-variable-icon">data_object</span>
-              variable_name
-            </div>
-            <span className="material-symbols-outlined ctb__prev-variable-btn">data_object</span>
-          </div>
-        </div>
-      );
+      return <VariableFieldPreview field={field} />;
     case 'tags':
       return (
         <div className="ctb__prev-field">

@@ -157,6 +157,12 @@
   cursor: pointer;
   color: #8f8f8f;
   padding: 0;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.12s, color 0.12s;
+}
+
+.toolRow:hover .iconBtn {
+  opacity: 1;
 }
 
 .iconBtn:hover {
