@@ -683,6 +683,7 @@ function App() {
       onGroupUpdate={handleGroupUpdate}
       onOpenAgent={handleOpenAgent}
       onCreateAgentFromRow={handleCreateAgentFromRow}
+      onExportError={() => showToast('Export failed. Try again.', 'error')}
       onDeleteAgent={handleDeleteAgent}
       onAgentUpdate={handleAgentUpdate}
       onExportAgent={handleExportAgent}

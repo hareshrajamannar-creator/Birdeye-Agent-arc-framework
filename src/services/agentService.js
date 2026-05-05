@@ -107,6 +107,13 @@ export function getCachedAgent(agentSlug, moduleSlug) {
   return agentCache[cacheKey(moduleSlug, agentSlug)] ?? null;
 }
 
+export async function getAgentsByModuleSlug(moduleSlug) {
+  if (!moduleSlug) return [];
+  const q = query(collection(db, COLLECTION), where('moduleSlug', '==', moduleSlug));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => restoreFromFirestore({ id: d.id, ...d.data() }));
+}
+
 // Fetch a single agent by moduleSlug + agentSlug (checks cache first)
 export async function getAgentBySlug(moduleSlug, agentSlug) {
   const key = cacheKey(moduleSlug, agentSlug);
@@ -155,4 +162,13 @@ export function subscribeToCustomTools(onTools) {
     const tools = snapshot.docs.map((d) => restoreFromFirestore({ id: d.id, ...d.data() }));
     onTools(tools);
   });
+}
+
+export async function getCustomToolsByIds(toolIds) {
+  const uniqueIds = [...new Set((toolIds || []).filter(Boolean))];
+  if (uniqueIds.length === 0) return [];
+  const snaps = await Promise.all(uniqueIds.map((toolId) => getDoc(doc(db, TOOLS_COLLECTION, toolId))));
+  return snaps
+    .filter((snap) => snap.exists())
+    .map((snap) => restoreFromFirestore({ id: snap.id, ...snap.data() }));
 }
