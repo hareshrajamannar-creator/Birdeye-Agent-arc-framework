@@ -8,7 +8,7 @@ import ScheduleBased from '../Molecules/RHS/Trigger/ScheduleBased/ScheduleBased'
 import ShareModal from '../Organisms/Modals/ShareModal/ShareModal';
 import EmptyStates from '../Patterns/EmptyStates/EmptyStates';
 import Button from '@birdeye/elemental/core/atoms/Button/index.js';
-import { saveAgent, getAgentBySlug, getCachedAgent } from '../../services/agentService';
+import { saveAgent, getAgentBySlug, getCachedAgent, saveCustomTool, getCustomTools } from '../../services/agentService';
 import { getModuleNav } from '../Modules/moduleNavigation';
 import './AgentBuilder.css';
 
@@ -355,6 +355,7 @@ export default function AgentBuilder({
   /* ─── Header three-dots menu ─── */
   const [headerMenuOpen, setHeaderMenuOpen] = useState(false);
   const headerMenuRef = useRef(null);
+  const importInputRef = useRef(null);
   useEffect(() => {
     if (!headerMenuOpen) return;
     const handler = (e) => {
@@ -464,8 +465,22 @@ export default function AgentBuilder({
     onSaveAgent?.(true, agentPayload);
   }, [buildAgentPayload, buildTemplatePayload, onSaveAgent, onSaveTemplate]);
 
-  /* ─── Download handler ─── */
-  const handleExport = useCallback(() => {
+  /* ─── Download handler — full self-contained export ─── */
+  const handleExport = useCallback(async () => {
+    // Collect IDs of custom tools referenced in any node's selectedTools
+    const referencedIds = new Set();
+    Object.values(nodeDetails).forEach((detail) => {
+      if (Array.isArray(detail.selectedTools)) {
+        detail.selectedTools.forEach((id) => referencedIds.add(id));
+      }
+    });
+
+    let exportedTools = [];
+    if (referencedIds.size > 0) {
+      const allTools = await getCustomTools();
+      exportedTools = allTools.filter((t) => referencedIds.has(t.id));
+    }
+
     const payload = {
       name: agentName,
       description: agentDesc,
@@ -473,6 +488,7 @@ export default function AgentBuilder({
       exportedAt: new Date().toISOString(),
       nodes: nodeList,
       nodeDetails,
+      customTools: exportedTools,
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -482,6 +498,32 @@ export default function AgentBuilder({
     a.click();
     URL.revokeObjectURL(url);
   }, [agentName, agentDesc, agentModuleContext, nodeList, nodeDetails]);
+
+  /* ─── Import handler — load agent from JSON file ─── */
+  const handleImport = useCallback(async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+
+      // Re-save any embedded custom tools so they exist in this project's Firestore
+      if (Array.isArray(data.customTools) && data.customTools.length > 0) {
+        await Promise.all(data.customTools.map((tool) => saveCustomTool(tool)));
+      }
+
+      // Apply the imported graph as a new agent (fresh ID so it doesn't overwrite an existing one)
+      const newId = crypto.randomUUID();
+      setAgentId(newId);
+      if (data.moduleContext) setAgentModuleContext(data.moduleContext);
+      setNodeList(data.nodes || []);
+      setNodeDetails(data.nodeDetails || {});
+    } catch (err) {
+      console.error('Import failed:', err);
+    }
+    // Reset so the same file can be re-imported if needed
+    e.target.value = '';
+  }, []);
 
   /* ─── Live node sync: RHS → canvas ─── */
   const handleNodeFieldChange = useCallback((nodeId, field, value) => {
@@ -962,6 +1004,15 @@ export default function AgentBuilder({
               <span className="material-symbols-outlined">download</span>
               Download
             </button>
+            <div className="ab-header-menu-divider" />
+            <button
+              className="ab-header-menu-item"
+              type="button"
+              onClick={() => { setHeaderMenuOpen(false); importInputRef.current?.click(); }}
+            >
+              <span className="material-symbols-outlined">upload_file</span>
+              Import from JSON
+            </button>
           </div>
         )}
       </div>
@@ -1061,6 +1112,15 @@ export default function AgentBuilder({
           onClose={() => setShareModalOpen(false)}
         />
       )}
+
+      {/* ─── Hidden file input for JSON import ─── */}
+      <input
+        ref={importInputRef}
+        type="file"
+        accept=".json"
+        className="ab-hidden-input"
+        onChange={handleImport}
+      />
 
     </AppShell>
   );

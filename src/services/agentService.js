@@ -164,6 +164,11 @@ export function subscribeToCustomTools(onTools) {
   });
 }
 
+export async function getCustomTools() {
+  const snap = await getDocs(collection(db, TOOLS_COLLECTION));
+  return snap.docs.map((d) => restoreFromFirestore({ id: d.id, ...d.data() }));
+}
+
 export async function getCustomToolsByIds(toolIds) {
   const uniqueIds = [...new Set((toolIds || []).filter(Boolean))];
   if (uniqueIds.length === 0) return [];

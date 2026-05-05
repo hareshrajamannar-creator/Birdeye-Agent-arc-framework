@@ -177,6 +177,15 @@
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
 }
 
+.ab-header-menu-divider {
+  height: 1px;
+  background: #e5e9f0;
+}
+
+.ab-hidden-input {
+  display: none;
+}
+
 /* ─── Publish agent modal form ─── */
 .agent-builder__save-form {
   display: flex;
