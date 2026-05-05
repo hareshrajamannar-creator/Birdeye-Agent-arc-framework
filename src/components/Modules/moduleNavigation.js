@@ -331,6 +331,25 @@ export const MODULE_NAV = {
     defaultItemId: 'view-all-agents',
     menuItems: standardSections(['Competitor monitoring agents', 'Benchmark summary agents']),
   },
+  'faq-generation': {
+    title: 'FAQ Generation AI',
+    ctaLabel: 'Create agent',
+    defaultItemId: 'faq-generation-agents',
+    menuItems: expandedSections([
+      {
+        label: 'Actions',
+        children: ['Recommendations', 'Track progress'],
+      },
+      {
+        label: 'Agents',
+        children: ['FAQ generation agents', 'FAQ research agents'],
+      },
+      {
+        label: 'Settings',
+        children: ['Prompts', 'Destinations'],
+      },
+    ]),
+  },
   settings: {
     title: 'Settings',
     ctaLabel: 'Create agent',

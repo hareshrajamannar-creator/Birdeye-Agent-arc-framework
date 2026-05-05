@@ -8,6 +8,7 @@ import AgentViewerPage from './pages/AgentViewerPage';
 import { getModuleTemplates } from './components/Modules/agentFrameworkData';
 import { getModuleNav } from './components/Modules/moduleNavigation';
 import { subscribeToAgents, deleteAgent, saveAgent } from './services/agentService';
+import { seedAeoAgent } from './utils/seedAeoAgent';
 import { deleteTemplate, saveTemplate, subscribeToTemplates } from './services/templateService';
 import ShareModal from './components/Organisms/Modals/ShareModal/ShareModal';
 import MoveToModal from './components/Organisms/Modals/MoveToModal/MoveToModal';
@@ -145,6 +146,11 @@ function App() {
     setToastVisible(true);
     toastTimerRef.current = setTimeout(() => setToastVisible(false), 3000);
   }
+
+  // Seed the AEO FAQ Generation Agent into Firestore on first boot
+  useEffect(() => {
+    seedAeoAgent();
+  }, []);
 
   // Subscribe to all agents in real-time from Firestore
   useEffect(() => {
