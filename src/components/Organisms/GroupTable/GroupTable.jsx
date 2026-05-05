@@ -157,6 +157,13 @@ export default function GroupTable({ tableData, onTableDataChange, onAgentRowCli
     emit(cols, updated);
   }
 
+  /* ─── Delete column ─── */
+  function deleteCol(colId) {
+    const updated = cols.filter((c) => c.id !== colId);
+    setCols(updated);
+    emit(updated, rows);
+  }
+
   /* ─── Delete row ─── */
   function deleteRow(rowId) {
     const updated = rows.filter((r) => r.id !== rowId);
@@ -203,12 +210,22 @@ export default function GroupTable({ tableData, onTableDataChange, onAgentRowCli
                     <div className={styles.thInner}>
                       <span>{col.label}</span>
                       {!isLocked && !viewOnly && (
-                        <span
-                          className={`material-symbols-outlined ${styles.thEditIcon}`}
-                          onClick={() => startHeaderEdit(col.id, col.label)}
-                        >
-                          edit
-                        </span>
+                        <>
+                          <span
+                            className={`material-symbols-outlined ${styles.thEditIcon}`}
+                            onClick={() => startHeaderEdit(col.id, col.label)}
+                            title="Rename column"
+                          >
+                            edit
+                          </span>
+                          <span
+                            className={`material-symbols-outlined ${styles.thDeleteIcon}`}
+                            onClick={() => deleteCol(col.id)}
+                            title="Remove column"
+                          >
+                            close
+                          </span>
+                        </>
                       )}
                     </div>
                   )}
