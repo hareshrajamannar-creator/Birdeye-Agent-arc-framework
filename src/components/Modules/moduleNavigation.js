@@ -246,6 +246,43 @@ export const MODULE_NAV = {
       },
     ]),
   },
+  'content-hub': {
+    title: 'Content hub',
+    ctaLabel: 'Create project',
+    defaultItemId: 'projects',
+    menuItems: [
+      {
+        id: 'content',
+        label: 'Content',
+        defaultExpanded: true,
+        children: [
+          { id: 'projects', label: 'Projects' },
+          { id: 'calendar', label: 'Calendar' },
+          { id: 'assigned-to-me', label: 'Assigned to me' },
+          { id: 'approve-content', label: 'Approve content' },
+          { id: 'fix-rejected-content', label: 'Fix rejected content' },
+        ],
+      },
+      {
+        id: 'agents',
+        label: 'Agents',
+        defaultExpanded: true,
+        children: [
+          { id: 'faq-generation-agents', label: 'FAQ generation agents' },
+          { id: 'blog-generation-agents', label: 'Blog generation agents' },
+        ],
+      },
+      {
+        id: 'settings',
+        label: 'Settings',
+        defaultExpanded: true,
+        children: [
+          { id: 'approvals', label: 'Approvals' },
+          { id: 'general', label: 'General' },
+        ],
+      },
+    ],
+  },
   surveys: {
     title: 'Surveys AI',
     ctaLabel: 'Create survey',
