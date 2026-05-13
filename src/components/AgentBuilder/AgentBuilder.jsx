@@ -263,6 +263,9 @@ export default function AgentBuilder({
   // Tracked as state so applyAgent can update them from Firestore — props alone are wrong after URL load
   const [agentModuleContext, setAgentModuleContext] = useState(urlModuleSlug || moduleContext);
   const [agentSectionContext, setAgentSectionContext] = useState(sectionContext);
+  // templateId / templateSource are stateful so applyAgent can load them from Firestore
+  const [agentTemplateId, setAgentTemplateId] = useState(templateId || '');
+  const [agentTemplateSource, setAgentTemplateSource] = useState(templateSource || '');
 
   /* ─── Loading / not-found state for URL-based loading ─── */
   const [isLoadingFromSlug, setIsLoadingFromSlug] = useState(!viewOnly && !!urlAgentSlug && !!urlModuleSlug);
@@ -302,6 +305,9 @@ export default function AgentBuilder({
       setAgentModuleContext(agent.moduleContext || agent.moduleSlug || urlModuleSlug);
       setAgentSectionContext(agent.sectionContext || '');
       setDerivedAppTitle(getModuleNav(agent.moduleContext || urlModuleSlug).title);
+      // Restore template association — this is what puts the builder into template mode
+      setAgentTemplateId(agent.templateId || '');
+      setAgentTemplateSource(agent.templateSource || '');
       setNodeList(agent.nodes || []);
       setNodeDetails(() => {
         const base = agent.nodeDetails || {};
@@ -369,13 +375,14 @@ export default function AgentBuilder({
   /* ─── Agent name is derived from nodeDetails (single source of truth) ─── */
   const agentName = nodeDetails[START_NODE_ID]?.agentName || (typeof pageTitle === 'string' ? pageTitle : '') || '';
   const [agentDesc] = useState(initialDescription || '');
-  const isTemplateMode = !!templateId && initialStatus !== 'Running';
+  // isTemplateMode uses state so it correctly activates after applyAgent loads templateId from Firestore
+  const isTemplateMode = !!agentTemplateId && agentStatus !== 'Running';
 
   /* ─── Always-fresh ref so publish never reads stale closure values ─── */
   const latestRef = useRef({});
   useLayoutEffect(() => {
-    latestRef.current = { agentId, agentName, agentDesc, moduleContext: agentModuleContext, sectionContext: agentSectionContext, agentStatus, nodeList, nodeDetails, templateId, templateSource, moduleSlug: agentModuleSlug, agentSlug };
-  }, [agentId, agentName, agentDesc, agentModuleContext, agentSectionContext, agentStatus, nodeList, nodeDetails, templateId, templateSource, agentModuleSlug, agentSlug]);
+    latestRef.current = { agentId, agentName, agentDesc, moduleContext: agentModuleContext, sectionContext: agentSectionContext, agentStatus, nodeList, nodeDetails, templateId: agentTemplateId, templateSource: agentTemplateSource, moduleSlug: agentModuleSlug, agentSlug };
+  }, [agentId, agentName, agentDesc, agentModuleContext, agentSectionContext, agentStatus, nodeList, nodeDetails, agentTemplateId, agentTemplateSource, agentModuleSlug, agentSlug]);
 
   /* ─── Auto-save to Firestore (debounced 1.5 s) ─── */
   const saveTimerRef = useRef(null);
@@ -401,11 +408,11 @@ export default function AgentBuilder({
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const buildTemplatePayload = useCallback(() => {
-    const { agentName: name, agentDesc: desc, moduleContext: mod, sectionContext: sec, nodeList: nodes, nodeDetails: details, templateSource: source } = latestRef.current;
+    const { agentName: name, agentDesc: desc, moduleContext: mod, sectionContext: sec, nodeList: nodes, nodeDetails: details, templateId: tmplId, templateSource: source } = latestRef.current;
     const finalName = (name || details?.[START_NODE_ID]?.agentName || '').trim();
     if (!finalName) return null;
     return {
-      id: templateId,
+      id: tmplId,
       title: finalName,
       description: (desc || initialDescription || '').trim(),
       moduleContext: mod,
@@ -414,10 +421,10 @@ export default function AgentBuilder({
       nodes,
       nodeDetails: details,
     };
-  }, [initialDescription, templateId]);
+  }, [initialDescription]);
 
   const buildAgentPayload = useCallback((status = 'Running') => {
-    const { agentId: id, agentName: name, agentDesc: desc, moduleContext: mod, sectionContext: sec, nodeList: nodes, nodeDetails: details, moduleSlug: msSlug, agentSlug: asSlug } = latestRef.current;
+    const { agentId: id, agentName: name, agentDesc: desc, moduleContext: mod, sectionContext: sec, nodeList: nodes, nodeDetails: details, moduleSlug: msSlug, agentSlug: asSlug, templateId: tmplId } = latestRef.current;
     const finalName = (name || details?.[START_NODE_ID]?.agentName || '').trim();
     if (!finalName) return null;
     return {
@@ -429,11 +436,11 @@ export default function AgentBuilder({
       sectionContext: sec,
       moduleSlug: msSlug,
       agentSlug: asSlug,
-      templateId,
+      templateId: tmplId,
       nodes,
       nodeDetails: details,
     };
-  }, [templateId]);
+  }, []);
 
   const handleSaveTemplate = useCallback(async () => {
     clearTimeout(saveTimerRef.current);
