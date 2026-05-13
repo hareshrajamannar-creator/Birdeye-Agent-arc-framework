@@ -701,6 +701,8 @@ function App() {
   const builderElement = (
     <ReactFlowProvider>
       <AgentBuilder
+        navItems={CUSTOM_NAV_ITEMS}
+        activeNavId={pathModule || 'reviews'}
         onSaveAgent={handleSaveAgent}
         onSaveTemplate={handleSaveTemplate}
         onClose={() => {

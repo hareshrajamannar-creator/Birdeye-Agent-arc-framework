@@ -240,6 +240,7 @@ export default function AgentBuilder({
   appTitle,
   pageTitle = '',
   activeNavId = 'reviews',
+  navItems,
   moduleContext = '',
   sectionContext = '',
   templateId,
@@ -302,8 +303,10 @@ export default function AgentBuilder({
       setAgentId(agent.id);
       setAgentModuleSlug(agent.moduleSlug || urlModuleSlug);
       setAgentSlug(agent.agentSlug || urlAgentSlug);
-      setAgentModuleContext(agent.moduleContext || agent.moduleSlug || urlModuleSlug);
+      const moduleCtx = agent.moduleContext || agent.moduleSlug || urlModuleSlug;
+      setAgentModuleContext(moduleCtx);
       setAgentSectionContext(agent.sectionContext || '');
+      setNavId(moduleCtx || activeNavId);
       setDerivedAppTitle(getModuleNav(agent.moduleContext || urlModuleSlug).title);
       // Restore template association — this is what puts the builder into template mode
       setAgentTemplateId(agent.templateId || '');
@@ -1088,6 +1091,7 @@ export default function AgentBuilder({
       appTitle={derivedAppTitle}
       pageTitle={editableName}
       activeNavId={navId}
+      navItems={navItems}
       onNavChange={viewOnly ? undefined : setNavId}
       showBack={!!onClose}
       onBack={onClose}
