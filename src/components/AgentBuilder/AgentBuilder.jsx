@@ -733,7 +733,7 @@ export default function AgentBuilder({
     });
   }, []);
 
-  const handleDropNode = useCallback(({ type, label, description, afterNodeId, branchPathId }) => {
+  const handleDropNode = useCallback(({ type, label, description, afterNodeId, branchPathId, position }) => {
     const id = nextId();
     const newNode = makeNodeConfig(id, type, label, description);
     const details = makeNodeDetails(type, label);
@@ -761,6 +761,33 @@ export default function AgentBuilder({
       return;
     }
 
+    // When dropped freely on the canvas (not via an edge button), use the drop Y coordinate
+    // to find the correct insertion point rather than always appending at the end.
+    let dropInsertIdx = null;
+    if (position && !afterNodeId) {
+      const currentNodeList = latestRef.current.nodeList || [];
+      const currentNodeDetails = latestRef.current.nodeDetails || {};
+      let y = 150; // first content node starts here (start node is at y=0, +150 gap)
+      for (let i = 0; i < currentNodeList.length; i++) {
+        if (position.y < y) {
+          dropInsertIdx = i;
+          break;
+        }
+        const item = currentNodeList[i];
+        if (item.flowType === 'branch') {
+          const branches = currentNodeDetails[item.id]?.branches || [];
+          let maxBranchNodes = 0;
+          branches.forEach((b) => {
+            const bNodes = currentNodeDetails[b.id]?.nodes || [];
+            maxBranchNodes = Math.max(maxBranchNodes, bNodes.length);
+          });
+          y += 150 + (maxBranchNodes + 1) * 250;
+        }
+        y += 250;
+      }
+      if (dropInsertIdx === null) dropInsertIdx = currentNodeList.length;
+    }
+
     setNodeList((prev) => {
       let updated;
       if (afterNodeId) {
@@ -768,6 +795,8 @@ export default function AgentBuilder({
         updated = idx !== -1
           ? [...prev.slice(0, idx + 1), newNode, ...prev.slice(idx + 1)]
           : [...prev, newNode];
+      } else if (dropInsertIdx !== null) {
+        updated = [...prev.slice(0, dropInsertIdx), newNode, ...prev.slice(dropInsertIdx)];
       } else {
         updated = [...prev, newNode];
       }
