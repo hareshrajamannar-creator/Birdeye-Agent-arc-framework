@@ -36,21 +36,17 @@ export default function EntityTaskBody({ initialValues = {}, onFieldChange }) {
   };
 
   const handleToggleTool = (toolId) => {
-    setSelectedTools((prev) => {
-      const next = prev.includes(toolId)
-        ? prev.filter((id) => id !== toolId)
-        : [...prev, toolId];
-      onFieldChange?.('selectedTools', next);
-      return next;
-    });
+    const next = selectedTools.includes(toolId)
+      ? selectedTools.filter((id) => id !== toolId)
+      : [...selectedTools, toolId];
+    setSelectedTools(next);
+    onFieldChange?.('selectedTools', next);
   };
 
   const handleRemoveTool = (toolId) => {
-    setSelectedTools((prev) => {
-      const next = prev.filter((id) => id !== toolId);
-      onFieldChange?.('selectedTools', next);
-      return next;
-    });
+    const next = selectedTools.filter((id) => id !== toolId);
+    setSelectedTools(next);
+    onFieldChange?.('selectedTools', next);
   };
 
   const openViewer = (tool) => {

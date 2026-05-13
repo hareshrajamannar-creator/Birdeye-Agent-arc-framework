@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect, useLayoutEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import AppShell from '../AppShell/AppShell';
 import LHSDrawer from '../LHSDrawer/LHSDrawer';
@@ -373,7 +373,7 @@ export default function AgentBuilder({
 
   /* ─── Always-fresh ref so publish never reads stale closure values ─── */
   const latestRef = useRef({});
-  useEffect(() => {
+  useLayoutEffect(() => {
     latestRef.current = { agentId, agentName, agentDesc, moduleContext: agentModuleContext, sectionContext: agentSectionContext, agentStatus, nodeList, nodeDetails, templateId, templateSource, moduleSlug: agentModuleSlug, agentSlug };
   }, [agentId, agentName, agentDesc, agentModuleContext, agentSectionContext, agentStatus, nodeList, nodeDetails, templateId, templateSource, agentModuleSlug, agentSlug]);
 
@@ -450,14 +450,26 @@ export default function AgentBuilder({
   const handlePublish = useCallback(async () => {
     clearTimeout(saveTimerRef.current);
     const payload = buildAgentPayload('Running');
-    if (!payload) return;
+    if (!payload) {
+      // No agent name — reschedule auto-save so the pending changes are not lost
+      saveTimerRef.current = setTimeout(() => {
+        const { agentId: id, agentName: name, agentDesc: desc, moduleContext: mod, sectionContext: sec, agentStatus: status, nodeList: nodes, nodeDetails: details, moduleSlug: msSlug, agentSlug: asSlug } = latestRef.current;
+        saveAgent(id, { id, name: name || 'Untitled agent', description: desc, status, moduleContext: mod, sectionContext: sec, moduleSlug: msSlug, agentSlug: asSlug, nodes, nodeDetails: details });
+      }, 1500);
+      return;
+    }
     try {
       await saveAgent(payload.id, payload);
       setAgentStatus('Running');
+      onSaveAgent?.(true, payload);
     } catch (e) {
       console.error('Publish failed', e);
+      // Save failed — reschedule auto-save so data is not silently lost
+      saveTimerRef.current = setTimeout(() => {
+        const { agentId: id, agentName: name, agentDesc: desc, moduleContext: mod, sectionContext: sec, agentStatus: status, nodeList: nodes, nodeDetails: details, moduleSlug: msSlug, agentSlug: asSlug } = latestRef.current;
+        saveAgent(id, { id, name: name || 'Untitled agent', description: desc, status, moduleContext: mod, sectionContext: sec, moduleSlug: msSlug, agentSlug: asSlug, nodes, nodeDetails: details });
+      }, 1500);
     }
-    onSaveAgent?.(true, payload);
   }, [buildAgentPayload, onSaveAgent]);
 
   const handleSaveAndPublish = useCallback(async () => {
