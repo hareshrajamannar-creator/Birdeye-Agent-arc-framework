@@ -5,8 +5,63 @@ import TextArea from '@birdeye/elemental/core/atoms/TextArea/index.js';
 import { Select, SelectItem } from '@birdeye/elemental/core/atoms/Select/index.js';
 import Toggle from '@birdeye/elemental/core/atoms/Toggle/index.js';
 import { OPTION_FIELD_TYPES } from '../CustomToolBuilder/CustomToolBuilder.jsx';
-import VariableChip from '../../../Molecules/Inputs/VariableChip/VariableChip';
+import VariableChip, { DataTypeIcon } from '../../../Molecules/Inputs/VariableChip/VariableChip';
 import styles from './CustomToolViewer.module.css';
+
+// ─── Variable field ───────────────────────────────────────────────────────────
+
+function VariableField({ field, label, required }) {
+  const [value, setValue] = useState('');
+  const [adding, setAdding] = useState(false);
+
+  const handleCommit = (v) => {
+    setValue(v);
+    setAdding(false);
+  };
+
+  const handleDelete = () => {
+    setValue('');
+    setAdding(false);
+  };
+
+  const hasValue = value || field.placeholder;
+
+  return (
+    <div className={styles.fieldWrap}>
+      <span className={styles.fieldLabel}>
+        {label}{required && <span className={styles.required}> *</span>}
+      </span>
+      <div className={styles.variableContainer}>
+        <div className={styles.variableContainerInner}>
+          {(hasValue || adding) && (
+            <VariableChip
+              value={hasValue ? (value || field.placeholder) : ''}
+              type="variable"
+              onChange={handleCommit}
+              onDelete={handleDelete}
+              autoFocus={adding && !hasValue}
+            />
+          )}
+        </div>
+        {!hasValue && !adding && (
+          <button
+            type="button"
+            className={styles.variableAddBtn}
+            onClick={() => setAdding(true)}
+            title="Insert variable"
+          >
+            <DataTypeIcon />
+          </button>
+        )}
+        {hasValue && (
+          <span className={styles.variableAddBtn}>
+            <DataTypeIcon />
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
 
 // ─── Interactive field ────────────────────────────────────────────────────────
 
@@ -142,17 +197,11 @@ function InteractiveField({ field }) {
 
     case 'variable':
       return (
-        <div className={styles.fieldWrap}>
-          <span className={styles.fieldLabel}>
-            {label}{required && <span className={styles.required}> *</span>}
-          </span>
-          <VariableChip
-            value={textValue || field.placeholder || 'variable_name'}
-            type="variable"
-            onChange={setTextValue}
-            onDelete={() => setTextValue('')}
-          />
-        </div>
+        <VariableField
+          field={field}
+          label={label}
+          required={required}
+        />
       );
 
     case 'tags':

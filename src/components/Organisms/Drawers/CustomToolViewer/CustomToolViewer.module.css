@@ -261,3 +261,50 @@
   background: transparent;
   padding: 0;
 }
+
+/* ─── Variable field container ─── */
+
+.variableContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 40px;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  background: #fff;
+  padding: 6px 10px;
+  width: 100%;
+  box-sizing: border-box;
+  gap: 8px;
+}
+
+.variableContainer:focus-within {
+  border-color: #d1e5f9;
+  outline: none;
+}
+
+.variableContainerInner {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.variableAddBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  flex-shrink: 0;
+  opacity: 0.55;
+  transition: opacity 0.12s;
+}
+
+.variableAddBtn:hover {
+  opacity: 1;
+}

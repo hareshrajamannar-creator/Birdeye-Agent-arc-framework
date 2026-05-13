@@ -503,7 +503,8 @@ export default function AgentBuilder({
 
   /* ─── Download handler — full self-contained export ─── */
   const handleExport = useCallback(async () => {
-    // Collect IDs of custom tools referenced in any node's selectedTools
+    // Collect IDs of custom tools referenced in any node's selectedTools,
+    // including nodes nested inside branch paths (all are top-level keys in nodeDetails)
     const referencedIds = new Set();
     Object.values(nodeDetails).forEach((detail) => {
       if (Array.isArray(detail.selectedTools)) {
@@ -513,13 +514,20 @@ export default function AgentBuilder({
 
     let exportedTools = [];
     if (referencedIds.size > 0) {
-      const allTools = await getCustomTools();
-      exportedTools = allTools.filter((t) => referencedIds.has(t.id));
+      try {
+        const allTools = await getCustomTools();
+        exportedTools = allTools.filter((t) => referencedIds.has(t.id));
+      } catch (err) {
+        console.error('Export: could not fetch custom tools', err);
+      }
     }
 
     const payload = {
+      schemaVersion: 1,
+      agentId,
       name: agentName,
       description: agentDesc,
+      status: agentStatus,
       moduleContext: agentModuleContext,
       exportedAt: new Date().toISOString(),
       nodes: nodeList,
@@ -533,7 +541,7 @@ export default function AgentBuilder({
     a.download = `${agentName.replace(/\s+/g, '-').toLowerCase() || 'agent'}.json`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [agentName, agentDesc, agentModuleContext, nodeList, nodeDetails]);
+  }, [agentId, agentName, agentDesc, agentStatus, agentModuleContext, nodeList, nodeDetails]);
 
   /* ─── Import handler — load agent from JSON file ─── */
   const handleImport = useCallback(async (e) => {
