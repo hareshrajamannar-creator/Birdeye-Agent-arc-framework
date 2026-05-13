@@ -832,6 +832,10 @@ export default function AgentBuilder({
       [id]: details,
       ...extraDetails,
     }));
+
+    // Auto-select the dropped node so the RHS opens immediately for configuration
+    setSelectedNodeId(id);
+    setDrawerOpen(true);
   }, []);
 
   const handleNodeClick = useCallback((node) => {
