@@ -62,6 +62,11 @@ function restoreFromFirestore(value) {
 
 // Save or update an agent (creates if new, overwrites if exists)
 export function saveAgent(agentId, snapshot) {
+  // Keep the in-memory cache in sync so re-navigation within the same session
+  // doesn't load stale data instead of the version just written to Firestore.
+  if (snapshot.agentSlug && snapshot.moduleSlug) {
+    agentCache[cacheKey(snapshot.moduleSlug, snapshot.agentSlug)] = { ...snapshot, id: agentId };
+  }
   return setDoc(doc(db, COLLECTION, agentId), {
     ...sanitizeForFirestore(snapshot),
     updatedAt: serverTimestamp(),

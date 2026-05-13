@@ -381,13 +381,24 @@ export default function AgentBuilder({
   const saveTimerRef = useRef(null);
   useEffect(() => {
     clearTimeout(saveTimerRef.current);
-    if (!agentId || !agentName || viewOnly || isTemplateMode) return;
+    if (!agentId || viewOnly || isTemplateMode) return;
     saveTimerRef.current = setTimeout(() => {
       const { agentId: id, agentName: name, agentDesc: desc, moduleContext: mod, sectionContext: sec, agentStatus: status, nodeList: nodes, nodeDetails: details, moduleSlug: msSlug, agentSlug: asSlug } = latestRef.current;
-      saveAgent(id, { id, name, description: desc, status, moduleContext: mod, sectionContext: sec, moduleSlug: msSlug, agentSlug: asSlug, nodes, nodeDetails: details });
+      saveAgent(id, { id, name: name || 'Untitled agent', description: desc, status, moduleContext: mod, sectionContext: sec, moduleSlug: msSlug, agentSlug: asSlug, nodes, nodeDetails: details });
     }, 1500);
     return () => clearTimeout(saveTimerRef.current);
   }, [agentName, nodeList, nodeDetails, agentId, agentModuleContext, agentSectionContext, agentStatus, isTemplateMode]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* ─── Flush any pending auto-save immediately when navigating away ─── */
+  useEffect(() => {
+    return () => {
+      clearTimeout(saveTimerRef.current);
+      const { agentId: id, agentName: name, agentDesc: desc, moduleContext: mod, sectionContext: sec, agentStatus: status, nodeList: nodes, nodeDetails: details, moduleSlug: msSlug, agentSlug: asSlug } = latestRef.current;
+      if (id && !viewOnly && !isTemplateMode) {
+        saveAgent(id, { id, name: name || 'Untitled agent', description: desc, status, moduleContext: mod, sectionContext: sec, moduleSlug: msSlug, agentSlug: asSlug, nodes, nodeDetails: details });
+      }
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const buildTemplatePayload = useCallback(() => {
     const { agentName: name, agentDesc: desc, moduleContext: mod, sectionContext: sec, nodeList: nodes, nodeDetails: details, templateSource: source } = latestRef.current;
