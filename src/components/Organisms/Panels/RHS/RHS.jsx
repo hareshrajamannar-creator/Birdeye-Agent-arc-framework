@@ -81,7 +81,16 @@ export default function RHS({ variant = 'agentDetails', title, bodyProps, onClos
     setIsExpanded(false);
   };
 
-  const testContent = <ExpandedRHSTest />;
+  const previewInputFields = bodyProps?.initialValues?.previewInputFields ?? [];
+  const previewOutputFields = bodyProps?.initialValues?.previewOutputFields ?? [];
+  const testContent = (
+    <ExpandedRHSTest
+      inputFields={previewInputFields}
+      outputFields={previewOutputFields}
+      onInputFieldsChange={(next) => bodyProps?.onFieldChange?.('previewInputFields', next)}
+      onOutputFieldsChange={(next) => bodyProps?.onFieldChange?.('previewOutputFields', next)}
+    />
+  );
 
   return (
     <>

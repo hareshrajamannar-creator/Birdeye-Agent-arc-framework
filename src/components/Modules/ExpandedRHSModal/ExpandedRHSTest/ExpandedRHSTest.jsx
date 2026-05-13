@@ -22,6 +22,8 @@ export default function ExpandedRHSTest({
   outputFields = [],
   onRun,
   defaultRun = false,
+  onInputFieldsChange,
+  onOutputFieldsChange,
 }) {
   const [hasRun, setHasRun] = useState(defaultRun);
   const [localInputFields, setLocalInputFields] = useState(() => normalizeFields(inputFields));
@@ -45,6 +47,16 @@ export default function ExpandedRHSTest({
     setLocalOutputFields(normalizeFields(outputFields));
   }, [outputFields]);
 
+  const handleInputChange = (next) => {
+    setLocalInputFields(next);
+    onInputFieldsChange?.(next);
+  };
+
+  const handleOutputChange = (next) => {
+    setLocalOutputFields(next);
+    onOutputFieldsChange?.(next);
+  };
+
   const handleRun = () => {
     setHasRun(true);
     onRun?.(localInputFields);
@@ -65,12 +77,12 @@ export default function ExpandedRHSTest({
 
       <ExpandedRHSTestInput
         fields={localInputFields}
-        onChange={setLocalInputFields}
+        onChange={handleInputChange}
       />
 
       <ExpandedRHSTestOutput
         rows={localOutputFields}
-        onChange={setLocalOutputFields}
+        onChange={handleOutputChange}
       />
 
       {hasRun && (
