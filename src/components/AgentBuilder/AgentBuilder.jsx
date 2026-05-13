@@ -388,23 +388,26 @@ export default function AgentBuilder({
   }, [agentId, agentName, agentDesc, agentModuleContext, agentSectionContext, agentStatus, nodeList, nodeDetails, agentTemplateId, agentTemplateSource, agentModuleSlug, agentSlug]);
 
   /* ─── Auto-save to Firestore (debounced 1.5 s) ─── */
+  // Always saves the agent — template mode only controls which button appears,
+  // not whether work is persisted. Blocking auto-save in template mode caused
+  // nodes to go missing for any draft agent created from a template.
   const saveTimerRef = useRef(null);
   useEffect(() => {
     clearTimeout(saveTimerRef.current);
-    if (!agentId || viewOnly || isTemplateMode) return;
+    if (!agentId || viewOnly) return;
     saveTimerRef.current = setTimeout(() => {
       const { agentId: id, agentName: name, agentDesc: desc, moduleContext: mod, sectionContext: sec, agentStatus: status, nodeList: nodes, nodeDetails: details, moduleSlug: msSlug, agentSlug: asSlug } = latestRef.current;
       saveAgent(id, { id, name: name || 'Untitled agent', description: desc, status, moduleContext: mod, sectionContext: sec, moduleSlug: msSlug, agentSlug: asSlug, nodes, nodeDetails: details });
     }, 1500);
     return () => clearTimeout(saveTimerRef.current);
-  }, [agentName, nodeList, nodeDetails, agentId, agentModuleContext, agentSectionContext, agentStatus, isTemplateMode]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [agentName, nodeList, nodeDetails, agentId, agentModuleContext, agentSectionContext, agentStatus]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ─── Flush any pending auto-save immediately when navigating away ─── */
   useEffect(() => {
     return () => {
       clearTimeout(saveTimerRef.current);
       const { agentId: id, agentName: name, agentDesc: desc, moduleContext: mod, sectionContext: sec, agentStatus: status, nodeList: nodes, nodeDetails: details, moduleSlug: msSlug, agentSlug: asSlug } = latestRef.current;
-      if (id && !viewOnly && !isTemplateMode) {
+      if (id && !viewOnly) {
         saveAgent(id, { id, name: name || 'Untitled agent', description: desc, status, moduleContext: mod, sectionContext: sec, moduleSlug: msSlug, agentSlug: asSlug, nodes, nodeDetails: details });
       }
     };
