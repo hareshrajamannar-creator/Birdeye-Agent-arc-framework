@@ -37,10 +37,58 @@ export function serializeFrom(el) {
   return text;
 }
 
+function buildEditingChipContents(chip, name, onFinalize, type = 'variable') {
+  const cfg = CHIP_TYPE_MAP[type] || CHIP_TYPE_MAP.variable;
+  chip.innerHTML = '';
+  chip.className = ['prompt-chip', 'prompt-chip--editing', cfg.chipMod].filter(Boolean).join(' ');
+
+  const swatch = document.createElement('span');
+  swatch.className = ['prompt-chip-swatch', cfg.swatchMod].filter(Boolean).join(' ');
+  swatch.innerHTML = cfg.iconHtml ?? DATA_TYPE_ICON_SVG;
+  chip.appendChild(swatch);
+
+  const input = document.createElement('input');
+  input.className = 'prompt-chip-input';
+  input.placeholder = 'variable';
+  input.value = name;
+  input.size = Math.max(name.length, 8);
+
+  let finalized = false;
+  const finalize = () => {
+    if (finalized) return;
+    finalized = true;
+
+    const nextName = input.value.trim();
+    if (!nextName) {
+      chip.remove();
+    } else {
+      buildViewChipContents(chip, nextName, onFinalize, type);
+    }
+    onFinalize?.();
+  };
+
+  input.onkeydown = (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); finalize(); }
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      finalized = true;
+      buildViewChipContents(chip, name, onFinalize, type);
+    }
+  };
+  input.onblur = finalize;
+  chip.appendChild(input);
+
+  requestAnimationFrame(() => {
+    input.focus();
+    input.select();
+  });
+}
+
 function buildViewChipContents(chip, name, onDelete, type = 'variable') {
   const cfg = CHIP_TYPE_MAP[type] || CHIP_TYPE_MAP.variable;
   chip.innerHTML = '';
   chip.dataset.chip = name;
+  chip.dataset.chipType = type;
   chip.className = ['prompt-chip', cfg.chipMod].filter(Boolean).join(' ');
 
   const swatch = document.createElement('span');
@@ -48,9 +96,15 @@ function buildViewChipContents(chip, name, onDelete, type = 'variable') {
   swatch.innerHTML = cfg.iconHtml ?? DATA_TYPE_ICON_SVG;
   chip.appendChild(swatch);
 
-  const label = document.createElement('span');
-  label.className = 'prompt-chip-label';
+  const label = document.createElement('button');
+  label.type = 'button';
+  label.className = 'prompt-chip-label prompt-chip-label-btn';
   label.textContent = name;
+  label.onmousedown = (e) => e.preventDefault();
+  label.onclick = (e) => {
+    e.stopPropagation();
+    buildEditingChipContents(chip, name, onDelete, type);
+  };
   chip.appendChild(label);
 
   const btn = document.createElement('button');

@@ -41,6 +41,18 @@
   font-family: 'Inter', 'Roboto', sans-serif;
 }
 
+.prompt-chip-label-btn {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: text;
+}
+
+.prompt-chip-label-btn:focus-visible {
+  outline: 1px solid #1976d2;
+  outline-offset: 1px;
+}
+
 .prompt-chip-del {
   display: inline-flex;
   align-items: center;
