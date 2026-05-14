@@ -525,8 +525,9 @@ function App() {
   async function handleGroupUpdate(field, value) {
     if (!isGroupPage) return;
     if (groupDoc) {
-      const { updatedAt, ...rest } = groupDoc;
-      await saveAgent(groupDoc.id, { ...rest, [field]: value });
+      // Targeted save: only update the specific field. merge:true (in saveAgent) ensures
+      // we never overwrite other fields (nodes, description, etc.) with a stale snapshot.
+      await saveAgent(groupDoc.id, { id: groupDoc.id, [field]: value });
     } else {
       // Static section — create a section config doc on first save
       const configId = `section-${effectiveModule}-${effectiveSection}`;
@@ -554,11 +555,10 @@ function App() {
   }
 
   async function handleAgentUpdate(agentId, field, value) {
-    const agent = agents.find((a) => a.id === agentId);
-    if (!agent) return;
-    const rest = { ...agent };
-    delete rest.updatedAt;
-    await saveAgent(agentId, { ...rest, [field]: value });
+    // Targeted save: only update the specific field so we never overwrite
+    // concurrent builder saves (nodes, nodeDetails, description) with a stale
+    // snapshot from the subscription array.
+    await saveAgent(agentId, { id: agentId, [field]: value });
   }
 
   async function handleOpenAgent(agentId) {

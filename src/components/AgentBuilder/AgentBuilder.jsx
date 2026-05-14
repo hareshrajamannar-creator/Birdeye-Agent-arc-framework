@@ -325,6 +325,7 @@ export default function AgentBuilder({
         };
       });
       setAgentStatus(agent.status || 'Draft');
+      setAgentDesc(agent.description || '');
       setSelectedNodeId(null);
       setDrawerOpen(false);
     }
@@ -377,7 +378,7 @@ export default function AgentBuilder({
   }, [headerMenuOpen]);
   /* ─── Agent name is derived from nodeDetails (single source of truth) ─── */
   const agentName = nodeDetails[START_NODE_ID]?.agentName || (typeof pageTitle === 'string' ? pageTitle : '') || '';
-  const [agentDesc] = useState(initialDescription || '');
+  const [agentDesc, setAgentDesc] = useState(initialDescription || '');
   // isTemplateMode uses state so it correctly activates after applyAgent loads templateId from Firestore
   const isTemplateMode = !!agentTemplateId && agentStatus !== 'Running';
 

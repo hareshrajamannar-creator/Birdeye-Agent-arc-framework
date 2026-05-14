@@ -316,6 +316,9 @@ function FlowCanvasInner({
   // Local node state so React Flow can own positions during canvas drag
   const [localNodes, setLocalNodes] = useState(() => styledNodes);
   const isDraggingRef = useRef(false);
+  // Always-fresh ref to styledNodes so handleNodeDragStop can force-sync
+  const styledNodesRef = useRef(styledNodes);
+  useEffect(() => { styledNodesRef.current = styledNodes; }, [styledNodes]);
 
   // Sync parent → local whenever nodes change and no drag is in progress
   useEffect(() => {
@@ -327,8 +330,11 @@ function FlowCanvasInner({
 
   // Let React Flow mutate node positions during drag
   const handleNodesChange = useCallback((changes) => {
-    const posChange = changes.find((c) => c.type === 'position');
-    if (posChange) isDraggingRef.current = posChange.dragging === true;
+    // Only update the drag flag when a position change has an explicit dragging boolean.
+    // Reconciliation events from React Flow may have dragging:undefined — ignore those
+    // so the flag doesn't get stuck as true and block parent→local syncs.
+    const posChange = changes.find((c) => c.type === 'position' && typeof c.dragging === 'boolean');
+    if (posChange) isDraggingRef.current = posChange.dragging;
     setLocalNodes((nds) => applyNodeChanges(changes, nds));
   }, []);
 
@@ -369,6 +375,8 @@ function FlowCanvasInner({
 
   // On drag-stop: clear drag flag, sort canvas nodes by Y, call reorder
   const handleNodeDragStop = useCallback(() => {
+    // Always clear the drag flag immediately — before any async work — so that
+    // the parent→local sync effect is never permanently blocked.
     isDraggingRef.current = false;
     if (!onNodesReorderRef.current) return;
     const allNodes = getNodes();
@@ -376,6 +384,9 @@ function FlowCanvasInner({
       .filter((n) => DRAGGABLE_TYPES.has(n.type))
       .sort((a, b) => a.position.y - b.position.y);
     onNodesReorderRef.current(draggable.map((n) => n.id));
+    // Force-sync localNodes from parent after reorder so React Flow never
+    // holds stale positions that create visual gaps on subsequent add/delete.
+    setLocalNodes(styledNodesRef.current);
   }, [getNodes]);
 
   const handleDragOver = useCallback((event) => {
