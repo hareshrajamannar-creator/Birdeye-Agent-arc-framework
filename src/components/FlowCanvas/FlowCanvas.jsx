@@ -338,6 +338,15 @@ function FlowCanvasInner({
     setLocalNodes((nds) => applyNodeChanges(changes, nds));
   }, []);
 
+  // Structural change (node added or removed): force-clear drag state and sync immediately.
+  // This is the primary guard against ghost nodes and orphaned edge + buttons:
+  // when a node is deleted, the new edge's midpoint + button would otherwise
+  // appear at the deleted node's stale Y position until the drag flag cleared.
+  useEffect(() => {
+    isDraggingRef.current = false;
+    setLocalNodes(styledNodesRef.current);
+  }, [nodes.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Fit view whenever a node is added or removed
   const prevNodeCountRef = useRef(nodes.length);
   useEffect(() => {
