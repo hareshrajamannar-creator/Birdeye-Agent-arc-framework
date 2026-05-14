@@ -18,7 +18,7 @@
         "hasToggle": true,
         "subtype": "Reviews",
         "stepNumber": 1,
-        "title": "1. Start when a FAQ request is made"
+        "title": "Start when a FAQ request is made"
       },
       "id": "node-1",
       "flowType": "trigger"
@@ -34,7 +34,7 @@
         "hasToggle": true,
         "subtype": "Review",
         "stepNumber": 2,
-        "title": "2. Collect web pages content for analysis"
+        "title": "Collect web pages content for analysis"
       },
       "id": "node-2",
       "flowType": "task"
@@ -44,7 +44,7 @@
       "data": {
         "subtype": "Custom",
         "stepNumber": 3,
-        "title": "3. Determine core search queries",
+        "title": "Determine core search queries",
         "titlePlaceholder": "Enter task name",
         "descriptionPlaceholder": "Enter description",
         "hasToggle": true,
@@ -66,7 +66,7 @@
         "hasAiIcon": true,
         "descriptionPlaceholder": "Enter description",
         "titlePlaceholder": "Enter task name",
-        "title": "4. Perplexity site search",
+        "title": "Perplexity site search",
         "stepNumber": 4,
         "subtype": "Custom"
       }
@@ -74,7 +74,7 @@
     {
       "flowType": "task",
       "data": {
-        "title": "5. Identify customer questions",
+        "title": "Identify customer questions",
         "subtype": "Custom",
         "stepNumber": 5,
         "subtitle": "Extract the questions customers are already asking by mining the brand's reviews, support tickets, and on-site search queries.",
@@ -90,7 +90,7 @@
     {
       "id": "node-8",
       "data": {
-        "title": "6. Extract PAA (People Also Ask) Questions",
+        "title": "Extract PAA (People Also Ask) Questions",
         "subtype": "Ticketing",
         "stepNumber": 6,
         "subtitle": "Scrape Google's \"People Also Ask\" for core queries + related searches",
@@ -115,7 +115,7 @@
         "toggleEnabled": true,
         "subtype": "Custom",
         "stepNumber": 7,
-        "title": "7. Query Fanout Expansion"
+        "title": "Query Fanout Expansion"
       },
       "id": "node-9"
     },
@@ -124,7 +124,7 @@
       "data": {
         "subtype": "Review",
         "stepNumber": 8,
-        "title": "8. Select FAQs from question pool",
+        "title": "Select FAQs from question pool",
         "titlePlaceholder": "Enter task name",
         "descriptionPlaceholder": "Enter description",
         "description": "Respond to a review",
@@ -147,7 +147,7 @@
         "toggleEnabled": true,
         "stepNumber": 9,
         "subtype": "Custom",
-        "title": "9. Generate AEO optimised FAQs"
+        "title": "Generate AEO optimised FAQs"
       },
       "id": "node-11"
     },
@@ -156,7 +156,7 @@
       "data": {
         "subtype": "Ticketing",
         "stepNumber": 10,
-        "title": "10. Send to Content Hub",
+        "title": "Send to Content Hub",
         "descriptionPlaceholder": "Enter description",
         "titlePlaceholder": "Enter task name",
         "subtitle": "Format FAQs and send to Content Hub Editor",
@@ -174,14 +174,14 @@
       "selectedTools": [
         "39hbiez"
       ],
-      "taskName": "2. Collect web pages content for analysis"
+      "taskName": "Collect web pages content for analysis"
     },
     "node-12": {
       "description": "Format FAQs and send to Content Hub Editor",
       "selectedTools": [
         "qgmncsh"
       ],
-      "taskName": "10. Send to Content Hub"
+      "taskName": "Send to Content Hub"
     },
     "node-6": {
       "previewInputFields": [
@@ -207,7 +207,7 @@
           "value": "Question: What qualifies as a dental emergency?\nPerplexity draft answer: A dental emergency is any situation requiring immediate care to save a tooth, stop bleeding, or relieve severe pain.\nSources: ada.org, mayoclinic.org\nSource query: Emergency dentist dallas\n"
         }
       ],
-      "taskName": "4. Perplexity site search",
+      "taskName": "Perplexity site search",
       "description": "Query Perplexity using the core search queries to retrieve AI-generated answers and related FAQ structures. Perplexity's responses reflect how AI answer engines are already responding to these questions, giving us the AEO gold standard to match or exceed.",
       "inputFields": [
         {
@@ -244,7 +244,7 @@
         }
       ],
       "description": "Expand the search queries into long-tail, voice search, and modifier variations real users type.",
-      "taskName": "7. Query Fanout Expansion",
+      "taskName": "Query Fanout Expansion",
       "previewOutputFields": [
         {
           "name": "Expanded_queries",
@@ -305,7 +305,7 @@
           "name": "Scraped_content"
         }
       ],
-      "taskName": "3. Determine core search queries",
+      "taskName": "Determine core search queries",
       "userPrompt": "You are an SEO-focused search query generation agent. \nGiven the business context, generate high-intent search queries that people would use to find this business or its services.  \n\nSearch queries: {{Search_queries}}",
       "inputFields": [
         {
@@ -362,7 +362,7 @@
         }
       ],
       "systemPrompt": "Requirements:\n- Convert each signal into a clear, natural-language question. For example, \"I couldn't find your hours anywhere\" becomes \"What are your hours?\".\n- Combine signals that ask the same thing into one entry with a frequency_count of how many signals merged into it.\n- Drop any question that doesn't relate to one of the service_matches provided.\n- Return at most 30 questions, ranked from highest to lowest frequency.\n- Do not fabricate questions that aren't implied by the signals.\n- Return only the JSON output shape — no commentary, no preamble.",
-      "taskName": "5. Identify customer questions",
+      "taskName": "Identify customer questions",
       "inputFields": [
         {
           "type": "variable",
@@ -380,14 +380,14 @@
       "llmModel": "Fast"
     },
     "node-8": {
-      "taskName": "6. Extract PAA (People Also Ask) Questions",
+      "taskName": "Extract PAA (People Also Ask) Questions",
       "selectedTools": [
         "s69wacq"
       ],
       "description": "Scrape Google's \"People Also Ask\" for core queries + related searches"
     },
     "node-1": {
-      "triggerName": "1. Start when a FAQ request is made",
+      "triggerName": "Start when a FAQ request is made",
       "conditions": [
         {
           "fieldValue": "opt_1778700434546",
@@ -436,7 +436,7 @@
     },
     "node-10": {
       "description": "Group similar questions, classify each cluster, and pick the strongest 8-15 clusters to become the final FAQ set. ",
-      "taskName": "8. Select FAQs from question pool"
+      "taskName": "Select FAQs from question pool"
     },
     "node-11": {
       "userPrompt": "You are a FAQ writer for {{brand_name}}. You are given 8-15\nselected question clusters along with the page's extracted facts,\nthe brand kit, and location context. Write the complete FAQ set\nin one response — one answer per cluster.\n\nSelected_clusters: {{selected_clusters}}\nPage_type: {{page_context.page_type}}\nPage_facts: {{page_context.extracted_facts}}\nBrand_kit: {{brand_kit}}\nLocation_context: {{location_context}}",
@@ -481,7 +481,7 @@
           "name": "Selected_clusters"
         }
       ],
-      "taskName": "9. Generate AEO optimised FAQs"
+      "taskName": "Generate AEO optimised FAQs"
     },
     "__start__": {
       "goals": "Instantly generates FAQs from your website content, reviews, and brand context whenever you create a new FAQ in Content Hub.",

@@ -1,6 +1,11 @@
 import React from 'react';
 import './CanvasNodeBody.css';
 
+function stripDuplicateStepNumber(title, stepNumber) {
+  if (!stepNumber) return title;
+  return String(title || '').replace(new RegExp(`^\\s*${stepNumber}\\.\\s+`), '');
+}
+
 export default function CanvasNodeBody({
   stepNumber,
   title,
@@ -9,7 +14,8 @@ export default function CanvasNodeBody({
   titlePlaceholder = 'Enter name',
   descriptionPlaceholder = 'Enter description',
 }) {
-  const hasTitle = Boolean(String(title || '').trim());
+  const displayTitle = stripDuplicateStepNumber(title, stepNumber);
+  const hasTitle = Boolean(String(displayTitle || '').trim());
   const hasDescription = Boolean(String(description || '').trim());
 
   return (
@@ -17,7 +23,7 @@ export default function CanvasNodeBody({
       <ol className={`cnb__step cnb__step--${nodeType}`} start={stepNumber}>
         <li>
           <span className={hasTitle ? undefined : 'cnb__placeholder'}>
-            {hasTitle ? title : titlePlaceholder}
+            {hasTitle ? displayTitle : titlePlaceholder}
           </span>
         </li>
       </ol>
