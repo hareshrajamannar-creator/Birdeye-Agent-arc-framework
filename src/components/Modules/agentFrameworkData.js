@@ -1,3 +1,7 @@
+import onDemandFaqGenerationAgent from './onDemandFaqGenerationAgent.json';
+
+const ON_DEMAND_FAQ_DESCRIPTION = 'Instantly generates FAQs from your website content, reviews, and brand context whenever you create a new FAQ in Content Hub.';
+
 export const MODULE_DEFINITIONS = {
   overview: {
     name: 'Overview',
@@ -319,6 +323,31 @@ export const MODULE_DEFINITIONS = {
       },
     ],
   },
+  'content-hub': {
+    name: 'Content hub',
+    icon: 'animated_images',
+    description: 'Create, review, and publish reusable content with AI-assisted workflows.',
+    agents: [
+      {
+        id: 'content-hub-on-demand-faq-generation-agent',
+        sectionContext: 'faq-generation-agents',
+        title: 'On demand FAQ generation agent',
+        description: ON_DEMAND_FAQ_DESCRIPTION,
+        steps: [
+          'FAQ request trigger',
+          'Collect website content',
+          'Research search questions',
+          'Generate AEO FAQs',
+          'Send to Content Hub',
+        ],
+        moduleContext: 'content-hub',
+        status: onDemandFaqGenerationAgent.status || 'Draft',
+        nodes: onDemandFaqGenerationAgent.nodes,
+        nodeDetails: onDemandFaqGenerationAgent.nodeDetails,
+        customTools: onDemandFaqGenerationAgent.customTools || [],
+      },
+    ],
+  },
 };
 
 export const MODULE_ORDER = [
@@ -341,7 +370,6 @@ export const MODULE_ORDER = [
 ];
 
 export function getModuleTemplates(moduleId, sectionId) {
-  if (moduleId !== 'reviews') return [];
   return (MODULE_DEFINITIONS[moduleId]?.agents || [])
     .filter((agent) => !sectionId || agent.sectionContext === sectionId);
 }

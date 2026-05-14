@@ -7,7 +7,7 @@ import AgentsDashboardTemplate from './components/Templates/AgentsDashboardTempl
 import AgentViewerPage from './pages/AgentViewerPage';
 import { getModuleTemplates } from './components/Modules/agentFrameworkData';
 import { getModuleNav } from './components/Modules/moduleNavigation';
-import { subscribeToAgents, deleteAgent, saveAgent } from './services/agentService';
+import { subscribeToAgents, deleteAgent, saveAgent, saveCustomTool } from './services/agentService';
 import { seedAeoAgent } from './utils/seedAeoAgent';
 import { deleteTemplate, saveTemplate, subscribeToTemplates } from './services/templateService';
 import ShareModal from './components/Organisms/Modals/ShareModal/ShareModal';
@@ -88,8 +88,13 @@ function mergeTemplates(defaultTemplates, savedTemplates, moduleId, sectionId) {
     if (saved?.deleted) return null;
     return withTemplateContext(saved ? { ...template, ...saved } : template, moduleId, sectionId);
   }).filter(Boolean);
+  const defaultTitles = new Set(defaultTemplates.map((template) => template.title));
   const custom = moduleSaved
-    .filter((template) => !template.deleted && !defaultTemplates.some((item) => item.id === template.id))
+    .filter((template) => (
+      !template.deleted &&
+      !defaultTemplates.some((item) => item.id === template.id) &&
+      !defaultTitles.has(template.title)
+    ))
     .map((template) => withTemplateContext(template, moduleId, sectionId));
 
   return [...defaults, ...custom];
@@ -287,6 +292,9 @@ function App() {
     const moduleSlug = effectiveModule;
     const agentName = template?.title || '';
     const agentSlug = toSlug(agentName || 'agent') + '-' + Date.now().toString(36);
+    if (Array.isArray(template?.customTools) && template.customTools.length > 0) {
+      await Promise.all(template.customTools.map((tool) => saveCustomTool(tool)));
+    }
     await saveAgent(newId, {
       id: newId,
       name: agentName,

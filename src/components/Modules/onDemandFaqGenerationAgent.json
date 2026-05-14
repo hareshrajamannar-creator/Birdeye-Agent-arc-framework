@@ -1,0 +1,560 @@
+{
+  "schemaVersion": 1,
+  "agentId": "208cc49d-c575-4a92-b7ea-52aad6b7ba00",
+  "name": "On demand FAQ Generation Agent",
+  "description": "Instantly generates FAQs from your website content, reviews, and brand context whenever you create a new FAQ in Content Hub.",
+  "status": "Draft",
+  "moduleContext": "content-hub",
+  "exportedAt": "2026-05-14T03:56:06.255Z",
+  "nodes": [
+    {
+      "data": {
+        "descriptionPlaceholder": "Enter description",
+        "titlePlaceholder": "Enter trigger name",
+        "toggleEnabled": true,
+        "subtitle": "Run when a FAQ request is raised for a website URL",
+        "description": "When a new review is received",
+        "hasAiIcon": false,
+        "hasToggle": true,
+        "subtype": "Reviews",
+        "stepNumber": 1,
+        "title": "1. Start when a FAQ request is made"
+      },
+      "id": "node-1",
+      "flowType": "trigger"
+    },
+    {
+      "data": {
+        "descriptionPlaceholder": "Enter description",
+        "titlePlaceholder": "Enter task name",
+        "toggleEnabled": true,
+        "subtitle": "Scrape selected business webpages to extract content, and context",
+        "description": "Respond to a review",
+        "hasAiIcon": false,
+        "hasToggle": true,
+        "subtype": "Review",
+        "stepNumber": 2,
+        "title": "2. Collect web pages content for analysis"
+      },
+      "id": "node-2",
+      "flowType": "task"
+    },
+    {
+      "flowType": "task",
+      "data": {
+        "subtype": "Custom",
+        "stepNumber": 3,
+        "title": "3. Determine core search queries",
+        "titlePlaceholder": "Enter task name",
+        "descriptionPlaceholder": "Enter description",
+        "hasToggle": true,
+        "hasAiIcon": true,
+        "description": "Custom",
+        "subtitle": "Analyze scraped content to determine 3-5 primary search queries that define business",
+        "toggleEnabled": true
+      },
+      "id": "node-3"
+    },
+    {
+      "flowType": "task",
+      "id": "node-6",
+      "data": {
+        "toggleEnabled": true,
+        "subtitle": "Query Perplexity using the core search queries to retrieve AI-generated answers and related FAQ structures. Perplexity's responses reflect how AI answer engines are already responding to these questions, giving us the AEO gold standard to match or exceed.",
+        "description": "Custom",
+        "hasToggle": true,
+        "hasAiIcon": true,
+        "descriptionPlaceholder": "Enter description",
+        "titlePlaceholder": "Enter task name",
+        "title": "4. Perplexity site search",
+        "stepNumber": 4,
+        "subtype": "Custom"
+      }
+    },
+    {
+      "flowType": "task",
+      "data": {
+        "title": "5. Identify customer questions",
+        "subtype": "Custom",
+        "stepNumber": 5,
+        "subtitle": "Extract the questions customers are already asking by mining the brand's reviews, support tickets, and on-site search queries.",
+        "toggleEnabled": true,
+        "hasToggle": true,
+        "hasAiIcon": true,
+        "description": "Custom",
+        "descriptionPlaceholder": "Enter description",
+        "titlePlaceholder": "Enter task name"
+      },
+      "id": "node-7"
+    },
+    {
+      "id": "node-8",
+      "data": {
+        "title": "6. Extract PAA (People Also Ask) Questions",
+        "subtype": "Ticketing",
+        "stepNumber": 6,
+        "subtitle": "Scrape Google's \"People Also Ask\" for core queries + related searches",
+        "toggleEnabled": true,
+        "hasToggle": true,
+        "hasAiIcon": false,
+        "description": "Create a ticket",
+        "descriptionPlaceholder": "Enter description",
+        "titlePlaceholder": "Enter task name"
+      },
+      "flowType": "task"
+    },
+    {
+      "flowType": "task",
+      "data": {
+        "titlePlaceholder": "Enter task name",
+        "descriptionPlaceholder": "Enter description",
+        "hasAiIcon": true,
+        "hasToggle": true,
+        "description": "Custom",
+        "subtitle": "Expand the search queries into long-tail, voice search, and modifier variations real users type.",
+        "toggleEnabled": true,
+        "subtype": "Custom",
+        "stepNumber": 7,
+        "title": "7. Query Fanout Expansion"
+      },
+      "id": "node-9"
+    },
+    {
+      "id": "node-10",
+      "data": {
+        "subtype": "Review",
+        "stepNumber": 8,
+        "title": "8. Select FAQs from question pool",
+        "titlePlaceholder": "Enter task name",
+        "descriptionPlaceholder": "Enter description",
+        "description": "Respond to a review",
+        "hasAiIcon": false,
+        "hasToggle": true,
+        "toggleEnabled": true,
+        "subtitle": "Group similar questions, classify each cluster, and pick the strongest 8-15 clusters to become the final FAQ set. "
+      },
+      "flowType": "task"
+    },
+    {
+      "flowType": "task",
+      "data": {
+        "titlePlaceholder": "Enter task name",
+        "descriptionPlaceholder": "Enter description",
+        "hasToggle": true,
+        "hasAiIcon": true,
+        "description": "Custom",
+        "subtitle": "Convert insights into structured questions and answers",
+        "toggleEnabled": true,
+        "stepNumber": 9,
+        "subtype": "Custom",
+        "title": "9. Generate AEO optimised FAQs"
+      },
+      "id": "node-11"
+    },
+    {
+      "id": "node-12",
+      "data": {
+        "subtype": "Ticketing",
+        "stepNumber": 10,
+        "title": "10. Send to Content Hub",
+        "descriptionPlaceholder": "Enter description",
+        "titlePlaceholder": "Enter task name",
+        "subtitle": "Format FAQs and send to Content Hub Editor",
+        "toggleEnabled": true,
+        "hasAiIcon": false,
+        "hasToggle": true,
+        "description": "Create a ticket"
+      },
+      "flowType": "task"
+    }
+  ],
+  "nodeDetails": {
+    "node-2": {
+      "description": "Scrape selected business webpages to extract content, and context",
+      "selectedTools": [
+        "39hbiez"
+      ],
+      "taskName": "2. Collect web pages content for analysis"
+    },
+    "node-12": {
+      "description": "Format FAQs and send to Content Hub Editor",
+      "selectedTools": [
+        "qgmncsh"
+      ],
+      "taskName": "10. Send to Content Hub"
+    },
+    "node-6": {
+      "previewInputFields": [
+        {
+          "images": [],
+          "value": "https://brightsmiles.com/services/emergency-dental",
+          "type": "variable",
+          "name": "2. Website_URL"
+        },
+        {
+          "name": "3. Search_queries",
+          "value": "1. Query: Emergency dentist dallas\n    Service match : Emergency dentistry\n\n2. Query: Emergency dentist dallas\n    Service match : Emergency dentistry",
+          "type": "variable",
+          "images": []
+        }
+      ],
+      "systemPrompt": "Requirements:\n- Use the page URL as context for the business's category and locale.\n- For each query, surface 5-10 closely related questions from authoritative sources (industry associations, government agencies, reputable editorial publications, trade sites). Avoid forums, social media, and SEO-thin aggregator sites.\n- For each question, include a short factual draft answer (1-3 sentences) and the source domains. The draft answer is for discovery context only.\n- Tag every question with the source_query that surfaced it.\n- Combine results across the source queries; if the same question appears under more than one, keep one entry.\n- Skip questions that match a source_query verbatim. Skip promotional, opinion, or speculative content.\n- Return only the JSON output shape — no commentary, no preamble.",
+      "previewOutputFields": [
+        {
+          "name": "Perplexity_questions",
+          "images": [],
+          "type": "variable",
+          "value": "Question: What qualifies as a dental emergency?\nPerplexity draft answer: A dental emergency is any situation requiring immediate care to save a tooth, stop bleeding, or relieve severe pain.\nSources: ada.org, mayoclinic.org\nSource query: Emergency dentist dallas\n"
+        }
+      ],
+      "taskName": "4. Perplexity site search",
+      "description": "Query Perplexity using the core search queries to retrieve AI-generated answers and related FAQ structures. Perplexity's responses reflect how AI answer engines are already responding to these questions, giving us the AEO gold standard to match or exceed.",
+      "inputFields": [
+        {
+          "value": "2. Webiste_URL",
+          "type": "variable"
+        },
+        {
+          "value": "3. Search_queries",
+          "type": "variable"
+        }
+      ],
+      "userPrompt": "You are given a webpage URL and 3-5 search queries the page wants to rank for. Your task is to research what authoritative web sources say about each query and return the FAQs real users are asking on this topic.\n\nPage_url: {{1. Website_URL}}\n\nSearch queries: {{3. Search_queries}}",
+      "outputFields": [
+        {
+          "value": "Perplexity_questions",
+          "type": "variable"
+        }
+      ],
+      "llmModel": "Fast"
+    },
+    "node-9": {
+      "llmModel": "Fast",
+      "outputFields": [
+        {
+          "value": "Expanded_queries",
+          "type": "variable"
+        }
+      ],
+      "userPrompt": "You are given questions from three sources (customer signals,\nPerplexity research, Google \"People Also Ask\"), the search queries\nthe page wants to rank for, and an expanded set of long-tail and\nvoice search variations of those queries. Your task is to cluster\nsimilar questions, classify each cluster, and pick the strongest\n8-15 to become the final FAQ set.\n\nCustomer_questions: {{5. Customer_questions}}\n\nPerplexity_questions: {{4. Perplexity_questions}}\n\nPaa_questions: {{6. PAA_Questions}}\n\ntarget_queries: {{target_queries}}        \n\nexpanded_queries: {{expanded_queries}}\n",
+      "inputFields": [
+        {
+          "value": "3. Search_queries",
+          "type": "variable"
+        }
+      ],
+      "description": "Expand the search queries into long-tail, voice search, and modifier variations real users type.",
+      "taskName": "7. Query Fanout Expansion",
+      "previewOutputFields": [
+        {
+          "name": "Expanded_queries",
+          "value": "Cluster_id: c_001\nCanonical_question: What qualifies as a dental emergency?\nIntent: Informational\nService match: Emergency dentistry\nMerged question count : 6",
+          "type": "variable",
+          "images": []
+        }
+      ],
+      "systemPrompt": "Cluster questions with the same intent into one canonical\n  question. For example, \"how much does it cost\" and \"what's the\n  price\" belong together. Pick the clearest phrasing as the\n  canonical question.\n- Classify each cluster's intent (informational, commercial,\n  transactional, or navigational) and tag it with a service_match\n  naming the page service it relates to, or \"general\" if no\n  specific service fits.\n- Pick 8-15 clusters to ship. Decide the actual count based on\n  what the pool supports; do not pad with weak clusters to hit 15,\n  and do not omit strong clusters to stay near 8.\n- Prefer clusters that align with target_queries or expanded_queries\n  (when present). Larger clusters break ties; more merged questions\n  signal more demand.\n- Do not invent questions. Every cluster must originate from at\n  least one question in the input pool.\n- Return only the JSON output shape. No commentary, no preamble.\n\n",
+      "previewInputFields": [
+        {
+          "name": "5. Customer_questions",
+          "images": [],
+          "type": "variable",
+          "value": "Question: Can I be seen the same day for tooth pain?\nSource type : Review \nFrequency count: 18\nService match: Emergency dentistry"
+        },
+        {
+          "name": "4. Perplexity_questions",
+          "value": "Question: What qualifies as a dental emergency? \nPerplexity draft answer: A dental emergency is any situation..., \nSources: ada.org, mayoclinic.org, \nSource query: Emergency dentist dallas",
+          "type": "variable",
+          "images": []
+        },
+        {
+          "name": "6. Paa_questions",
+          "images": [],
+          "value": "Question: How much is an emergency dental visit?\nRelated queries: emergency dentist cost\nSource query: Emergency dentist dallas",
+          "type": "variable"
+        },
+        {
+          "name": "Target_queries",
+          "images": [],
+          "value": "Emergency dentist dallas, 24 hour dental clinic dallas, Dental emergency near me",
+          "type": "variable"
+        },
+        {
+          "name": "Expanded_queries",
+          "value": "Source query: Emergency dentist dallas\nQuery: 24 hour emergency dentist near me,\nType: Long tail\n\n",
+          "type": "variable",
+          "images": []
+        }
+      ]
+    },
+    "node-3": {
+      "systemPrompt": "Queries for each core theme: \nFor each theme, create search queries optimized for Answer Engine Optimization (AEO).  \n\nQuery guidelines: \n- Use natural, conversational language (what users actually search)\n- Include local intent where relevant (for example, “near me” or city-based queries)\n- Include both informational and transactional queries\n- Avoid duplicate or overly similar queries\n- Keep queries clear, specific, and relevant to the business\n\nOutput: \nReturn a structured list of search queries grouped by theme. \nEach query should:\n- Be concise and user-focused \n- Reflect real search behavior \n- Be tagged with its corresponding theme",
+      "previewOutputFields": [
+        {
+          "name": "Search_queries",
+          "images": [],
+          "value": "- Dentist near me\n- Best dentist near me\n- Emergency dentist near me\n- Teeth cleaning cost in India\n- Dental clinic near me",
+          "type": "variable"
+        }
+      ],
+      "previewInputFields": [
+        {
+          "type": "variable",
+          "value": "1. Query: Emergency dentist dallas,\nService_match: Emergency_dentistry\nSource: Core\n\n2. Query: Emergency dentist dallas,\nService_match: Emergency_dentistry\nSource: Core\n\n3. Query: Emergency dentist dallas,\nService_match: Emergency_dentistry\nSource: Core",
+          "images": [],
+          "name": "Scraped_content"
+        }
+      ],
+      "taskName": "3. Determine core search queries",
+      "userPrompt": "You are an SEO-focused search query generation agent. \nGiven the business context, generate high-intent search queries that people would use to find this business or its services.  \n\nSearch queries: {{Search_queries}}",
+      "inputFields": [
+        {
+          "type": "variable",
+          "value": "Scraped_content"
+        },
+        {
+          "type": "variable",
+          "value": "2. Website_URL"
+        }
+      ],
+      "description": "Analyze scraped content to determine 3-5 primary search queries that define business",
+      "llmModel": "Fast",
+      "outputFields": [
+        {
+          "type": "variable",
+          "value": "Search_queries"
+        }
+      ]
+    },
+    "node-7": {
+      "previewInputFields": [
+        {
+          "type": "variable",
+          "value": "Emergency dentistry, Root canal, After hours care",
+          "images": [],
+          "name": "Service_matches"
+        },
+        {
+          "images": [],
+          "type": "variable",
+          "value": "I called at 11pm because my tooth was killing me and they got me in the next morning. Lifesaver",
+          "name": "Review_excerpts"
+        },
+        {
+          "name": "Ticket_subjects",
+          "images": [],
+          "value": "Do you take walk-ins on Sundays?",
+          "type": "variable"
+        },
+        {
+          "images": [],
+          "type": "variable",
+          "value": "After hours",
+          "name": "Site_search_queries"
+        }
+      ],
+      "previewOutputFields": [
+        {
+          "name": "Customer_questions",
+          "images": [],
+          "type": "variable",
+          "value": " Question: Can I be seen the same day for tooth pain?\n Source type: Review\n Frequency count: 18\n Service match: Emergency dentistry"
+        }
+      ],
+      "systemPrompt": "Requirements:\n- Convert each signal into a clear, natural-language question. For example, \"I couldn't find your hours anywhere\" becomes \"What are your hours?\".\n- Combine signals that ask the same thing into one entry with a frequency_count of how many signals merged into it.\n- Drop any question that doesn't relate to one of the service_matches provided.\n- Return at most 30 questions, ranked from highest to lowest frequency.\n- Do not fabricate questions that aren't implied by the signals.\n- Return only the JSON output shape — no commentary, no preamble.",
+      "taskName": "5. Identify customer questions",
+      "inputFields": [
+        {
+          "type": "variable",
+          "value": "3. Search_queries"
+        }
+      ],
+      "description": "Extract the questions customers are already asking by mining the brand's reviews, support tickets, and on-site search queries.",
+      "userPrompt": "You are given customer signals from a brand's connected sources - review snippets, support ticket subjects. Your task is to extract the questions customers are actually asking.\n\nService matches: {{Service_matches}}\n\nReview excerpts: {{Review_excerpts}}\n\nTicket subjects: {{Ticket_subjects}}\n\nSite search queries: {{Site search queries}}\n",
+      "outputFields": [
+        {
+          "value": "Customer_questions",
+          "type": "variable"
+        }
+      ],
+      "llmModel": "Fast"
+    },
+    "node-8": {
+      "taskName": "6. Extract PAA (People Also Ask) Questions",
+      "selectedTools": [
+        "s69wacq"
+      ],
+      "description": "Scrape Google's \"People Also Ask\" for core queries + related searches"
+    },
+    "node-1": {
+      "triggerName": "1. Start when a FAQ request is made",
+      "conditions": [
+        {
+          "fieldValue": "opt_1778700434546",
+          "operatorValue": "is",
+          "valueValue": "",
+          "id": 1778700363602
+        }
+      ],
+      "conditionOptions": {
+        "field": [
+          {
+            "value": "opt_1778700434546",
+            "label": "Manual FAQ agent"
+          }
+        ],
+        "value": [
+          {
+            "label": "Rasied",
+            "value": "opt_1778700462725"
+          }
+        ],
+        "operator": [
+          {
+            "value": "is",
+            "label": "is"
+          },
+          {
+            "label": "is not",
+            "value": "is_not"
+          },
+          {
+            "label": "contains",
+            "value": "contains"
+          },
+          {
+            "value": "greater_than",
+            "label": "is greater than"
+          },
+          {
+            "value": "less_than",
+            "label": "is less than"
+          }
+        ]
+      },
+      "description": "Run when a FAQ request is raised for a website URL"
+    },
+    "node-10": {
+      "description": "Group similar questions, classify each cluster, and pick the strongest 8-15 clusters to become the final FAQ set. ",
+      "taskName": "8. Select FAQs from question pool"
+    },
+    "node-11": {
+      "userPrompt": "You are a FAQ writer for {{brand_name}}. You are given 8-15\nselected question clusters along with the page's extracted facts,\nthe brand kit, and location context. Write the complete FAQ set\nin one response — one answer per cluster.\n\nSelected_clusters: {{selected_clusters}}\nPage_type: {{page_context.page_type}}\nPage_facts: {{page_context.extracted_facts}}\nBrand_kit: {{brand_kit}}\nLocation_context: {{location_context}}",
+      "inputFields": [
+        {
+          "value": "Selected_faqs",
+          "type": "variable"
+        },
+        {
+          "value": "1. Scraped_content",
+          "type": "variable"
+        }
+      ],
+      "description": "Convert insights into structured questions and answers",
+      "llmModel": "Fast",
+      "outputFields": [
+        {
+          "value": "Final_FAQs",
+          "type": "variable"
+        }
+      ],
+      "systemPrompt": "For each answer:\n- Lead with the direct answer in the first sentence. No preambles.\n- The first 40-50 words must stand alone as a complete answer\n  (think Google featured snippet).\n- Total length must be 45-65 words. Match the brand voice:\n  {{brand_voice_traits}}.\n- Ground every fact in page_facts or brand_kit. Do not invent\n  prices, hours, ingredients, policies, or any other facts.\n- Reference the service by name when service_match names a real\n  service; when it is \"general\", draw on the brand's wider service\n  list. When location_context is present, name the city or\n  neighborhood naturally (no full street addresses).\n- Include a call to action only if the intent is transactional.\n- Sentences should be short enough to read aloud cleanly. Avoid\n  nested clauses, jargon-without-definition, and marketing fluff.\n\nAcross the set:\n- Vary sentence openers and phrasings. Don't start three answers\n  in a row with the same construction.\n- Distribute entity mentions naturally. If one fact (e.g., the\n  after-hours triage line) is the most relevant answer to two\n  questions, use it in both; but don't shoehorn the same fact\n  into every answer.\n\nSelf-check (per FAQ):\n- Populate aeo_checks_passed with the checks the answer satisfies\n  (snippet, voice, entity, length). If any fails, revise that\n  answer before returning the set.\n- Return only the JSON output shape. No commentary, no preamble.",
+      "previewOutputFields": [
+        {
+          "images": [],
+          "value": "cluster_id: c_001\nQuestion: What qualifies as a dental emergency?\nAnswer: A dental emergency is any tooth pain, injury, or infection that needs same-day care. At Bright Smiles Dallas, our emergency team treats severe toothaches, knocked-out teeth, broken crowns, abscesses, and uncontrolled bleeding 24/7. Not sure if your situation qualifies? Call our emergency line and we'll triage over the phone.\nWord_count: 49\nService_match: Emergency_dentistry\nAeo_checks_passed: \"snippet\", \"voice\", \"entity\", \"length\"",
+          "type": "variable",
+          "name": "Final_faqs"
+        }
+      ],
+      "previewInputFields": [
+        {
+          "type": "variable",
+          "value": "Bright Smiles Dallas",
+          "images": [],
+          "name": "Brand_name"
+        },
+        {
+          "value": "Cluster_id: c_001\nCanonical_question: \"What qualifies as a dental emergency?\",\nIntent: Informational,\nService_match: Emergency_dentistry,\nMerged_question_count: 6",
+          "type": "variable",
+          "images": [],
+          "name": "Selected_clusters"
+        }
+      ],
+      "taskName": "9. Generate AEO optimised FAQs"
+    },
+    "__start__": {
+      "goals": "Instantly generates FAQs from your website content, reviews, and brand context whenever you create a new FAQ in Content Hub.",
+      "outcomes": "Draft structured, AEO-ready FAQs in Content Hub using website content, customer reviews, search research, and brand context.",
+      "locations": [],
+      "agentName": "On demand FAQ Generation Agent"
+    }
+  },
+  "customTools": [
+    {
+      "id": "39hbiez",
+      "description": "",
+      "iconDataUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAABF5JREFUeAHtWE1W20AMlhxnn+5azM9wApITNJygcALgBNATkJyAcgLgBIUTEE7Q9AQMJOnrrllDbFUaj4Oxx3+wYBO9FzzMyNI3GmkkGWBFK/pYQngHra+rvkfQJYAdAlJEoBBhzktzIJh7iHchwGg202N4IzUGqJTqLJ6iY0Dc43+7dd5hJZr/DiczfQkNqRHAjUAdAtIZW6rzIgFHQNR/Gcsg/b8dvxGoV4dJrBasbV7wMV4IOHOMiEO/jZ8gglGi3F/Akd+G/RiIUHTnh7iNgEcyx9iVyNgINi9EZh3dlRZkQWrxTD9heZx07re9gdZ6btfuY0F4lFhGfJMtd8vDOW9iW3jt/IDnT61i3WrjLq/pMv1eBbhOAs5abXc6ezxJFIbP0and5ih9bNOpHvEk/6CzWEQnqfmByEisKbKrLFkKkAGcGXCy2wX2YsUv4G2gCMJh7mWEeI7wOA1CZLRCBhlHe9fqaA5QAoIAD2XcAtzXf18fRfgMe8YfGXwaeBoIg5TrpRM+QT+9JrJY9r7Bzzo21tQeNAXIr9rjo6F23GN8RAfyjADPi2XgjeFFOgbnBmLL83ph0DgBxtbjS9dY53EA7g307WAEBcRRfWmHXRcA8Ukb8a98NU3oBrh1bwCyn0SR8ZX8iwjKwKTkSnFTFZ/nQcfeq+Pp7KGXez87wTvtcnT9gg8g9sdeNi36WaboeenQY97+d5cg3tUxEe0h4jVbusQHxYWB3YUOSnkJTq3L9I3eMoDssF9NukK8cUWn0Mb6lnH6iOCOd+zkSSgIlPjygRQP0wLezUB1IwbHAbGTXcsFCREaZ8YICiuQhIf9Zw41iTeuitZCiOW4ePJRjGSUUw3lVQFixKHlSRcYBTzsDgqqAFKJoJzgqD4vYI0NQ57Hy8tBbZ6Y302OWtUAWU59HqwFEB7kGZVYpw5P7h2KN15KRL+zU75D+VjSGAJ94zvx2iWHEzwJpwfRjpRc4Ka5VD2Tib5WgerpkrL/hedh7MDzmlK13LtIUthk9rAN76ScBeXuC4ItjUmqo4JUBzaFQUEkY40jfQvAWDZemcqXwc0KrMCX9b+4/MejogvdRVUukZ10VjO+Dz/EelIwBF+Us8rgy9r6S9SHmiRFiLQIrl9YkP+dAM1OKM7D6NEpp6tuDiDAlVknPIAapD4rRVB8dVGBSxQWrNJjcJIXEB0PTO+g0uvtNlwnVjaB1ZBMF8gNFZdYaH5TvQtNAMYgPDleuXYUH8FtGqRYmZJq2nZqTcC5ZDYGKCC4r91PdWH362ubSzCJr/Kw38SKpmmqCbKycZcGh/vXHqdA43Mc4gNxdvOVAYwPDuMn1W7GjcyaIJt/+uBmKuPsI7ZiNynbpciVj0j8UWk++aOXmUiCZNGKm3zxuWQubNFt0v+4GvlGACuA5ihdwot1k6sknWHSIKXLM839ewEuhdtKmBC+sgKxIDdAJJe35vFdVlmhHLGuD4fSBWb77xWt6KPpPwYmYKOHJa5bAAAAAElFTkSuQmCC",
+      "name": "Webpage scraper tool",
+      "fields": [
+        {
+          "id": "07bbcxa",
+          "required": false,
+          "type": "variable",
+          "options": [],
+          "label": "Website URL",
+          "placeholder": "Website_URL"
+        }
+      ],
+      "updatedAt": {
+        "seconds": 1778700642,
+        "nanoseconds": 237000000
+      },
+      "createdAt": "2026-05-04T10:25:11.211Z"
+    },
+    {
+      "id": "qgmncsh",
+      "name": "Send FAQs to Content Hub",
+      "iconDataUrl": null,
+      "description": "Format FAQs and send to Content Hub Editor",
+      "createdAt": "2026-05-13T13:13:13.178Z",
+      "fields": [],
+      "updatedAt": {
+        "seconds": 1778677993,
+        "nanoseconds": 339000000
+      }
+    },
+    {
+      "id": "s69wacq",
+      "createdAt": "2026-05-04T10:41:31.111Z",
+      "updatedAt": {
+        "seconds": 1777891293,
+        "nanoseconds": 532000000
+      },
+      "fields": [
+        {
+          "id": "km8pjyj",
+          "type": "variable",
+          "required": false,
+          "options": [],
+          "label": "Search queries",
+          "placeholder": ""
+        },
+        {
+          "required": true,
+          "type": "dropdown",
+          "id": "032ijej",
+          "placeholder": "",
+          "label": "Locations",
+          "options": [
+            "14 locations selected",
+            "Option 2"
+          ]
+        }
+      ],
+      "iconDataUrl": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTAiIGN5PSIxMCIgcj0iOS43NSIgZmlsbD0id2hpdGUiIHN0cm9rZT0iI0VBRUFFQSIgc3Ryb2tlLXdpZHRoPSIwLjUiLz4KPHBhdGggZD0iTTE2LjY2NjggMTAuMTQ3OEMxNi42NjY4IDkuNTk5NjcgMTYuNjIxNCA5LjE5OTY3IDE2LjUyMzIgOC43ODQ4N0gxMC4xMzYyVjExLjI1ODlIMTMuODg1MkMxMy44MDk3IDExLjg3MzcgMTMuNDAxNSAxMi43OTk3IDEyLjQ5NDUgMTMuNDIxOUwxMi40ODE4IDEzLjUwNDdMMTQuNTAxMiAxNS4wMzc4TDE0LjY0MTEgMTUuMDUxNUMxNS45MjYxIDEzLjg4ODYgMTYuNjY2OCAxMi4xNzc0IDE2LjY2NjggMTAuMTQ3OFoiIGZpbGw9IiM0Mjg1RjQiLz4KPHBhdGggZD0iTTEwLjEzNjIgMTYuNjY2M0MxMS45NzI5IDE2LjY2NjMgMTMuNTE0OSAxNi4wNzM3IDE0LjY0MTEgMTUuMDUxNUwxMi40OTQ1IDEzLjQyMTlDMTEuOTIgMTMuODE0NSAxMS4xNDkgMTQuMDg4NSAxMC4xMzYyIDE0LjA4ODVDOC4zMzcyOSAxNC4wODg1IDYuODEwNDcgMTIuOTI1NiA2LjI2NjIgMTEuMzE4Mkw2LjE4NjQyIDExLjMyNDhMNC4wODY1NiAxMi45MTc0TDQuMDU5MSAxMi45OTIyQzUuMTc3NzYgMTUuMTcgNy40NzU1NyAxNi42NjYzIDEwLjEzNjIgMTYuNjY2M1oiIGZpbGw9IiMzNEE4NTMiLz4KPHBhdGggZD0iTTYuMjY2MiAxMS4zMTgyQzYuMTIyNTkgMTAuOTAzNCA2LjAzOTQ3IDEwLjQ1ODkgNi4wMzk0NyA5Ljk5OTY3QzYuMDM5NDcgOS41NDAzOSA2LjEyMjU5IDkuMDk1OTYgNi4yNTg2NCA4LjY4MTE1TDYuMjU0ODQgOC41OTI4MUw0LjEyODY3IDYuOTc0NjNMNC4wNTkxIDcuMDA3MDVDMy41OTgwNSA3LjkxMDc3IDMuMzMzNSA4LjkyNTYgMy4zMzM1IDkuOTk5NjdDMy4zMzM1IDExLjA3MzcgMy41OTgwNSAxMi4wODg1IDQuMDU5MSAxMi45OTIyTDYuMjY2MiAxMS4zMTgyWiIgZmlsbD0iI0ZCQkMwNSIvPgo8cGF0aCBkPSJNMTAuMTM2MiA1LjkxMDc3QzExLjQxMzYgNS45MTA3NyAxMi4yNzUzIDYuNDUxNTEgMTIuNzY2NiA2LjkwMzM5TDE0LjY4NjUgNS4wNjYzNEMxMy41MDc0IDMuOTkyMjcgMTEuOTcyOSAzLjMzMzAxIDEwLjEzNjIgMy4zMzMwMUM3LjQ3NTU3IDMuMzMzMDEgNS4xNzc3NiA0LjgyOTI5IDQuMDU5MSA3LjAwNzA1TDYuMjU4NjQgOC42ODExNUM2LjgxMDQ3IDcuMDczNzUgOC4zMzcyOSA1LjkxMDc3IDEwLjEzNjIgNS45MTA3N1oiIGZpbGw9IiNFQjQzMzUiLz4KPC9zdmc+Cg==",
+      "name": "Google’s PAA questions",
+      "description": ""
+    }
+  ]
+}
