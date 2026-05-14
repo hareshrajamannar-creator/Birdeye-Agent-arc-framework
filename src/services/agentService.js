@@ -60,7 +60,8 @@ function restoreFromFirestore(value) {
   return value;
 }
 
-// Save or update an agent (creates if new, overwrites if exists)
+// Save or update an agent. Use merge semantics so independent autosaves
+// for group metrics, tables, and builder details do not erase each other.
 export function saveAgent(agentId, snapshot) {
   // Keep the in-memory cache in sync so re-navigation within the same session
   // doesn't load stale data instead of the version just written to Firestore.
@@ -70,7 +71,7 @@ export function saveAgent(agentId, snapshot) {
   return setDoc(doc(db, COLLECTION, agentId), {
     ...sanitizeForFirestore(snapshot),
     updatedAt: serverTimestamp(),
-  });
+  }, { merge: true });
 }
 
 // Fetch a single agent by id (one-time read)

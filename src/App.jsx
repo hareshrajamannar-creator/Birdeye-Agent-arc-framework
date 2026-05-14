@@ -651,15 +651,14 @@ function App() {
   /* ─── Duplicate template ─── */
   async function handleDuplicateTemplate(template) {
     const newId = crypto.randomUUID();
+    const { updatedAt, ...templateFields } = template;
     await saveTemplate(newId, {
-      id: newId,
+      ...templateFields,
       title: `Copy of ${template.title || 'Untitled'}`,
-      description: template.description || '',
       moduleContext: template.moduleContext || currentModule,
       sectionContext: template.sectionContext || activeL2Item,
       source: 'custom',
-      nodes: template.nodes || null,
-      nodeDetails: template.nodeDetails || null,
+      id: newId,
     });
     showToast('Template duplicated');
   }
@@ -668,15 +667,13 @@ function App() {
   async function handleMoveTemplate(templateId, moduleId, sectionId) {
     const template = moduleTemplates.find((t) => t.id === templateId) || savedTemplates.find((t) => t.id === templateId);
     if (!template) return;
+    const { updatedAt, ...templateFields } = template;
     await saveTemplate(templateId, {
-      id: templateId,
-      title: template.title,
-      description: template.description || '',
+      ...templateFields,
       moduleContext: moduleId,
       sectionContext: sectionId,
       source: template.source || 'custom',
-      nodes: template.nodes || null,
-      nodeDetails: template.nodeDetails || null,
+      id: templateId,
     });
     showToast('Template moved');
   }
@@ -702,15 +699,13 @@ function App() {
 
   /* ─── Share template ─── */
   async function handleShareTemplate(template) {
+    const { updatedAt, ...templateFields } = template;
     await saveTemplate(template.id, {
-      id: template.id,
-      title: template.title,
-      description: template.description || '',
+      ...templateFields,
       moduleContext: template.moduleContext || currentModule,
       sectionContext: template.sectionContext || activeL2Item,
       source: template.source || 'custom',
-      nodes: template.nodes || null,
-      nodeDetails: template.nodeDetails || null,
+      id: template.id,
     });
     setTemplateShareUrl(`${window.location.origin}/view/template/${template.id}`);
   }
