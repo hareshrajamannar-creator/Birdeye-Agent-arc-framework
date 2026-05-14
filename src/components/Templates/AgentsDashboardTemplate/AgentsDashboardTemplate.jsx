@@ -530,7 +530,7 @@ export default function AgentsDashboardTemplate({
                 />
                 <div style={{ padding: '20px 24px 24px' }}>
                   <GroupTable
-                    key={activeMenuItemId + '-table'}
+                    key={`${activeMenuItemId}-table-${groupDoc?.tablePresetVersion || 'custom'}`}
                     tableData={groupDoc?.table}
                     agents={agentList}
                     onTableDataChange={(t) => onGroupUpdate?.('table', t)}

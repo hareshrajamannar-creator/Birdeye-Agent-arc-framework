@@ -124,6 +124,54 @@ const CUSTOM_NAV_ITEMS = [
   { id: 'competitors',  label: 'Competitors',  icon: 'leaderboard' },
 ];
 
+const CONTENT_HUB_FAQ_TABLE_VERSION = 'content-hub-faq-generation-v2';
+const CONTENT_HUB_FAQ_TABLE = {
+  columns: [
+    { id: 'col1', label: 'Generated FAQs' },
+    { id: 'col2', label: 'Accepted FAQs' },
+    { id: 'col3', label: 'Time saved' },
+    { id: 'col4', label: 'Locations' },
+  ],
+  rows: [
+    {
+      id: 'content-hub-faq-row-aeo-website',
+      name: 'AEO-optimized FAQ agent',
+      status: 'Draft',
+      col1: '30',
+      col2: '28',
+      col3: '1h',
+      col4: '2',
+    },
+    {
+      id: 'content-hub-faq-row-on-demand-launch',
+      name: 'On demand FAQ generation agent',
+      status: 'Draft',
+      col1: '24',
+      col2: '22',
+      col3: '1h',
+      col4: '3',
+    },
+    {
+      id: 'content-hub-faq-row-aeo-refresh',
+      name: 'AEO FAQ refresh agent',
+      status: 'Running',
+      col1: '40',
+      col2: '38',
+      col3: '2h',
+      col4: '5',
+    },
+    {
+      id: 'content-hub-faq-row-on-demand-review',
+      name: 'On demand FAQ review agent',
+      status: 'Draft',
+      col1: '18',
+      col2: '16',
+      col3: '45m',
+      col4: '1',
+    },
+  ],
+};
+
 /* ─── App ─── */
 
 function App() {
@@ -270,6 +318,21 @@ function App() {
         .map(toDashboardAgent),
     [agents, effectiveModule, effectiveSection, isDynamicGroupSection]
   );
+
+  useEffect(() => {
+    if (effectiveModule !== 'content-hub' || effectiveSection !== 'faq-generation-agents') return;
+    if (groupDoc?.tablePresetVersion === CONTENT_HUB_FAQ_TABLE_VERSION) return;
+
+    saveAgent('section-content-hub-faq-generation-agents', {
+      id: 'section-content-hub-faq-generation-agents',
+      isSectionConfig: true,
+      agentSlug: 'faq-generation-agents',
+      moduleContext: 'content-hub',
+      moduleSlug: 'content-hub',
+      tablePresetVersion: CONTENT_HUB_FAQ_TABLE_VERSION,
+      table: CONTENT_HUB_FAQ_TABLE,
+    });
+  }, [effectiveModule, effectiveSection, groupDoc?.tablePresetVersion]);
 
   /* ─── Module change ─── */
   function handleModuleChange(moduleId) {

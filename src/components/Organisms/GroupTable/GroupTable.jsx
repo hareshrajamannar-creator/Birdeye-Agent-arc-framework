@@ -282,11 +282,15 @@ export default function GroupTable({ tableData, onTableDataChange, onAgentRowCli
                   onClick={!viewOnly ? () => cycleStatus(row.id) : undefined}
                   style={(viewOnly || row.agentId) ? { cursor: 'default' } : undefined}
                 >
-                  <Chip
-                    label={displayStatus}
-                    colorType={STATUS_COLOR[displayStatus] || 'grey'}
-                    size="small"
-                  />
+                  {displayStatus === 'Draft' ? (
+                    <span className={styles.draftChip}>Draft</span>
+                  ) : (
+                    <Chip
+                      label={displayStatus}
+                      colorType={STATUS_COLOR[displayStatus] || 'grey'}
+                      size="small"
+                    />
+                  )}
                 </td>
 
                 {/* Editable cols */}

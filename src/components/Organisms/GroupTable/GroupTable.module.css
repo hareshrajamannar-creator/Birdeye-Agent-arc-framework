@@ -7,6 +7,7 @@
   width: 100%;
   border-collapse: collapse;
   font-family: 'Roboto', sans-serif;
+  table-layout: fixed;
 }
 
 /* ─── Header ─── */
@@ -19,6 +20,10 @@
   text-align: left;
   white-space: nowrap;
   position: relative;
+}
+
+.th:first-child {
+  width: 360px;
 }
 
 .thInner {
@@ -90,6 +95,7 @@
 /* ─── Name cell ─── */
 .nameCell {
   transition: color 0.1s;
+  width: 360px;
 }
 
 .tr:hover .nameCell {
@@ -116,6 +122,19 @@
 /* ─── Status cell ─── */
 .statusCell {
   cursor: pointer;
+}
+
+.draftChip {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: #f2f4f7;
+  color: #667085;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 400;
 }
 
 /* ─── Cell edit ─── */
