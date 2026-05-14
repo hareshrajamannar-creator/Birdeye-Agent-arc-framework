@@ -1033,9 +1033,8 @@ export default function AgentBuilder({
 
   /* ─── Header actions: Publish + three-dots menu (or view-only badge) ─── */
   const headerActions = viewOnly ? (
-    <div className="ab-view-badge">
-      <span className="material-symbols-outlined">visibility</span>
-      View only
+    <div className="ab-header-actions">
+      <Button theme="primary" label="Publish" onClick={() => {}} />
     </div>
   ) : (
     <div className="ab-header-actions">
@@ -1137,24 +1136,11 @@ export default function AgentBuilder({
       activeNavId={navId}
       navItems={navItems}
       onNavChange={viewOnly ? undefined : setNavId}
-      showBack={!!onClose}
-      onBack={onClose}
+      showBack={viewOnly || !!onClose}
+      onBack={viewOnly ? undefined : onClose}
       pageActions={headerActions}
     >
       <div className="agent-builder-wrapper">
-        {viewOnly && (
-          <div className="ab-view-banner">
-            <span className="material-symbols-outlined">visibility</span>
-            <span>You&apos;re viewing a shared workflow. Editing is disabled.</span>
-            <a
-              className="ab-view-banner__link"
-              href={`mailto:?subject=Request edit access – ${agentName}`}
-            >
-              Request edit access
-            </a>
-          </div>
-        )}
-
         <div className="agent-builder">
           <div className="agent-builder__lhs">
             <LHSDrawer defaultTab="Create manually" triggerOpen tasksOpen={false} controlsOpen={false} viewOnly={viewOnly} />

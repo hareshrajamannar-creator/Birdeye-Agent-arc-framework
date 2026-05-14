@@ -9,6 +9,26 @@ import { getAgent, getAgentBySlug, subscribeToAgents } from '../services/agentSe
 import { getTemplate, subscribeToTemplates } from '../services/templateService';
 import styles from './AgentViewerPage.module.css';
 
+const SHARED_NAV_ITEMS = [
+  { id: 'overview', label: 'Overview', icon: 'home' },
+  { id: 'inbox', label: 'Inbox', icon: 'sms' },
+  { id: 'listings', label: 'Listings', icon: 'location_on' },
+  { id: 'search', label: 'Search AI', icon: 'lightbulb' },
+  { id: 'reviews', label: 'Reviews', icon: 'grade' },
+  { id: 'referrals', label: 'Referrals', icon: 'featured_seasonal_and_gifts' },
+  { id: 'payments', label: 'Payments', icon: 'monetization_on' },
+  { id: 'appointments', label: 'Appointments', icon: 'calendar_month' },
+  { id: 'social', label: 'Social', icon: 'workspaces' },
+  { id: 'content-hub', label: 'Content hub', icon: 'animated_images' },
+  { id: 'surveys', label: 'Surveys', icon: 'assignment_turned_in' },
+  { id: 'ticketing', label: 'Ticketing', icon: 'shapes' },
+  { id: 'contacts', label: 'Contacts', icon: 'group' },
+  { id: 'campaigns', label: 'Campaigns', icon: 'campaign' },
+  { id: 'reports', label: 'Reports', icon: 'pie_chart' },
+  { id: 'insights', label: 'Insights', icon: 'tips_and_updates' },
+  { id: 'competitors', label: 'Competitors', icon: 'leaderboard' },
+];
+
 export default function AgentViewerPage() {
   const { templateId, moduleSlug, agentSlug, agentId } = useParams();
   const navigate = useNavigate();
@@ -144,8 +164,10 @@ export default function AgentViewerPage() {
     <ReactFlowProvider>
       <AgentBuilder
         agentId={agent.id}
-        moduleContext={agent.moduleContext || 'reviews'}
-        appTitle="Agent Arc"
+        moduleContext={mod}
+        activeNavId={mod}
+        navItems={SHARED_NAV_ITEMS}
+        appTitle={getModuleNav(mod).title}
         pageTitle={agent.name || 'Shared agent'}
         initialDescription={agent.description || ''}
         initialNodes={agent.nodes || null}
